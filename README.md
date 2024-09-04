@@ -15,6 +15,19 @@ bootstrap repo for SMA repos
 
 * https://github.com/Smithsonian/supernovas-rpm-spec
 
+* QL reduction pipeline
+
+* pyuvdata
+
+* grafana
+
+* compass (matlab based)
+
+* polaris (matlab based)
+
+* CASA
+
 ### related
 
 * https://github.com/valkey-io/valkey
+
