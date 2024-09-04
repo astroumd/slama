@@ -1,0 +1,4 @@
+#        packages needed for ubuntu
+# sudo apt install $(grep -v ^# requirements.apt)
+doxygen
+cppcheck
