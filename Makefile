@@ -7,8 +7,11 @@ URL3  = https://github.com/Smithsonian/redisx
 URL4  = https://github.com/Smithsonian/SuperNOVAS
 URL5  = https://github.com/Smithsonian/supernovas-rpm-spec
 URL6  = https://github.com/valkey-io/valkey
+URL7  = https://github.com/Smithsonian/xchange
 
-GIT_DIRS = SMA-Software smax-python SuperNOVAS
+GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange
+
+# redisx smax
 
 .PHONY:  help install 
 
@@ -57,7 +60,11 @@ SMA-Software:
 smax-python:
 	git clone $(URL2)
 
+redisx:
+	git clone $(URL3)
+
 SuperNOVAS:
 	git clone $(URL4)
 
-
+xchange:
+	git clone $(URL7)
