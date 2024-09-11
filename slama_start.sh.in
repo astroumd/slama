@@ -1,0 +1,12 @@
+# @EDIT_MSG@
+# for (ba)sh : source this file
+
+export  SLAMA=@SLAMA@
+
+export PATH=$SLAMA/bin:$PATH
+
+# do python first. this is important if a venv is used  (new)
+if [ -e $SLAMA/anaconda3/python_start.sh ]; then
+    source $SLAMA/anaconda3/python_start.sh
+fi
+
