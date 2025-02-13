@@ -6,11 +6,11 @@ Things peculiar to the off-line testing (grep for PJT in the conf file)
 
 After installing valkey start server in this directory
 
-      valkey-server valkey_sma.conf
+      valkey-server_sma valkey_sma.conf
 
 Query using the valkey-cli program:
 
-      valkey-cli
+      valkey-cli_sma
       > ping
       PONG
       > keys *
@@ -20,7 +20,7 @@ Query using the valkey-cli program:
 
 or
 
-      valkey-cli keys \*   > keys.log
+      valkey-cli_sma keys \*   > keys.log
 
 
 
@@ -35,3 +35,6 @@ Example with a suffix, and a private $HOME/opt tree
       cd valkey
       make distclean
       make PROG_SUFFIX="_sma" PREFIX=$HOME/opt  install
+
+
+this implies you need $HOME/opt/bin in your $PATH, or pick another PREFIX.
