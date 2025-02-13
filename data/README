@@ -1,0 +1,25 @@
+Things peculiar to the off-line testing (grep for PJT in the conf file)
+
+- port 6380   # redis and the real online likely already use 6379)
+- dir  ./     # current directory for the rdb file, so launch from here
+- dbfilename sma-shared-variables.rdb
+
+After installing valkey start server in this directory
+
+      valkey-server valkey_sma.conf
+
+Query using the valkey-cli program:
+
+      valkey-cli
+      > ping
+      PONG
+      > keys *
+      DSM:roach2-48:SWARM_SCAN_X
+      ...
+      1041) "DSM:phasemon:PHASEMON_HRDWR_STAT_X"
+
+or
+
+      valkey-cli keys \*   > keys.log
+      
+
