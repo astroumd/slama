@@ -21,5 +21,17 @@ Query using the valkey-cli program:
 or
 
       valkey-cli keys \*   > keys.log
+
+
+
+# Installation
+
+
+Example with a suffix, and a private $HOME/opt tree
       
 
+      url=https://github.com/valkey-io/valkey
+      git clone $url
+      cd valkey
+      make distclean
+      make PROG_SUFFIX="_sma" PREFIX=$HOME/opt  install
