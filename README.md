@@ -52,8 +52,11 @@ Configure should
 
 make install should
     
- * install valkey*_sma in ${SLAMA}/bin
+ * mkdir ${SLAMA}/bin  ${SLAMA}/lua
  
+ * build valkey and  install valkey*_sma in ${SLAMA}/bin
+   - make -jN PROG_SUFFIX="_sma" PREFIX=${SLAMA}/bin
+   (where N is number of cores to use)
 * install valkey-init.sh and smax-init.sh in $SLAMA/bin
  
 * copy smax-server/lua to ${SLAMA}/lua
