@@ -8,8 +8,9 @@ URL4  = git@github.com:Smithsonian/SuperNOVAS.git
 URL5  = git@github.com:Smithsonian/supernovas-rpm-spec.git
 URL6  = git@github.com:valkey-io/valkey.git
 URL7  = git@github.com:Smithsonian/xchange.git
+URL8  = git@github.com:Smithsonian/smax-server.git
 
-GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange
+GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange smax-server valkey
 
 # redisx smax
 
@@ -68,3 +69,6 @@ SuperNOVAS:
 
 xchange:
 	git clone $(URL7)
+
+smax-server:
+	git clone $(URL8)
