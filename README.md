@@ -29,5 +29,6 @@ bootstrap repo for SMA repos
 
 ### related
 
-* https://github.com/valkey-io/valkey
+* https://github.com/valkey-io/valkey (the OSS redis)
+* https://github.com/redis/hiredis (the original redis)
 
