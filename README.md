@@ -27,6 +27,8 @@ bootstrap repo for SMA repos
 
 * CASA
 
+* pyuvdata https://github.com/RadioAstronomySoftwareGroup/pyuvdata
+
 ### related
 
 * https://github.com/valkey-io/valkey
