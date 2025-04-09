@@ -31,5 +31,11 @@ uv add smax-python
 
 ## 3. load environment
 
-This is normally the entry point for any shell that needs to be SLAMA
+This is normally the entry point for any shell that needs to be SLAMA:
+
+```
+    source slama_start.sh
+```
+
+and can be started from any directory with an absolute path.
 
