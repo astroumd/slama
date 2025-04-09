@@ -31,9 +31,12 @@ build1:
 	mkdir -p bin lua
 
 build2:
-	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
+	./install_anaconda3
 
 build3:
+	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
+
+build4:
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
 help:
