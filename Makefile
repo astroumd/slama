@@ -10,7 +10,7 @@ URL6  = git@github.com:valkey-io/valkey.git
 URL7  = git@github.com:Smithsonian/xchange.git
 URL8  = git@github.com:Smithsonian/smax-server.git
 
-GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange smax-server valkey
+GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server
 
 # redisx smax
 
@@ -26,6 +26,15 @@ install:
 	@echo "    make help                  a full list of all documented help"
 	@echo "For a full list, type:  'make help'"
 	@echo ""
+
+build1:
+	mkdir -p bin lua
+
+build2:
+	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
+
+build3:
+	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
 help:
 ## help:      This Help
@@ -66,6 +75,9 @@ redisx:
 
 SuperNOVAS:
 	git clone $(URL4)
+
+valkey:
+	git clone $(URL6)
 
 xchange:
 	git clone $(URL7)
