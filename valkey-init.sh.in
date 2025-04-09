@@ -1,0 +1,12 @@
+#!/bin/bash
+# @EDIT_MSG@
+# Script to run the valkey SMA server and load the LUA scripts into it
+export REDIS_PORT=@REDIS_PORT@
+export PATH=$SLAMA/bin:$PATH
+# valkey.conf cannot have a path in database file name, must be in $cwd
+cp ${SLAMA}/data/sma-shared-variables.rdb .
+valkey-server_sma ${SLAMA}/data/valkey_sma.conf --port ${REDIS_PORT} &
+
+# wait till server is loaded before loading LUA scripts
+sleep 3 
+${SLAMA}/bin/smax-init.sh

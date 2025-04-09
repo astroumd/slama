@@ -1,15 +1,16 @@
 
 # URLs that we'll need
 
-URL1  = https://github.com/Smithsonian/SMA-Software
-URL2  = https://github.com/Smithsonian/smax-python
-URL3  = https://github.com/Smithsonian/redisx
-URL4  = https://github.com/Smithsonian/SuperNOVAS
-URL5  = https://github.com/Smithsonian/supernovas-rpm-spec
-URL6  = https://github.com/valkey-io/valkey
-URL7  = https://github.com/Smithsonian/xchange
+URL1  = git@github.com:Smithsonian/SMA-Software.git
+URL2  = git@github.com:Smithsonian/smax-python.git
+URL3  = git@github.com:Smithsonian/redisx.git
+URL4  = git@github.com:Smithsonian/SuperNOVAS.git
+URL5  = git@github.com:Smithsonian/supernovas-rpm-spec.git
+URL6  = git@github.com:valkey-io/valkey.git
+URL7  = git@github.com:Smithsonian/xchange.git
+URL8  = git@github.com:Smithsonian/smax-server.git
 
-GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange
+GIT_DIRS = SMA-Software smax-python SuperNOVAS xchange smax-server valkey
 
 # redisx smax
 
@@ -68,3 +69,6 @@ SuperNOVAS:
 
 xchange:
 	git clone $(URL7)
+
+smax-server:
+	git clone $(URL8)

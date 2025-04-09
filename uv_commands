@@ -1,0 +1,20 @@
+  1409	2025-03-11 11:38:24	which uv
+  1410	2025-03-11 11:38:27	uv --help
+  1411	2025-03-11 11:38:30	uv --help | more
+  1529	2025-03-21 16:26:12	pip install uv -U
+  1531	2025-03-21 16:28:50	which uv
+  1532	2025-03-21 16:28:52	uv --help
+  1534	2025-03-21 16:29:14	uv init slama
+  1536	2025-03-21 16:29:34	uv add astropy
+  1540	2025-03-21 16:30:00	uv add astropy
+  1548	2025-03-21 16:30:51	more uv.lock
+  1551	2025-03-21 16:31:52	uv python install 3.10
+  1553	2025-03-21 16:32:33	uv add smax-python
+  1555	2025-03-21 16:32:56	more uv.lock
+  1556	2025-03-21 16:33:01	grep smax uv.lock
+  1560	2025-03-21 16:33:57	uv pip install
+  1562	2025-03-21 16:34:28	uv pip install smax-python
+  1564	2025-03-21 16:34:43	uv pip install ../smax-python/
+  1566	2025-03-21 16:35:42	hgrpe uv
+  1567	2025-03-21 16:35:44	hgrep uv
+  1568	2025-03-21 16:36:08	hgrep uv > ../uv_commands
