@@ -48,8 +48,8 @@ build4:
 build5:	smax-server lua
 	cp smax-server/lua/*.lua lua
 
-build6:
-	pip install -e .
+build6: smax-python
+	pip install -e smax-python
 
 help:
 ## help:      This Help
