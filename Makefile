@@ -1,15 +1,21 @@
 
 # URLs that we'll need
 
+_G1_ = https://github.com/
+_G2_ = git@github.com:
+
 URL1  = git@github.com:Smithsonian/SMA-Software.git
 URL2  = git@github.com:Smithsonian/smax-python.git
 URL3  = git@github.com:Smithsonian/redisx.git
 URL4  = git@github.com:Smithsonian/SuperNOVAS.git
 URL5  = git@github.com:Smithsonian/supernovas-rpm-spec.git
-URL6  = git@github.com:valkey-io/valkey.git
+URL6  = git@github.com:Smithsonian/smax-postgres.git
 URL7  = git@github.com:Smithsonian/xchange.git
 URL8  = git@github.com:Smithsonian/smax-server.git
+URL9  = git@github.com:Smithsonian/smax-clib.git
+URL10 = git@github.com:valkey-io/valkey.git
 
+# git software directories we need and build here
 GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server
 
 # redisx smax
@@ -39,6 +45,12 @@ build3:
 build4:
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
+build5:	smax-server lua
+	cp smax-server/lua/*.lua lua
+
+build6:
+	pip install -e .
+
 help:
 ## help:      This Help
 help : Makefile
@@ -65,7 +77,7 @@ branch:
 	-@for dir in $(GIT_DIRS); do\
 	(echo -n "$$dir: " ;cd $$dir; git branch --show-current); done
 
-# all git targets
+# all git targets we need
 
 SMA-Software:
 	git clone $(URL1)
@@ -79,11 +91,11 @@ redisx:
 SuperNOVAS:
 	git clone $(URL4)
 
-valkey:
-	git clone $(URL6)
-
 xchange:
 	git clone $(URL7)
 
 smax-server:
 	git clone $(URL8)
+
+valkey:
+	git clone $(URL10)
