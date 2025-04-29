@@ -2,10 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Union
 import astropy.units as u
 import numpy as np
+from smax import SmaxRedisClient
 
 class MonitorPoint:
-    def __init__(self,name:str,value:Any,units:Union[u.Unit|str],description:str = None, errLo:Any=None, errHi:Any = None, warnLo:any = None, warnHi:any=None):
+    def __init__(self,name:str,value:Any,units:Union[u.Unit|str],table=str, key=str, description:str = None, errLo:Any=None, errHi:Any = None, warnLo:any = None, warnHi:any=None):
         self._name = name
+        self._table = table # Redis table
+        self.__key = key # Redis key
         self._description = description
         self._value = value
         self._units = units
@@ -59,14 +62,29 @@ class MonitorPoint:
     def isValid(self) -> bool:
         return self._valid
 
-class MonitorPointUpdater:
-    def __init__(self,url:str):
-        # valkey server
-        self._url = url
-
-    def update(mp:MonitorPoint) -> None:
-        """ read from self.url and write data to mp """
+    def check_validity(self):
         pass
 
+class MonitorPointUpdater:
+    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient):
+        self._mp = mp
+        # valkey server
+        self._client = client
+
+    def update(mp:MonitorPoint) -> None:
+        """ read from self.client and write data to mp """
+        result = smax_client.smax_pull(self._mp._table, self._mp._key)
+        self._mp._value = result.data
+        self._mp.check_validity()
+
+class MonitorPointWriter:
+    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient):
+        self._mp = mp
+        # valkey server
+        self._client = client
+
+    def write(self, value) -> None:
+        """ read from self.client and write data to mp """
+        smax_client.smax_share(self._mp._table, self._mp._key, value)
 
 
