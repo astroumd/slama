@@ -8,7 +8,7 @@ class MonitorPoint:
     def __init__(self,name:str,value:Any,units:Union[u.Unit|str],table=str, key=str, description:str = None, errLo:Any=None, errHi:Any = None, warnLo:any = None, warnHi:any=None):
         self._name = name
         self._table = table # Redis table
-        self.__key = key # Redis key
+        self._key = key # Redis key
         self._description = description
         self._value = value
         self._units = units
@@ -22,6 +22,9 @@ class MonitorPoint:
     def name(self) -> str:
         return self._name
 
+    @property
+    def canonical_name(self) -> str:
+        return f"{self._table}:{self._key}"
     @property
     def value(self) -> Any:
         return self._value
@@ -71,9 +74,14 @@ class MonitorPointUpdater:
         # valkey server
         self._client = client
 
-    def update(mp:MonitorPoint) -> None:
+    @property
+    def mp(self):
+        return self._mp
+
+    def update(self) -> None:
         """ read from self.client and write data to mp """
-        result = smax_client.smax_pull(self._mp._table, self._mp._key)
+        result = self._client.smax_pull(self._mp._table, self._mp._key)
+        print(f"fetched {result}")
         self._mp._value = result.data
         self._mp.check_validity()
 
@@ -85,6 +93,6 @@ class MonitorPointWriter:
 
     def write(self, value) -> None:
         """ read from self.client and write data to mp """
-        smax_client.smax_share(self._mp._table, self._mp._key, value)
+        self._client.smax_share(self._mp._table, self._mp._key, value)
 
 
