@@ -6,4 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "astropy>=7.0.1",
+    "matplotlib",
+    "numpy"
 ]
