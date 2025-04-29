@@ -1,6 +1,8 @@
 # slama plotting
+#!/usr/bin/env python
 from .monitor import MonitorPointUpdater
 import matplotlib.pyplot as plt
+from matplotlib.widgets import TextBox
 import astropy.units as u
 from time import sleep
 import numpy as np
@@ -29,6 +31,9 @@ class MonitorPointPlot():
         self._ax.set_title(title)
         self._ax.set_xlabel("delta time (seconds)")
         self._ax.set_ylabel(f"value ({self.mp.units})")
+        axbox = self._figure.add_axes([0.4,0.7,0.2,0.1])
+        self._textbox = TextBox(axbox,label=self.mp.name,initial=f"{self.mp.value:.3f} {self.mp.units}")
+
 
     def _update_mp(self):
         self._mpu.update()
@@ -36,15 +41,14 @@ class MonitorPointPlot():
     def _update_plot(self):
         self._update_mp()
         self._y.append(self.mp.value)
-        print(f"{len(self._y)=}")
         self._line.set_ydata(self._y)
         self._x = np.arange(0,len(self._y))
         self._line.set_xdata(self._x)
-        print(f"{len(self._x)=}, {len(self._y)=}")
         #if (len(self._x)>10):
         self._ax.set_xlim(0,self._x.max())
         #if (len(self._y)>10):
         self._ax.set_ylim(1.5*np.min(self._y),1.5*np.max(self._y),auto=True)
+        self._textbox.set_val(f"{self.mp.value:.3f} {self.mp.units}")
         self._figure.canvas.draw()
         self._figure.canvas.flush_events()
 
