@@ -85,7 +85,7 @@ Start valkey, this also runs smax-init
 
 ```
 
-and testing smax-python:
+and testing smax-python: (port is wrong etc.)
 
 ```
       pytest smax-python/tests/test_smax_data_types.py
