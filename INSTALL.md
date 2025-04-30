@@ -164,3 +164,11 @@ this will use another port, but there's no way to use another rdb file?  The com
      valkey-cli_sma -p 6380 --rdb junk.rdb
 ```	   
 simply creates a new rdb file from the sma-shared-variables.rdb
+
+- getting keyval can be done
+
+```
+     valkey-cli_sma -p 6380 hget weather:forecast:gfs test_temp
+
+```
+but to get all the meta-data, it's better to use `smaxValue` from the clib 
