@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Union
 import astropy.units as u
+from astropy.time import Time
 import numpy as np
 from smax import SmaxRedisClient
 
@@ -28,6 +29,9 @@ class MonitorPoint:
     @property
     def value(self) -> Any:
         return self._value
+    @property
+    def timestamp(self) -> Time:
+        return self._timestamp
 
     @property
     def units(self)-> u.Unit:
@@ -61,6 +65,7 @@ class MonitorPoint:
     def warnRange(self) -> list:
         return [self._warnLo, self._warnHi]
 
+    #@todo Mps will not have validities...
     @property
     def isValid(self) -> bool:
         return self._valid
@@ -69,10 +74,11 @@ class MonitorPoint:
         pass
 
 class MonitorPointUpdater:
-    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient):
+    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient, lazy=False):
         self._mp = mp
         # valkey server
         self._client = client
+        self._lazy=lazy
 
     @property
     def mp(self):
@@ -80,10 +86,18 @@ class MonitorPointUpdater:
 
     def update(self) -> None:
         """ read from self.client and write data to mp """
+        #@todo use lazy pull
         result = self._client.smax_pull(self._mp._table, self._mp._key)
-        print(f"fetched {result}")
+        #print(f"fetched {result}")
         self._mp._value = result.data
         self._mp.check_validity()
+
+class MonitorPointSubscriber:
+    """for lazy pulling, get notified when changed
+    be sure to mutex lock when read/write
+    """
+    def __init__(self):
+        pass
 
 class MonitorPointWriter:
     def __init__(self,mp:MonitorPoint, client:SmaxRedisClient):
