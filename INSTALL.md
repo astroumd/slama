@@ -7,7 +7,7 @@ Order of steps is important
 ```
      git clone https://github.com/astroumd/slama
      cd slama
-     git checkout autoconf   [for now]
+     git checkout autoconf   [for now, soon can be skipped]
 ```
 
 ## 1. configure
@@ -24,18 +24,23 @@ will report some env.var, create some shell startup files.
 ## 2. python
 
 If you don't have a python environment, or a way to make a virtual environment,
-the `install_anaconda3`, with optionally wget=wgetc if you have the caching version
-of wget. Otherwise just this:
+the `install_anaconda3`, with optionally `wget=wgetc` if you have the caching version
+of wget, or even `wget=curl` will work.   Otherwise just this:
 
 ```
      make build2
 ```
 
 
-###  uv ?
+###  install slama modules: pip
 
-Don't use this yet.  Just noting for kicks, maybe we'll learn to use
-the new `uv` hype, or even `hatch`
+```
+     pip install -e slama
+```
+
+### install slama modules: uv
+
+to be 
 
 ```
 pip install uv -U
@@ -44,6 +49,11 @@ uv add smax-python
 uv add astropy
 uv python install 3.10
 uv add smax-python
+
+uv pip install -e slama
+
+
+
 ```
 
 ## 3. load environment
@@ -59,8 +69,12 @@ and can be started from any directory
 ## 4. get the other git directories we (may) need
 
 ```
-     make git
+     make git pull
 ```
+
+In addition to grabbing the needs git directories, it also updates them
+
+
 
 ## 5. build things we need (note we use valkey now, not redis)
 
@@ -85,11 +99,45 @@ Start valkey, this also runs smax-init
 
 ```
 
-and testing smax-python:
+and testing smax-python: (port is wrong etc.)
 
 ```
       pytest smax-python/tests/test_smax_data_types.py
-      pytest smax-python/tests/test_smax_redis_client.py          [doesn't work yet]
+
+```
+
+## 7. More testing
+
+Follow slama/README.md
+
+```
+      cd slama/src/slama
+      python test_smax.py
+      -> Input weather:forecast:gfs:test_tau=0.5130620014500181, fetched result 0.5130620014500181 of type float
+
+
+
+      python test_plot.py
+      -> ERROR:smax.smax_redis_client:Could not find weather:forecast:gfs:test_temp in Redis
+
+
+```
+
+and in an ipython window
+
+```
+
+from slama.monitor import MonitorPoint, MonitorPointUpdater, MonitorPointWriter
+from smax import SmaxRedisClient
+
+smax_client = SmaxRedisClient('localhost',redis_port=6380)
+mp = MonitorPoint("mytestpoint",value=None,units="K",table="weather:forecast:gfs", key="test_temp")
+mpw = MonitorPointWriter(mp,smax_client)
+
+mpw.write(a value)
+# note typo 'mp' in earlier version
+
+# etc
 
 ```
 
@@ -107,3 +155,20 @@ and testing smax-python:
 1206559:M 23 Apr 2025 08:37:48.751 # Valkey is now ready to exit, bye bye...
 ```
 it should say which file it used to save on disk.  mine never ended.
+
+- valkey-cli_sma -p 6380
+
+this will use another port, but there's no way to use another rdb file?  The command
+
+```
+     valkey-cli_sma -p 6380 --rdb junk.rdb
+```	   
+simply creates a new rdb file from the sma-shared-variables.rdb
+
+- getting keyval can be done
+
+```
+     valkey-cli_sma -p 6380 hget weather:forecast:gfs test_temp
+
+```
+but to get all the meta-data, it's better to use `smaxValue` from the clib 
