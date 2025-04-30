@@ -1,4 +1,5 @@
 # slama
+
 bootstrap repo for SMA repos
 
 ## repos:
@@ -37,13 +38,17 @@ bootstrap repo for SMA repos
 * https://github.com/redis/hiredis (the original redis)
 
 
+## Installation
+
+Installation is covered in INSTALL.md
+
 ## Configure
 
-Configure should
+After `configure` has been run:
 
-* create slama_start.sh
+* created slama_start.sh 
 
-* create and set global environment variables like REDIS_NAME, REDIS_CLI, RESID_SERVER, REDIS_PORT, LUA 
+* create and set global environment variables like REDIS_NAME, REDIS_CLI, RESIS_SERVER, REDIS_PORT, LUA 
     - maybe add $REDIS_DBFILE to the list (sma-shared-variables.rdb)
 
 * update data/valkey_sma.conf to use $REDIS_PORT, REDIS_DBFILE

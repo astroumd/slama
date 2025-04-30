@@ -386,7 +386,7 @@ daemonize no
 #
 # Note that on modern Linux systems "/run/valkey.pid" is more conforming
 # and should be used instead.
-pidfile /var/run/valkey_6379.pid
+pidfile /var/run/valkey_@REDIS_PORT@.pid
 
 # Specify the server verbosity level.
 # This can be one of:
@@ -575,8 +575,7 @@ rdb-version-check strict
 # sanitize-dump-payload no
 
 # The filename where to dump the DB
-#PJT dbfilename dump.rdb
-dbfilename sma-shared-variables.rdb
+dbfilename @REDIS_DBFILE@
 
 # Remove RDB files used by replication in instances without persistence
 # enabled. By default this option is disabled, however there are environments
