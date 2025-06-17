@@ -4,20 +4,55 @@ import astropy.units as u
 from astropy.time import Time
 import numpy as np
 from smax import SmaxRedisClient
+import smax.smax_data_types as smaxdt
+from pathlib import Path
+import json
+from collections import UserList
+from enum import IntEnum, auto
+from numbers import Number
+
+
+class Validity(IntEnum):
+    INVALID_NO_DATA = auto()
+    INVALID_NO_HW = auto()
+    INVALID_HW_BAD = auto()
+    VALID = auto()
+    VALID_NOT_CHECKED = auto()
+    VALID_GOOD = auto()
+    VALID_WARNING = auto()
+    VALID_ERROR = auto()
+    VALID_WARNING_LOW = auto()
+    VALID_WARNING_HIGH = auto()
+    VALID_ERROR_LOW = auto()
+    VALID_ERROR_HIGH = auto()
+    MAX_VALIDITY = auto()
+
 
 class MonitorPoint:
-    def __init__(self,name:str,value:Any,units:Union[u.Unit|str],table=str, key=str, description:str = None, errLo:Any=None, errHi:Any = None, warnLo:any = None, warnHi:any=None):
+    def __init__(
+        self,
+        name: str,
+        canonical_name: str,
+        value: Validity = Validity.VALID_GOOD,
+        units: Union[u.Unit | str] = u.dimensionless_unscaled,
+        description: str = None,
+        err_low: Any = None,
+        err_high: Any = None,
+        warn_low: Any = None,
+        warn_high: Any = None,
+        valid_strings: list = None,
+    ):
         self._name = name
-        self._table = table # Redis table
-        self._key = key # Redis key
+        self._canonical_name = canonical_name
         self._description = description
         self._value = value
         self._units = units
-        self._errLo = errLo
-        self._errHi = errHi
-        self._warnLo = errLo
-        self._warnHi = warnHi
+        self._err_low = err_low
+        self._err_high = err_high
+        self._warn_low = err_low
+        self._warn_high = warn_high
         self._valid = True
+        self._valid_strings = valid_strings  # used only for string type MPs
 
     @property
     def name(self) -> str:
@@ -25,88 +60,208 @@ class MonitorPoint:
 
     @property
     def canonical_name(self) -> str:
-        return f"{self._table}:{self._key}"
+        if self._canonical_name is None:
+            return f"{self._table}:{self._key}"
+        else:
+            return self._canonical_name
+
+    @property
+    def table(self) -> str:
+        return self._canonical_name.rsplit(":", 1)[0]
+
+    @property
+    def key(self) -> str:
+        return self._canonical_name.rsplit(":", 1)[1]
+
     @property
     def value(self) -> Any:
         return self._value
-    @property
-    def timestamp(self) -> Time:
-        return self._timestamp
 
     @property
-    def units(self)-> u.Unit:
-        if self._units is None:
+    def timestamp(self) -> Time:
+        return Time(self._value.timestamp)
+
+    @property
+    def units(self) -> u.Unit:
+        if self._units is None and self._value.unit is None:
             return u.dimensionless_unscaled
         # this could raise a ValueError if self._units is not a valid
         # unit.  Are we allowing non-astropy units?
         return u.Unit(self._units)
 
     @property
-    def errLo(self) -> Any:
-        return self._errLo
+    def type(self) -> str:
+        return self._value.type
 
     @property
-    def errHi(self) -> Any:
-        return self._errHi
+    def smax_type(self):
+        return type(self._value)
 
-    @property 
+    @property
+    def err_low(self) -> Any:
+        return self._err_low
+
+    @property
+    def err_high(self) -> Any:
+        return self._err_high
+
+    @property
     def errRange(self) -> list:
-        return [self._errLo, self._errHi]
+        return [self._err_low, self._err_high]
 
     @property
-    def warnLo(self) -> Any:
-        return self._warnLo
+    def warn_low(self) -> Any:
+        return self._warn_low
 
     @property
-    def warnHi(self) -> Any:
-        return self._warnHi
+    def warn_high(self) -> Any:
+        return self._warn_high
 
-    @property 
+    @property
     def warnRange(self) -> list:
-        return [self._warnLo, self._warnHi]
+        return [self._warn_low, self._warn_high]
 
-    #@todo Mps will not have validities...
+    # @todo Mps will not have validities...
     @property
     def isValid(self) -> bool:
-        return self._valid
+        return self._valid  # should be validity > INVALID_HW_BAD
 
-    def check_validity(self):
-        pass
+    def set_valid_strings(self, valid_strings: list) -> None:
+        self._valid_strings = valid_strings
+
+    @property
+    def validity(self) -> Validity:
+        v = self.value
+        if isinstance(v, Number):
+            return self._numeric_validity()
+
+        if isinstance(v, str):
+            return self._string_validity()
+
+        if isinstance(v, bool):
+            return self._bool_validity()
+
+    def _numeric_validity(self) -> Validity:
+        v = self.value
+        if self.err_high is not None and v >= self.err_high:
+            return Validity.VALID_ERROR_HIGH
+        if self.err_low is not None and v <= self.err_low:
+            return Validity.VALID_ERROR_LOW
+        if self.warn_high is not None and v >= self.warn_high:
+            return Validity.VALID_WARNING_HIGH
+        if self.warn_low is not None and v <= self.warn_low:
+            return Validity.VALID_WARNING_LOW
+        return Validity.VALID_GOOD
+
+    def _string_validity(self) -> Validity:
+        v = self.value
+        if self.err_high is not None and v in self.err_high:
+            return Validity.VALID_ERROR_HIGH
+        if self.err_low is not None and v in self.err_low:
+            return Validity.VALID_ERROR_LOW
+        if self.warn_high is not None and v in self.warn_high:
+            return Validity.VALID_WARNING_HIGH
+        if self.warn_low is not None and v in self.warn_low:
+            return Validity.VALID_WARNING_LOW
+        if self._valid_strings is not None and self.value in self._valid_strings:
+            return Validity.VALID_GOOD
+        return Validity.VALID
+
+    def _bool_validity(self) -> Validity:
+        return Validity.VALID_NOT_CHECKED
+
+    def update(self, result):
+        self._value = result.data
+
+    def isGood(self) -> bool:
+        return self.validity == Validity.VALID_GOOD
+
+
+class MonitorPointList(UserList):
+    def __init__(self, mpjsonlist):
+        mplist = []
+        for m in mpjsonlist:
+            mplist.append(MonitorPoint(**m))
+        UserList.__init__(self, mplist)
+
+    @classmethod
+    def from_file(self, path: Path):
+        mplist = json.load(open(path, "r"))
+        return MonitorPointList(mplist["monitorpoints"])
+
+
+class MonitorListUpdater:
+    def __init__(
+        self, mplist: MonitorPointList, client: SmaxRedisClient, lazy=False, updatenow=True
+    ):
+        self._mplist = mplist
+        # valkey server
+        self._client = client
+        self._lazy = lazy
+        if updatenow:
+            self.update()
+
+    @property
+    def mplist(self):
+        return self._mplist
+
+    def update(self) -> None:
+        """read from self.client and write data to mp"""
+        # @todo use lazy pull -- Not Implemented in Python
+
+        for mp in self.mplist:
+            result = self._client.smax_pull(mp.table, mp.key)
+            # or self._client.smax_pull(self._mp._canonical_name)
+            # print(f"fetched {result}")
+            mp._value = result.data
+
 
 class MonitorPointUpdater:
-    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient, lazy=False):
+    def __init__(self, mp: MonitorPoint, client: SmaxRedisClient, lazy=False):
         self._mp = mp
         # valkey server
         self._client = client
-        self._lazy=lazy
+        self._lazy = lazy
 
     @property
     def mp(self):
         return self._mp
 
     def update(self) -> None:
-        """ read from self.client and write data to mp """
-        #@todo use lazy pull
-        result = self._client.smax_pull(self._mp._table, self._mp._key)
-        #print(f"fetched {result}")
+        """read from self.client and write data to mp"""
+        # @todo use lazy pull -- Not Implemented in Python
+        result = self._client.smax_pull(self.mp.table, self.mp.key)
+        # or self._client.smax_pull(self._mp._canonical_name)
+        # print(f"fetched {result}")
         self._mp._value = result.data
-        self._mp.check_validity()
+
 
 class MonitorPointSubscriber:
     """for lazy pulling, get notified when changed
     be sure to mutex lock when read/write
     """
-    def __init__(self):
-        pass
+
+    def __init__(self, mp: MonitorPoint, client: SmaxRedisClient, sleep=5):
+        self._mp = mp
+        self._client = client
+        self._sleep = sleep
+        self.subscribe()
+
+    def subscribe(self):
+        self._client.subscribe(
+            self._mp.canonical_name, callback=self._mp.update, pubsub_sleep=self._sleep
+        )
+
+    def unsubscribe(self):
+        self._client.unsubscribe()
+
 
 class MonitorPointWriter:
-    def __init__(self,mp:MonitorPoint, client:SmaxRedisClient):
+    def __init__(self, mp: MonitorPoint, client: SmaxRedisClient):
         self._mp = mp
         # valkey server
         self._client = client
 
     def write(self, value) -> None:
-        """ read from self.client and write data to mp """
-        self._client.smax_share(self._mp._table, self._mp._key, value)
-
-
+        """read from self.client and write data to mp"""
+        self._client.smax_share(self._mp.table, self._mp.key, value)
