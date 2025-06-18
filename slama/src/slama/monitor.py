@@ -34,7 +34,7 @@ class MonitorPoint:
         name: str,
         canonical_name: str,
         value: Validity = Validity.VALID_GOOD,
-        units: Union[u.Unit | str] = u.dimensionless_unscaled,
+        units: Union[u.Unit | str] = None,
         description: str = None,
         err_low: Any = None,
         err_high: Any = None,
@@ -83,8 +83,8 @@ class MonitorPoint:
 
     @property
     def units(self) -> u.Unit:
-        if self._units is None and self._value.unit is None:
-            return u.dimensionless_unscaled
+        if self._units is None:  # and self._value.unit is None:
+            return None
         # this could raise a ValueError if self._units is not a valid
         # unit.  Are we allowing non-astropy units?
         return u.Unit(self._units)
@@ -140,6 +140,7 @@ class MonitorPoint:
 
         if isinstance(v, bool):
             return self._bool_validity()
+        return Validity.VALID_NOT_CHECKED
 
     def _numeric_validity(self) -> Validity:
         v = self.value
@@ -165,13 +166,15 @@ class MonitorPoint:
             return Validity.VALID_WARNING_LOW
         if self._valid_strings is not None and self.value in self._valid_strings:
             return Validity.VALID_GOOD
-        return Validity.VALID
+        if self._valid_strings is None:
+            return Validity.VALID_GOOD
+        return Validity.VALID_ERROR
 
     def _bool_validity(self) -> Validity:
         return Validity.VALID_NOT_CHECKED
 
     def update(self, result):
-        self._value = result.data
+        self._value = result.asdict()["data"]
 
     def isGood(self) -> bool:
         return self.validity == Validity.VALID_GOOD
@@ -219,7 +222,7 @@ class MonitorListUpdater:
             result = self._client.smax_pull(mp.table, mp.key)
             # or self._client.smax_pull(self._mp._canonical_name)
             # print(f"fetched {result}")
-            mp._value = result.data
+            mp._value = result.asdict()["data"]
 
 
 class MonitorPointUpdater:
@@ -239,7 +242,7 @@ class MonitorPointUpdater:
         result = self._client.smax_pull(self.mp.table, self.mp.key)
         # or self._client.smax_pull(self._mp._canonical_name)
         # print(f"fetched {result}")
-        self._mp._value = result.data
+        self._mp._value = result.asdict()["data"]
 
 
 class MonitorPointSubscriber:

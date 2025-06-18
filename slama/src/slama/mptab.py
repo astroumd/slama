@@ -48,6 +48,7 @@ class CellSubscriber(MonitorPointSubscriber, QTableWidgetItem):
 class TextCell(QLabel):
     def __init__(self, mp: MonitorPoint):
         super().__init__()
+        # print(f"doing {mp.name}")
         self._mp = mp
         self._defaultss = "border: 1px solid black; padding: 5px;"
         self.setStyleSheet(self._defaultss)
@@ -71,6 +72,7 @@ class TableCell(QTableWidgetItem):
 
     def __init__(self, mp: MonitorPoint):
         super().__init__()
+        # print(f"table doing {mp.name}")
         self._mp = mp
         self.update()
 
@@ -103,21 +105,21 @@ class MpTableWidget(QTableWidget):
         i = 0
         hlabels = []
         for row in range(rows):
-            hlabels.append(self._mpl.mplist[i + start].name)
+            name = self._mpl.mplist[i + start].name
+            if self._mpl.mplist[i + start].units is not None:
+                name += f" ({self._mpl.mplist[i + start].units})"
+            hlabels.append(name)
             # self.setHorizontalHeaderLabel(row, self._mpl[i].name)
             for col in range(columns):
                 self._cells.append(TableCell(self._mpl.mplist[i + start]))
                 self.setItem(row, col, self._cells[i])
                 i += 1
         self.setVerticalHeaderLabels(hlabels)
-        # Set up a timer to update the table data regularly
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_table)
-        self.timer.start(2000)
 
     def update_table(self):
         """Update the values in the table."""
         self._mpl.update()
+        print("updating table")
         for c in self._cells:
             c.update()
 
@@ -154,15 +156,15 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Array Status")
-        self.setGeometry(100, 100, 900, 400)
+        self.setGeometry(100, 100, 950, 400)
 
         self._smax_client = SmaxRedisClient("localhost", redis_port=6380)
         self._path = Path("mpdefs.json")
         self._mpl = MonitorListUpdater(MonitorPointList.from_file(self._path), self._smax_client)
         self._mpl.update()
         print(f"{len(self._mpl)=} {len(self._mpl.mplist)=}")
-        self.table = MpTableWidget(6, 8, self._mpl, start=0)
-        self.grid = MpGridWidget(3, 3, self._mpl, start=len(self.table))
+        self.table = MpTableWidget(7, 8, self._mpl, start=0)
+        self.grid = MpGridWidget(4, 3, self._mpl, start=len(self.table))
         main_layout = QVBoxLayout()
         main_layout.addLayout(self.grid)
         main_layout.addWidget(self.table)
@@ -171,6 +173,18 @@ class MainWindow(QMainWindow):
         container.setLayout(main_layout)
 
         self.setCentralWidget(container)
+        # Set up a timer to update the table data regularly
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update)
+        self.timer.start(2000)
+
+    def update(self):
+        """Update the values in the table."""
+        self._mpl.update()
+        for c in self.table._cells:
+            c.update()
+        for c in self.grid._cells:
+            c.update()
 
 
 def main():
