@@ -1,0 +1,420 @@
+{
+"monitorpoints": [
+    {
+      "canonical_name" : "RM:acc1:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc2:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc3:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc4:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc5:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc6:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc7:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc8:RM_TRACK_EL_F",
+      "description" : "Elevation Error",
+      "name" : "Elevation",
+      "units": "degree",
+      "warn_low" : 15.0,
+      "warn_high" : 88.0,
+      "err_low" : -1.0,
+      "err_high" : 90
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc2:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc3:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc4:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc5:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc6:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc7:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc8:RM_EL_TRACKING_ERROR_F",
+      "description" : "Elevation Error",
+      "name" : "El Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc2:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc3:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc4:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc5:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc6:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc7:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc8:RM_TRACK_AZ_F",
+      "description" : "Tracking Azimuth",
+      "name" : "Azimuth",
+      "units": "degree",
+      "warn_low" : -70.0,
+      "warn_high" : 175.0,
+      "err_low" : -90.0,
+      "err_high" : 180.0 
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc2:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc3:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc4:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc5:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc6:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc7:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc8:RM_AZ_TRACKING_ERROR_F",
+      "description" : "Azimuth Error",
+      "name" : "Az Error",
+      "units": "degree",
+      "warn_low" : -0.25,
+      "warn_high" : 0.25,
+      "err_low" : -0.5,
+      "err_high" : 0.5
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc2:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc3:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc4:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc5:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc6:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc7:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc8:RM_ACTIVE_LOW_RECEIVER_C10",
+      "description" : "Receiver selection for low-band Rx",
+      "name" : "LowRx",
+      "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_SOURCE_C34",
+      "description" : "Observing target",
+      "name" : "Source"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_RA_CAT_HOURS_D",
+      "description" : "Source Right Ascension",
+      "name" : "RA",
+      "units": "hr"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_DEC_CAT_DEG_D",
+      "description" : "Source Declination",
+      "name" : "DEC",
+      "units": "hr"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_SVEL_KMPS_D",
+      "description" : "Source Velocity",
+      "name" : "Vel",
+      "units": "km/s"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_WEATHER_TEMP_F",
+      "description" : "Ambient Temperature",
+      "name" : "T(amb)",
+      "units": "Celsius"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_WEATHER_HUMIDITY_F",
+      "description" : "Relative Humidity",
+      "name" : "RH%"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_WEATHER_MBAR_F",
+      "description" : "Atmospheric Pressure",
+      "name" : "Patm",
+      "units": "mbar"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_WEATHER_WINDSPEED_F",
+      "description" : "Wind Speed",
+      "name" : "V(Wind)",
+      "units": "km/s"
+    }
+
+  ]
+}
+
