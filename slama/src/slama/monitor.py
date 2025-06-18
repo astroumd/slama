@@ -49,7 +49,7 @@ class MonitorPoint:
         self._units = units
         self._err_low = err_low
         self._err_high = err_high
-        self._warn_low = err_low
+        self._warn_low = warn_low
         self._warn_high = warn_high
         self._valid = True
         self._valid_strings = valid_strings  # used only for string type MPs
@@ -204,6 +204,12 @@ class MonitorListUpdater:
     @property
     def mplist(self):
         return self._mplist
+
+    def __getitem__(self, index):
+        return self._mplist[index]
+
+    def __len__(self):
+        return len(self._mplist)
 
     def update(self) -> None:
         """read from self.client and write data to mp"""

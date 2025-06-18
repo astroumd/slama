@@ -368,6 +368,86 @@
       "name" : "LowRx",
       "valid_strings": ["A1","B1","C", "E", "A2", "B2", "D", "F"]
     },
+     {
+       "canonical_name" : "RM:acc1:RM_TSYS_D",
+       "description" : "System Temperature",
+       "name" : "Tsys",
+       "units": "K",
+       "warn_low" : 50.0,
+       "warn_high" :500.0,
+       "err_low" : 25.0,
+       "err_high" : 1500.0
+     },   
+     {
+       "canonical_name" : "RM:acc2:RM_TSYS_D",
+       "description" : "System Temperature",
+       "name" : "Tsys",
+       "units": "K",
+       "warn_low" : 50.0,
+       "warn_high" :500.0,
+       "err_low" : 25.0,
+       "err_high" : 1500.0
+     },   
+     {
+       "canonical_name" : "RM:acc3:RM_TSYS_D",
+       "description" : "System Temperature",
+       "name" : "Tsys",
+       "units": "K",
+       "warn_low" : 50.0,
+       "warn_high" :500.0,
+       "err_low" : 25.0,
+       "err_high" : 1500.0
+     },   
+    {
+      "canonical_name" : "RM:acc4:RM_TSYS_D",
+      "description" : "System Temperature",
+      "name" : "Tsys",
+      "units": "K",
+      "warn_low" : 50.0,
+      "warn_high" :500.0,
+      "err_low" : 25.0,
+      "err_high" : 1500.0
+    },   
+    {
+      "canonical_name" : "RM:acc5:RM_TSYS_D",
+      "description" : "System Temperature",
+      "name" : "Tsys",
+      "units": "K",
+      "warn_low" : 50.0,
+      "warn_high" :500.0,
+      "err_low" : 25.0,
+      "err_high" : 1500.0
+    }, 
+    {
+      "canonical_name" : "RM:acc6:RM_TSYS_D",
+      "description" : "System Temperature",
+      "name" : "Tsys",
+      "units": "K",
+      "warn_low" : 50.0,
+      "warn_high" :500.0,
+      "err_low" : 25.0,
+      "err_high" : 1500.0
+    },    
+    {
+      "canonical_name" : "RM:acc7:RM_TSYS_D",
+      "description" : "System Temperature",
+      "name" : "Tsys",
+      "units": "K",
+      "warn_low" : 50.0,
+      "warn_high" :500.0,
+      "err_low" : 25.0,
+      "err_high" : 1500
+    },   
+    {
+      "canonical_name" : "RM:acc8:RM_TSYS_D",
+      "description" : "System Temperature",
+      "name" : "Tsys",
+      "units": "K",
+      "warn_low" : 50.0,
+      "warn_high" :500.0,
+      "err_low" : 25.0,
+      "err_high" : 1500.0
+    },       
     {
       "canonical_name" : "RM:acc1:RM_SOURCE_C34",
       "description" : "Observing target",
@@ -413,8 +493,13 @@
       "description" : "Wind Speed",
       "name" : "V(Wind)",
       "units": "km/s"
+    },
+    {
+      "canonical_name" : "RM:acc1:RM_WEATHER_WINDDIR_F",
+      "description" : "Wind Direction",
+      "name" : "Wind Dir",
+      "units": "deg"
     }
-
   ]
 }
 
