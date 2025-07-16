@@ -45,22 +45,33 @@ class FakeObs:
         self._patm = 626.8255
         self.weather(init=True)
         self.slew(119.6513, 47.281)
+        self._sources = {"ORIMSR": 
+                         SkyCoord("5:35:14.5 -05:22:30.5", frame="icrs", unit=(u.hr, u.deg)),
+                         "3c279":
+                                  SkyCoord("12:56:11.167 -05:47:21.52", frame="icrs", unit=(u.hr, u.deg)),
+                        }
 
-    def observe(self):
-        self._source = "ORIMSR"
+
+    def observe(self, source):
+        self._source = source
         self._vel = 5.0
         self._freq = 230.538
-        self._coord = SkyCoord("5:35:14.5 -05:22:30.5", frame="icrs", unit=(u.hr, u.deg))
+        self._coord = self._sources[source]
         self.setsource(self._source, self._coord, self._vel, self._freq)
-        az = 95
-        el = 30
+        if source == "ORIMSR":
+            az = 95
+            el = 30
+        elif source == "3c279":
+            az = 170 
+            el = 45 
+
         azincr = 0.004
         elincr = 0.003
         timeincr = 0.003
         self.slew(az, el)
         i = 0
         if True:
-            while i < 10:
+            while i < 20:
                 i += 1
                 if el > 89.0:
                     elincr = -0.016
@@ -203,7 +214,7 @@ class FakeObs:
                 self._smax_client.smax_share(s, "RM_TSYS_D", round(random.uniform(90, 250), 2))
 
             v = random.random()
-            if v > 0.95:
+            if v > 0.96:
                 self._smax_client.smax_share(s, "RM_ACTIVE_LOW_RECEIVER_C10", "garbage")
             else:
                 self._smax_client.smax_share(
