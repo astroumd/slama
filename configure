@@ -2500,7 +2500,7 @@ do
   case $ac_config_target in
     "slama_start.sh") CONFIG_FILES="$CONFIG_FILES slama_start.sh" ;;
     "data/valkey_sma.conf") CONFIG_FILES="$CONFIG_FILES data/valkey_sma.conf" ;;
-    "smax-init.sh") CONFIG_FILES="$CONFIG_FILES smax-init.sh" ;;
+    "bin/smax-init.sh") CONFIG_FILES="$CONFIG_FILES bin/smax-init.sh" ;;
     "valkey-init.sh") CONFIG_FILES="$CONFIG_FILES valkey-init.sh" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
