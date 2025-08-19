@@ -28,7 +28,7 @@ class Validity(IntEnum):
     MAX_VALIDITY = auto()
 
 
-class MonitorPoint:
+class MonitorPoint(SmaxVarBase):
     def __init__(
         self,
         name: str,

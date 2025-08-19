@@ -8,7 +8,7 @@ class Air:
         self.temperature_target = 0.0
         self.vent = 0.0
 
-tree=Tree()
+tree=Tree(identifier="SMA")
 tree.create_node("Submillimeter Array","sma")
 tree.create_node("Antennas","ant",parent='sma')
 for i in range(1,9):
@@ -37,5 +37,6 @@ print(tree.root)
 print(tree.all_nodes())
 ants = tree.leaves("ant")
 print(type(ants[0]))
-#for a in ants:
-#    print(f"{a.parent}: {a}")
+if True:
+    for a in ants:
+        print(f"{a.predecessor('SMA')} // {a.identifier}")

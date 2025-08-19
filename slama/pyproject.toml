@@ -1,9 +1,20 @@
 [project]
 name = "slama"
-version = "0.1.0"
-description = "Add your description here"
+description = "SMA LMA code"
+authors = [
+  { name = "Marc Pound", email = "mpound@umd.edu" },
+  { name = "Peter Teuben", email = "teuben@umd.edu" },
+]
 readme = "README.md"
 requires-python = ">=3.11"
+keywords = []
+dynamic = ["version"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
 dependencies = [
     "astropy>=7.0.1",
     "matplotlib",

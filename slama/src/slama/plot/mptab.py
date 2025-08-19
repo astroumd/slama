@@ -1,12 +1,5 @@
 import sys
 import random
-from slama.monitor import (
-    MonitorPoint,
-    MonitorPointSubscriber,
-    MonitorPointList,
-    MonitorListUpdater,
-    Validity,
-)
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import (
     QApplication,
@@ -22,6 +15,14 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QColorConstants, QColor
 from smax import SmaxRedisClient
 from pathlib import Path
+
+from ..monitor import (
+    MonitorPoint,
+    MonitorPointSubscriber,
+    MonitorPointList,
+    MonitorListUpdater,
+    Validity,
+)
 
 
 def validity_color(validity: Validity) -> QColor:
