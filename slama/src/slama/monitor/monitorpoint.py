@@ -59,7 +59,9 @@ class MonitorPoint(SmaxVarBase):
         **kwargs
     ):
         #print(f"{name=},{canonical_name=},{smax_type=},{description=},{range=},{unit=},{kwargs=}\n")
-        if smax_type in _SMAX_TYPE_MAP.keys():
+        if isinstance(smax_type,dict) :
+            print(f"Found invalid smax_type=[dict] in monitor point {canonical_name=}")
+        elif smax_type in _SMAX_TYPE_MAP.keys():
             _SMAX_TYPE_MAP[smax_type].__init__(self)
         else:
             print(f"Found invalid {smax_type=} in monitor point {canonical_name=}")
