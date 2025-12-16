@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "astropy>=7.0.1",
+    "jsoneditor>=1.6.0",
     "matplotlib",
-    "numpy"
+    "numpy",
 ]
