@@ -7,7 +7,7 @@ Order of steps is important
 ```
      git clone https://github.com/astroumd/slama
      cd slama
-     git checkout autoconf   [for now, soon can be skipped]
+     # git checkout autoconf   [for now, soon can be skipped]
 ```
 
 ## 1. configure
@@ -113,12 +113,16 @@ Follow slama/README.md
 ```
       cd slama/src/slama
       python test_smax.py
-      -> Input weather:forecast:gfs:test_tau=0.5130620014500181, fetched result 0.5130620014500181 of type float
+      ->
+      <class 'smax.smax_data_types.SmaxFloat64'>
+      Input weather:forecast:gfs:test_tau=0.40884870974487453, fetched result 0.40884870974487453 of type float64
+      [ 0.00000000e+00  1.12345000e+00 -1.54321000e+00  1.00000123e+05] float64
+      ^C
 
 
 
       python test_plot.py
-      -> ERROR:smax.smax_redis_client:Could not find weather:forecast:gfs:test_temp in Redis
+      -> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
 
 
 ```
@@ -132,6 +136,8 @@ from smax import SmaxRedisClient
 
 smax_client = SmaxRedisClient('localhost',redis_port=6380)
 mp = MonitorPoint("mytestpoint",value=None,units="K",table="weather:forecast:gfs", key="test_temp")
+-> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
+
 mpw = MonitorPointWriter(mp,smax_client)
 
 mpw.write(a value)
