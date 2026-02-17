@@ -58,7 +58,7 @@ uv pip install -e slama
 
 ## 3. load environment
 
-This is normally the entry point for any shell that needs to be SLAMA:
+This is normally the entry point for any shell that needs to be using SLAMA:
 
 ```
      source slama_start.sh
@@ -72,7 +72,7 @@ and can be started from any directory
      make git pull
 ```
 
-In addition to grabbing the needs git directories, it also updates them
+In addition to grabbing the needed git directories, it also updates them
 
 
 
@@ -144,7 +144,8 @@ mpw.write(a value)
 
 ### Comments
 
-- valkey-init.sh starts up valkey-server_sma on port 6380 - no protection against multiple other than it failing because it's already running
+- valkey-init.sh starts up valkey-server_sma on port 6380 - no protection against multiple other than
+  it failing because it's already running
 
 
 
