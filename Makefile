@@ -14,9 +14,10 @@ URL7  = git@github.com:Smithsonian/xchange.git
 URL8  = git@github.com:Smithsonian/smax-server.git
 URL9  = git@github.com:Smithsonian/smax-clib.git
 URL10 = git@github.com:valkey-io/valkey.git
+URL11 = git@github.com:redis/hiredis.git
 
 # git software directories we need and build here
-GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server
+GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server valkey
 
 # redisx smax
 
@@ -36,7 +37,7 @@ install:
 build1:
 	mkdir -p bin lua
 
-build2:
+build2: anaconda3
 	./install_anaconda3
 
 build3:
@@ -99,3 +100,6 @@ smax-server:
 
 valkey:
 	git clone $(URL10)
+
+hiredis:
+	git clone $(URL11)
