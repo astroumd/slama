@@ -31,6 +31,7 @@ of wget, or even `wget=curl` will work.   Otherwise just this:
      make build2
 ```
 
+Now pick one of the install methods:
 
 ###  install slama modules: pip
 
@@ -87,7 +88,7 @@ In addition to grabbing the needed git directories, it also updates them
 
 ## 6. dryrun
 
-Start valkey, this also runs smax-init
+Start valkey, this also runs smax-init. You can check port 6380, or check `valkey` in your process table
 
 ```
      valkey-init.sh
