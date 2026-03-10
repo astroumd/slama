@@ -20,6 +20,8 @@ dependencies = [
     "jsoneditor>=1.6.0",
     "matplotlib",
     "numpy",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.8.0",
     "smax",
     "treelib>=1.8.0",
 ]
