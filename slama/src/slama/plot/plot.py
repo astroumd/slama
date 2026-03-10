@@ -1,11 +1,11 @@
 # slama plotting
 #!/usr/bin/env python
-from .monitor import MonitorPointUpdater
 import matplotlib.pyplot as plt
 from matplotlib.widgets import TextBox
 import astropy.units as u
 from time import sleep
 import numpy as np
+from ..monitor import MonitorPointUpdater
 
 
 class MonitorPointPlot:
