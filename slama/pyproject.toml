@@ -20,4 +20,9 @@ dependencies = [
     "jsoneditor>=1.6.0",
     "matplotlib",
     "numpy",
+    "smax",
+    "treelib>=1.8.0",
 ]
+
+[tool.uv.sources]
+smax = { git = "ssh://git@github.com/Smithsonian/smax-python.git" }

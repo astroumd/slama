@@ -66,9 +66,8 @@ class MonitorPoint(SmaxVarBase):
         else:
             print(f"Found invalid {smax_type=} in monitor point {canonical_name=}")
         self._name = name
-        #SmaxVarBase.__init__(smaxname=canonical_name, description=description, unit=str(unit),*kwargs)
-        self.smaxname=canonical_name 
-        self.description=description 
+        self.smaxname=canonical_name
+        self.description=description
         self.unit=unit=str(unit)
         self.size=size
         self._err_low = err_low
@@ -77,6 +76,7 @@ class MonitorPoint(SmaxVarBase):
         self._warn_high = warn_high
         self._valid = True
         self._valid_strings = valid_strings  # used only for string type MPs
+        self._smax_result = None  # stores result from smax_pull()
 
     @property
     def name(self) -> str:
@@ -88,19 +88,21 @@ class MonitorPoint(SmaxVarBase):
 
     @property
     def table(self) -> str:
-        return self._canonical_name.rsplit(":", 1)[0]
+        return self.smaxname.rsplit(":", 1)[0]
 
     @property
     def key(self) -> str:
-        return self._canonical_name.rsplit(":", 1)[1]
+        return self.smaxname.rsplit(":", 1)[1]
 
     @property
     def value(self) -> Any:
-        return self["data"]
+        return self._smax_result
 
     @property
     def time(self) -> Time:
-        return Time(self.data.timestamp)
+        if self._smax_result is None:
+            return None
+        return Time(self._smax_result.timestamp)
 #
     @property
     def units(self) -> u.Unit:
@@ -185,8 +187,8 @@ class MonitorPoint(SmaxVarBase):
     def _bool_validity(self) -> Validity:
         return Validity.VALID_NOT_CHECKED
 
-    def update(self, result):
-        self.data = result.asdict()["data"]
+    def update(self, result) -> None:
+        self._smax_result = result
 
     def isGood(self) -> bool:
         return self.validity == Validity.VALID_GOOD
@@ -232,9 +234,7 @@ class MonitorListUpdater:
 
         for mp in self.mplist:
             result = self._client.smax_pull(mp.table, mp.key)
-            # or self._client.smax_pull(self._mp._canonical_name)
-            # print(f"fetched {result}")
-            mp.data = result.asdict()["data"]
+            mp.update(result)
 
 
 class MonitorPointUpdater:
@@ -250,11 +250,8 @@ class MonitorPointUpdater:
 
     def update(self) -> None:
         """read from self.client and write data to mp"""
-        # @todo use lazy pull -- Not Implemented in Python
         result = self._client.smax_pull(self.mp.table, self.mp.key)
-        # or self._client.smax_pull(self._mp._canonical_name)
-        # print(f"fetched {result}")
-        self._mp._value = result.asdict()["data"]
+        self._mp.update(result)
 
 
 class MonitorPointSubscriber:
