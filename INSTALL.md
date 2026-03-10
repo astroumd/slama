@@ -7,7 +7,7 @@ Order of steps is important
 ```
      git clone https://github.com/astroumd/slama
      cd slama
-     git checkout autoconf   [for now, soon can be skipped]
+     # git checkout autoconf   [for now, soon can be skipped]
 ```
 
 ## 1. configure
@@ -31,6 +31,7 @@ of wget, or even `wget=curl` will work.   Otherwise just this:
      make build2
 ```
 
+Now pick one of the install methods:
 
 ###  install slama modules: pip
 
@@ -58,7 +59,7 @@ uv pip install -e slama
 
 ## 3. load environment
 
-This is normally the entry point for any shell that needs to be SLAMA:
+This is normally the entry point for any shell that needs to be using SLAMA:
 
 ```
      source slama_start.sh
@@ -72,7 +73,7 @@ and can be started from any directory
      make git pull
 ```
 
-In addition to grabbing the needs git directories, it also updates them
+In addition to grabbing the needed git directories, it also updates them
 
 
 
@@ -87,7 +88,7 @@ In addition to grabbing the needs git directories, it also updates them
 
 ## 6. dryrun
 
-Start valkey, this also runs smax-init
+Start valkey, this also runs smax-init. You can check port 6380, or check `valkey` in your process table
 
 ```
      valkey-init.sh
@@ -113,12 +114,16 @@ Follow slama/README.md
 ```
       cd slama/src/slama
       python test_smax.py
-      -> Input weather:forecast:gfs:test_tau=0.5130620014500181, fetched result 0.5130620014500181 of type float
+      ->
+      <class 'smax.smax_data_types.SmaxFloat64'>
+      Input weather:forecast:gfs:test_tau=0.40884870974487453, fetched result 0.40884870974487453 of type float64
+      [ 0.00000000e+00  1.12345000e+00 -1.54321000e+00  1.00000123e+05] float64
+      ^C
 
 
 
       python test_plot.py
-      -> ERROR:smax.smax_redis_client:Could not find weather:forecast:gfs:test_temp in Redis
+      -> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
 
 
 ```
@@ -132,6 +137,8 @@ from smax import SmaxRedisClient
 
 smax_client = SmaxRedisClient('localhost',redis_port=6380)
 mp = MonitorPoint("mytestpoint",value=None,units="K",table="weather:forecast:gfs", key="test_temp")
+-> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
+
 mpw = MonitorPointWriter(mp,smax_client)
 
 mpw.write(a value)
@@ -144,7 +151,8 @@ mpw.write(a value)
 
 ### Comments
 
-- valkey-init.sh starts up valkey-server_sma on port 6380 - no protection against multiple other than it failing because it's already running
+- valkey-init.sh starts up valkey-server_sma on port 6380 - no protection against multiple other than
+  it failing because it's already running
 
 
 
