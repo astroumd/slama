@@ -1,0 +1,30 @@
+{
+  "subsystem_a": {
+    "sensor1": {
+      "description": "Temperature sensor",
+      "size": "1",
+      "smax_type": "float",
+      "unit": "C"
+    },
+    "sensor2": {
+      "description": "Pressure sensor",
+      "size": "1",
+      "smax_type": "int"
+    },
+    "nested": {
+      "deep_value": {
+        "description": "Deep voltage sensor",
+        "size": "1",
+        "smax_type": "float64",
+        "unit": "V"
+      }
+    }
+  },
+  "subsystem_b": {
+    "flag": {
+      "description": "Status flag",
+      "size": "1",
+      "smax_type": "bool"
+    }
+  }
+}
