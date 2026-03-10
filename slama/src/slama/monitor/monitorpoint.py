@@ -4,7 +4,7 @@ import astropy.units as u
 from astropy.time import Time
 import numpy as np
 from smax import SmaxRedisClient
-import smax.smax_data_types as smaxdt
+from smax.smax_data_types import SmaxVarBase, _SMAX_TYPE_MAP
 from pathlib import Path
 import json
 from collections import UserList
@@ -26,6 +26,18 @@ class Validity(IntEnum):
     VALID_ERROR_LOW = auto()
     VALID_ERROR_HIGH = auto()
     MAX_VALIDITY = auto()
+    
+class AMonitorPoint:
+    """Represents a collection of primitive (leaf) values or a list."""
+    def __init__(self, name, values):
+        self.name = name
+        self.values = values  # dict (for key/values) or list (for arrays)
+
+    def __repr__(self):
+        if isinstance(self.values, dict):
+            return f"<MonitorPoint {self.name}: {len(self.values)} values>"
+        else:
+            return f"<MonitorPoint {self.name}: list of {len(self.values)} items>"
 
 
 class MonitorPoint(SmaxVarBase):
@@ -33,26 +45,38 @@ class MonitorPoint(SmaxVarBase):
         self,
         name: str,
         canonical_name: str,
-        value: Validity = Validity.VALID_GOOD,
-        units: Union[u.Unit | str] = None,
+        smax_type: str,       
+        unit: Union[u.Unit | str] = None,
         description: str = None,
+        size: str = None,
+        range: str = None,
+        validity: Validity = Validity.VALID_GOOD,
         err_low: Any = None,
         err_high: Any = None,
         warn_low: Any = None,
         warn_high: Any = None,
         valid_strings: list = None,
+        **kwargs
     ):
+        #print(f"{name=},{canonical_name=},{smax_type=},{description=},{range=},{unit=},{kwargs=}\n")
+        if isinstance(smax_type,dict) :
+            print(f"Found invalid smax_type=[dict] in monitor point {canonical_name=}")
+        elif smax_type in _SMAX_TYPE_MAP.keys():
+            _SMAX_TYPE_MAP[smax_type].__init__(self)
+        else:
+            print(f"Found invalid {smax_type=} in monitor point {canonical_name=}")
         self._name = name
-        self._canonical_name = canonical_name
-        self._description = description
-        self._value = value
-        self._units = units
+        self.smaxname=canonical_name
+        self.description=description
+        self.unit=unit=str(unit)
+        self.size=size
         self._err_low = err_low
         self._err_high = err_high
         self._warn_low = warn_low
         self._warn_high = warn_high
         self._valid = True
         self._valid_strings = valid_strings  # used only for string type MPs
+        self._smax_result = None  # stores result from smax_pull()
 
     @property
     def name(self) -> str:
@@ -60,42 +84,32 @@ class MonitorPoint(SmaxVarBase):
 
     @property
     def canonical_name(self) -> str:
-        if self._canonical_name is None:
-            return f"{self._table}:{self._key}"
-        else:
-            return self._canonical_name
+        return self.smaxname
 
     @property
     def table(self) -> str:
-        return self._canonical_name.rsplit(":", 1)[0]
+        return self.smaxname.rsplit(":", 1)[0]
 
     @property
     def key(self) -> str:
-        return self._canonical_name.rsplit(":", 1)[1]
+        return self.smaxname.rsplit(":", 1)[1]
 
     @property
     def value(self) -> Any:
-        return self._value
+        return self._smax_result
 
     @property
-    def timestamp(self) -> Time:
-        return Time(self._value.timestamp)
-
+    def time(self) -> Time:
+        if self._smax_result is None:
+            return None
+        return Time(self._smax_result.timestamp)
+#
     @property
     def units(self) -> u.Unit:
-        if self._units is None:  # and self._value.unit is None:
+        if self.unit is None:
             return None
-        # this could raise a ValueError if self._units is not a valid
-        # unit.  Are we allowing non-astropy units?
-        return u.Unit(self._units)
-
-    @property
-    def type(self) -> str:
-        return self._value.type
-
-    @property
-    def smax_type(self):
-        return type(self._value)
+        else:
+            return u.Unit(self.unit)
 
     @property
     def err_low(self) -> Any:
@@ -173,8 +187,8 @@ class MonitorPoint(SmaxVarBase):
     def _bool_validity(self) -> Validity:
         return Validity.VALID_NOT_CHECKED
 
-    def update(self, result):
-        self._value = result.asdict()["data"]
+    def update(self, result) -> None:
+        self._smax_result = result
 
     def isGood(self) -> bool:
         return self.validity == Validity.VALID_GOOD
@@ -220,9 +234,7 @@ class MonitorListUpdater:
 
         for mp in self.mplist:
             result = self._client.smax_pull(mp.table, mp.key)
-            # or self._client.smax_pull(self._mp._canonical_name)
-            # print(f"fetched {result}")
-            mp._value = result.asdict()["data"]
+            mp.update(result)
 
 
 class MonitorPointUpdater:
@@ -238,11 +250,8 @@ class MonitorPointUpdater:
 
     def update(self) -> None:
         """read from self.client and write data to mp"""
-        # @todo use lazy pull -- Not Implemented in Python
         result = self._client.smax_pull(self.mp.table, self.mp.key)
-        # or self._client.smax_pull(self._mp._canonical_name)
-        # print(f"fetched {result}")
-        self._mp._value = result.asdict()["data"]
+        self._mp.update(result)
 
 
 class MonitorPointSubscriber:

@@ -1,0 +1,17 @@
+{
+  "system": {
+    "name": "Engine",
+    "temperature": 85,
+    "sensors": [
+      {"id": "S1", "value": 10},
+      12,
+      {"id": "S3", "value": 15},
+      [100, 200]
+    ],
+    "tags": ["critical", "core", 99],
+    "subsystem": {
+      "voltages": [220, 230, 240],
+      "status": "active"
+    }
+  }
+}

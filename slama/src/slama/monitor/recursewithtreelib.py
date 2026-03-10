@@ -3,6 +3,9 @@ import json
 from pathlib import Path
 from treelib import Tree
 from monitorpoint import MonitorPoint
+
+# using treelib to instantiate a monitor system
+
 # -------------------------------------------------------
 # Utility to read JSON file
 # -------------------------------------------------------
