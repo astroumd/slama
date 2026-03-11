@@ -13,8 +13,9 @@ URL6  = git@github.com:Smithsonian/smax-postgres.git
 URL7  = git@github.com:Smithsonian/xchange.git
 URL8  = git@github.com:Smithsonian/smax-server.git
 URL9  = git@github.com:Smithsonian/smax-clib.git
-URL10 = git@github.com:valkey-io/valkey.git
-URL11 = git@github.com:redis/hiredis.git
+URL10 = git@github.com:Smithsonian/smax-json.git
+URL11 = git@github.com:valkey-io/valkey.git
+URL12 = git@github.com:redis/hiredis.git
 
 # git software directories we need and build here
 GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server valkey
@@ -98,8 +99,14 @@ xchange:
 smax-server:
 	git clone $(URL8)
 
-valkey:
+smax-clib:
+	git clone $(URL9)
+
+smax-json:
 	git clone $(URL10)
 
-hiredis:
+valkey:
 	git clone $(URL11)
+
+hiredis:
+	git clone $(URL12)
