@@ -10,6 +10,7 @@
     </thead>
     <tbody>
         {% for row in block.rows %}
+        {% if row.label not in hidden_rows %}
         <tr>
             <td class="row-label">{{ row.label }}</td>
             {% for point in row.points %}
@@ -20,6 +21,7 @@
             </td>
             {% endfor %}
         </tr>
+        {% endif %}
         {% endfor %}
     </tbody>
 </table>

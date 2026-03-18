@@ -2,6 +2,8 @@
 
 {% block title %}{{ config.name }} - SLAMA Monitor{% endblock %}
 
+{% block clock %}{{ clock_html }}{% endblock %}
+
 {% block content %}
 <div class="display-header">
     <h1>{{ config.name }}</h1>
@@ -9,6 +11,8 @@
 </div>
 
 <div hx-ext="ws" ws-connect="/ws/display/{{ config.filename }}">
+
+    {# --- Layout blocks --- #}
     {% for block in config.layout %}
     <div id="block-{{ loop.index0 }}" class="layout-block">
         {% if block.block_type == "table" %}
@@ -20,21 +24,77 @@
         {% endif %}
     </div>
     {% endfor %}
+
+    {# --- Settings (collapsed, below the data) --- #}
+    <details class="settings-menu">
+        <summary class="settings-toggle">Settings</summary>
+        <div class="settings-body">
+            <div class="control-group">
+                <label class="control-label">Update interval:
+                    <span id="interval-display">{{ config.update_interval }}</span>s
+                </label>
+                <input type="range" id="interval-slider" min="1" max="30" step="0.5"
+                       value="{{ config.update_interval }}" class="interval-slider">
+            </div>
+
+            {% if all_row_labels %}
+            <div class="control-group">
+                <label class="control-label">Visible rows:</label>
+                <div class="row-toggles">
+                    {% for label in all_row_labels %}
+                    <label class="toggle-label">
+                        <input type="checkbox" class="row-toggle" value="{{ label }}" checked>
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </details>
 </div>
 
 <script>
-    // Update connection status indicator
-    document.body.addEventListener("htmx:wsOpen", function() {
+    // --- Connection status ---
+    document.body.addEventListener("htmx:wsOpen", function(evt) {
         var el = document.getElementById("connection-status");
         el.textContent = "Connected";
         el.classList.add("connected");
         el.classList.remove("disconnected");
+        // Store the WebSocket reference for sending messages
+        window._slamaWs = evt.detail.socketWrapper;
     });
     document.body.addEventListener("htmx:wsClose", function() {
         var el = document.getElementById("connection-status");
         el.textContent = "Disconnected";
         el.classList.add("disconnected");
         el.classList.remove("connected");
+        window._slamaWs = null;
+    });
+
+    // --- Send settings over WebSocket ---
+    function sendSettings() {
+        if (!window._slamaWs) return;
+        var interval = document.getElementById("interval-slider").value;
+        var hiddenRows = [];
+        document.querySelectorAll(".row-toggle").forEach(function(cb) {
+            if (!cb.checked) hiddenRows.push(cb.value);
+        });
+        var msg = JSON.stringify({interval: parseFloat(interval), hidden_rows: hiddenRows});
+        window._slamaWs.send(msg);
+    }
+
+    // --- Interval slider ---
+    var slider = document.getElementById("interval-slider");
+    var display = document.getElementById("interval-display");
+    slider.addEventListener("input", function() {
+        display.textContent = this.value;
+    });
+    slider.addEventListener("change", sendSettings);
+
+    // --- Row visibility checkboxes ---
+    document.querySelectorAll(".row-toggle").forEach(function(cb) {
+        cb.addEventListener("change", sendSettings);
     });
 </script>
 {% endblock %}

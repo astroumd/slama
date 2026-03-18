@@ -11,7 +11,10 @@
 <body>
     <nav class="top-bar">
         <a href="/" class="nav-brand">SLAMA Monitor</a>
-        <span class="nav-status" id="connection-status">Connecting...</span>
+        <div class="nav-right">
+            <span id="clock" class="nav-clock">{% block clock %}{% endblock %}</span>
+            <span class="nav-status" id="connection-status">Connecting...</span>
+        </div>
     </nav>
     <main>
         {% block content %}{% endblock %}

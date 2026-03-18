@@ -11,6 +11,7 @@
     --color-text: #e0e0e0;
     --color-accent: #0f3460;
     --color-brand: #53a8b6;
+    --color-border: #2a2a4a;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,6 +40,18 @@ body {
     font-weight: bold;
 }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-clock {
+    font-size: 13px;
+    color: #aaa;
+    letter-spacing: 0.5px;
+}
+
 .nav-status {
     font-size: 12px;
     padding: 3px 10px;
@@ -58,7 +71,7 @@ main {
 
 h1 { margin-bottom: 5px; color: var(--color-brand); }
 h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
-.display-desc { color: #888; margin-bottom: 15px; }
+.display-desc { color: #888; margin-bottom: 10px; }
 
 /* --- Index page: display list --- */
 .display-list {
@@ -90,6 +103,79 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     font-size: 11px;
 }
 
+/* --- Settings menu (collapsed by default) --- */
+.settings-menu {
+    margin-top: 20px;
+}
+
+.settings-toggle {
+    cursor: pointer;
+    font-size: 13px;
+    color: #888;
+    padding: 4px 0;
+    user-select: none;
+}
+
+.settings-toggle:hover { color: var(--color-brand); }
+
+.settings-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 10px 14px;
+    margin-top: 6px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-label {
+    font-size: 13px;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+.control-label span {
+    color: var(--color-brand);
+    font-weight: bold;
+    min-width: 2.5em;
+    display: inline-block;
+    text-align: right;
+}
+
+.interval-slider {
+    width: 140px;
+    accent-color: var(--color-brand);
+    cursor: pointer;
+}
+
+.row-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+}
+
+.toggle-label {
+    font-size: 12px;
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.toggle-label input[type="checkbox"] {
+    accent-color: var(--color-brand);
+    cursor: pointer;
+}
+
 /* --- Layout blocks --- */
 .layout-block { margin-bottom: 20px; }
 
@@ -103,8 +189,9 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
 .mp-table th, .mp-table td {
     padding: 6px 10px;
     text-align: center;
-    border: 1px solid #2a2a4a;
+    border: 1px solid var(--color-border);
     min-width: 80px;
+    transition: background-color 0.3s ease;
 }
 
 .mp-table th {
@@ -112,6 +199,9 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     color: var(--color-text);
     font-weight: bold;
     font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .mp-table .row-label {
@@ -119,7 +209,12 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     font-weight: bold;
     background: var(--color-accent);
     color: var(--color-text);
-    min-width: 100px;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.mp-table tbody tr:hover td:not(.row-label) {
+    filter: brightness(1.1);
 }
 
 /* --- Grid block --- */
@@ -129,6 +224,7 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     background: var(--color-surface);
     padding: 10px;
     border-radius: 4px;
+    border: 1px solid var(--color-border);
 }
 
 .grid-label {
@@ -141,6 +237,7 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     padding: 4px 8px;
     border-radius: 3px;
     min-width: 80px;
+    transition: background-color 0.3s ease;
 }
 
 /* --- Cells block --- */
@@ -157,7 +254,7 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     background: var(--color-surface);
     padding: 8px 12px;
     border-radius: 4px;
-    border: 1px solid var(--color-accent);
+    border: 1px solid var(--color-border);
 }
 
 .cell-label {
@@ -170,6 +267,7 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     border-radius: 3px;
     min-width: 60px;
     text-align: center;
+    transition: background-color 0.3s ease;
 }
 
 /* --- Validity color classes --- */
