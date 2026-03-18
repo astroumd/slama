@@ -16,7 +16,8 @@
             {% for point in row.points %}
             {% set cell = cells.get(point) %}
             <td id="{{ cell.cell_id if cell else '' }}"
-                class="{{ cell.css_class if cell else 'cell-nodata' }}">
+                class="{{ cell.css_class if cell else 'cell-nodata' }}{% if cell and cell.is_numeric %} plotable{% endif %}"
+                {% if cell and cell.is_numeric %}data-canonical="{{ cell.canonical_name }}"{% endif %}>
                 {{ cell.value if cell else '---' }}
             </td>
             {% endfor %}

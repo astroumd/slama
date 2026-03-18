@@ -54,6 +54,17 @@
     </details>
 </div>
 
+{# --- Plot modal overlay --- #}
+<div id="plot-modal" class="plot-modal" style="display:none;">
+    <div class="plot-modal-content">
+        <div class="plot-modal-header">
+            <span id="plot-title" class="plot-title"></span>
+            <button id="plot-close" class="plot-close-btn">&times;</button>
+        </div>
+        <div id="plot-container"></div>
+    </div>
+</div>
+
 <script>
     // --- Connection status ---
     document.body.addEventListener("htmx:wsOpen", function(evt) {
@@ -61,7 +72,6 @@
         el.textContent = "Connected";
         el.classList.add("connected");
         el.classList.remove("disconnected");
-        // Store the WebSocket reference for sending messages
         window._slamaWs = evt.detail.socketWrapper;
     });
     document.body.addEventListener("htmx:wsClose", function() {
@@ -95,6 +105,125 @@
     // --- Row visibility checkboxes ---
     document.querySelectorAll(".row-toggle").forEach(function(cb) {
         cb.addEventListener("change", sendSettings);
+    });
+
+    // =================================================================
+    // Time series plot (Phase 3)
+    // =================================================================
+
+    // Currently plotted canonical name (null when modal is closed)
+    var _plotCanonical = null;
+
+    // Plotly dark theme layout matching the observatory CSS
+    var _plotLayout = {
+        paper_bgcolor: "#16213e",
+        plot_bgcolor: "#1a1a2e",
+        font: { color: "#e0e0e0", family: "Consolas, Monaco, Courier New, monospace", size: 12 },
+        margin: { t: 10, r: 30, b: 50, l: 60 },
+        xaxis: {
+            title: "Time (UTC)",
+            gridcolor: "#2a2a4a",
+            tickformat: "%H:%M:%S",
+        },
+        yaxis: {
+            title: "",
+            gridcolor: "#2a2a4a",
+        },
+        showlegend: false,
+    };
+
+    // Convert epoch timestamps to JS Date objects for Plotly
+    function epochToDate(epochs) {
+        return epochs.map(function(t) { return new Date(t * 1000); });
+    }
+
+    // Open the plot modal for a canonical name
+    function openPlot(canonical) {
+        _plotCanonical = canonical;
+        document.getElementById("plot-title").textContent = canonical;
+        document.getElementById("plot-modal").style.display = "flex";
+
+        fetch("/api/history/" + canonical)
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                var traces = [{
+                    x: epochToDate(data.times),
+                    y: data.values,
+                    type: "scatter",
+                    mode: "lines+markers",
+                    line: { color: "#53a8b6", width: 2 },
+                    marker: { size: 3 },
+                }];
+
+                // Add threshold lines as horizontal shapes
+                var shapes = [];
+                var th = data.thresholds || {};
+                if (th.warn_high != null) {
+                    shapes.push({ type: "line", y0: th.warn_high, y1: th.warn_high,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#fff3cd", width: 1, dash: "dash" } });
+                }
+                if (th.warn_low != null) {
+                    shapes.push({ type: "line", y0: th.warn_low, y1: th.warn_low,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#fff3cd", width: 1, dash: "dash" } });
+                }
+                if (th.err_high != null) {
+                    shapes.push({ type: "line", y0: th.err_high, y1: th.err_high,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#f8d7da", width: 1, dash: "dot" } });
+                }
+                if (th.err_low != null) {
+                    shapes.push({ type: "line", y0: th.err_low, y1: th.err_low,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#f8d7da", width: 1, dash: "dot" } });
+                }
+
+                var layout = Object.assign({}, _plotLayout, { shapes: shapes });
+                layout.yaxis = Object.assign({}, _plotLayout.yaxis, { title: canonical.split(":").pop() });
+
+                Plotly.newPlot("plot-container", traces, layout, {
+                    responsive: true,
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ["lasso2d", "select2d"],
+                });
+            });
+    }
+
+    // Close the plot modal
+    function closePlot() {
+        _plotCanonical = null;
+        document.getElementById("plot-modal").style.display = "none";
+        Plotly.purge("plot-container");
+    }
+
+    // Close button and backdrop click
+    document.getElementById("plot-close").addEventListener("click", closePlot);
+    document.getElementById("plot-modal").addEventListener("click", function(evt) {
+        if (evt.target === this) closePlot();
+    });
+
+    // Close on Escape key
+    document.addEventListener("keydown", function(evt) {
+        if (evt.key === "Escape" && _plotCanonical) closePlot();
+    });
+
+    // --- Click delegation for plotable cells ---
+    document.addEventListener("click", function(evt) {
+        var cell = evt.target.closest(".plotable");
+        if (cell && cell.dataset.canonical) {
+            openPlot(cell.dataset.canonical);
+        }
+    });
+
+    // --- Live plot updates ---
+    // After each HTMX WebSocket swap, if a plot is open, read the new value
+    // from the DOM and append it to the Plotly trace.
+    document.body.addEventListener("htmx:wsAfterMessage", function() {
+        if (!_plotCanonical) return;
+        var cellId = "cell-" + _plotCanonical.replace(/:/g, "-");
+        var el = document.getElementById(cellId);
+        if (!el) return;
+        var val = parseFloat(el.textContent);
+        if (isNaN(val)) return;
+        Plotly.extendTraces("plot-container",
+            { x: [[new Date()]], y: [[val]] }, [0]);
     });
 </script>
 {% endblock %}

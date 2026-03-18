@@ -386,9 +386,132 @@ cd src/slama
 uv run fakeobs.py
 ```
 
+## Phase 3 — Interactive Time Series Plots
+
+### Goal
+
+Let users click any numeric data cell to open an interactive time series plot
+showing recent history, with threshold bands overlaid. Non-numeric cells
+(strings like Source) are not clickable.
+
+### Architecture
+
+```
+  ┌────────────────────────────────────────────────────────┐
+  │  Browser                                               │
+  │                                                        │
+  │  1. User clicks a numeric cell (.plotable)             │
+  │  2. JS fetches GET /api/history/RM:acc1:RM_TRACK_EL_F │
+  │  3. Response: {times, values, thresholds}              │
+  │  4. Plotly.js renders chart in modal overlay           │
+  │  5. Each WebSocket update appends point via            │
+  │     Plotly.extendTraces()                              │
+  └────────────────────┬───────────────────────────────────┘
+                       │
+              HTTP GET (JSON)
+                       │
+  ┌────────────────────▼───────────────────────────────────┐
+  │  FastAPI Server                                        │
+  │                                                        │
+  │  /api/history/{canonical_name}                         │
+  │    → bridge.get_history(canonical_name)                │
+  │    → returns {times, values, thresholds}               │
+  │                                                        │
+  │  DataBridge._history                                   │
+  │    dict[str, deque(maxlen=1800)]                       │
+  │    ~216 KB per canonical name                          │
+  │    Populated automatically on each fetch_cell() call   │
+  └────────────────────────────────────────────────────────┘
+```
+
+### Server-Side History Buffer (`data_bridge.py`)
+
+- `DataBridge._history` — `dict[str, deque]` mapping canonical names to ring
+  buffers of `(timestamp, float_value)` tuples.
+- `_record_history()` — Called from `fetch_cell()` after each SMAX pull.
+  Only records numeric values (skips strings and booleans).
+- `get_history(canonical_name)` — Returns `{canonical_name, times, values,
+  thresholds}` where thresholds are the `warn_low/high`, `err_low/high`
+  limits from `mpdefs.json`.
+- Ring buffer size: `maxlen=1800` entries (~1 hour at 2-second intervals,
+  ~216 KB per canonical name).
+- History starts accumulating when the server starts. There is no persistent
+  storage — restarting the server clears history.
+
+### CellData.is_numeric Flag
+
+`CellData` gained an `is_numeric: bool` field (default `False`). Set to
+`True` in `fetch_cell()` when the raw SMAX value is numeric. Templates use
+this flag to add the `plotable` CSS class and `data-canonical` attribute
+only to numeric cells.
+
+### API Endpoint (`server.py`)
+
+```
+GET /api/history/{canonical_name:path}
+```
+
+Returns JSON:
+```json
+{
+  "canonical_name": "RM:acc1:RM_TRACK_EL_F",
+  "times": [1742000000.0, 1742000002.0, ...],
+  "values": [45.123, 45.125, ...],
+  "thresholds": {"warn_low": 10.0, "warn_high": 80.0, "err_low": 5.0, "err_high": 85.0}
+}
+```
+
+The canonical name is a path parameter (not query parameter) so that colons
+are preserved. Returns empty lists with 200 status if no history exists yet.
+
+### Frontend Interaction
+
+**Click handling** — Event delegation on `document` catches clicks on any
+`.plotable` element, even after HTMX swaps in new HTML. Reads
+`data-canonical` attribute to identify the monitor point.
+
+**Modal** — A fixed-position overlay (`#plot-modal`) with a dark backdrop.
+Contains a header with the canonical name and close button, plus a
+`#plot-container` div for Plotly. Closes on button click, backdrop click,
+or Escape key.
+
+**Plotly.js chart** — Loaded from CDN (`plotly-2.35.2.min.js`). Dark theme
+layout matching the observatory CSS (`paper_bgcolor: #16213e`,
+`plot_bgcolor: #1a1a2e`, monospace font). Features:
+- Line + markers trace in brand color (`#53a8b6`).
+- Horizontal dashed lines for warning thresholds (yellow).
+- Horizontal dotted lines for error thresholds (red).
+- Interactive zoom, pan, and hover tooltips (Plotly built-in).
+- X-axis formatted as `%H:%M:%S` (UTC time).
+
+**Live updates** — Listens for `htmx:wsAfterMessage` events. When a plot
+is open, reads the current value from the DOM element matching the plotted
+canonical name's cell ID and appends it to the Plotly trace via
+`Plotly.extendTraces()`.
+
+### CSS Additions (`style.css`)
+
+- `.plotable` — `cursor: pointer` and cyan outline on hover to indicate
+  clickability.
+- `.plot-modal` — Fixed overlay with semi-transparent black backdrop.
+- `.plot-modal-content` — 85% width, max 900px, with surface background
+  and accent border.
+- `#plot-container` — Fixed 400px height for the Plotly chart.
+
+### Design Decisions
+
+- **Why server-side buffer, not client-side?** — Server buffer is shared
+  across all connections. A user opening the page sees history from before
+  their session started (up to 1 hour). Client-only accumulation would
+  show nothing on initial click.
+- **Why HTTP endpoint, not WebSocket?** — The history fetch is a one-time
+  request-response (potentially large payload). Using HTTP keeps the
+  WebSocket protocol simple (HTML fragments + settings JSON).
+- **Why no string plots?** — String values like source name don't have
+  meaningful numeric time series. A future enhancement could show an
+  event log table for strings.
+
 ## Future Phases
 
-- **Phase 3** — Interactive time series plots (Plotly.js). Click a cell to
-  open a plot panel showing recent history for that monitor point.
 - **Phase 4** — Deployment (Nginx reverse proxy, systemd service),
   reconnection logic, additional display configs.

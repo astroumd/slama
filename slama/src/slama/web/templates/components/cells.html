@@ -5,7 +5,8 @@
     <div class="standalone-cell">
         <span class="cell-label">{{ cell_def.label }}</span>
         <span id="{{ cell.cell_id if cell else '' }}"
-              class="cell-value {{ cell.css_class if cell else 'cell-nodata' }}">
+              class="cell-value {{ cell.css_class if cell else 'cell-nodata' }}{% if cell and cell.is_numeric %} plotable{% endif %}"
+              {% if cell and cell.is_numeric %}data-canonical="{{ cell.canonical_name }}"{% endif %}>
             {{ cell.value if cell else '---' }}
         </span>
     </div>

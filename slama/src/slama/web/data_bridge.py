@@ -6,6 +6,8 @@ for CSS color coding, using threshold definitions from mpdefs.json.
 
 import json
 import logging
+import time
+from collections import deque
 from dataclasses import dataclass
 from numbers import Number
 from pathlib import Path
@@ -21,6 +23,9 @@ CSS_ERROR = "cell-error"
 CSS_NODATA = "cell-nodata"
 CSS_UNCHECKED = "cell-unchecked"
 
+# Maximum history entries per canonical name (~1 hour at 2s interval)
+_HISTORY_MAXLEN = 1800
+
 
 @dataclass
 class CellData:
@@ -29,6 +34,7 @@ class CellData:
     value: str          # formatted display string
     css_class: str      # validity CSS class name
     cell_id: str        # HTML element id (canonical name with safe chars)
+    is_numeric: bool = False  # True if value is numeric (eligible for plots)
 
 
 class DataBridge:
@@ -40,6 +46,7 @@ class DataBridge:
         self._port = port
         self._client = None  # lazy connection
         self._thresholds: dict[str, dict] = {}
+        self._history: dict[str, deque] = {}  # canonical_name → deque of (timestamp, value)
         if mpdefs_path is not None:
             self._load_thresholds(mpdefs_path)
 
@@ -115,6 +122,41 @@ class DataBridge:
 
         return CSS_UNCHECKED
 
+    def _record_history(self, canonical_name: str, raw_value) -> None:
+        """Append a numeric value to the history ring buffer."""
+        if not isinstance(raw_value, Number) or isinstance(raw_value, bool):
+            return
+        if canonical_name not in self._history:
+            self._history[canonical_name] = deque(maxlen=_HISTORY_MAXLEN)
+        self._history[canonical_name].append((time.time(), float(raw_value)))
+
+    def get_history(self, canonical_name: str) -> dict:
+        """Return history for a canonical name as {times, values, thresholds}.
+
+        Returns empty lists if no history is available.
+        """
+        buf = self._history.get(canonical_name, deque())
+        times = [t for t, _ in buf]
+        values = [v for _, v in buf]
+
+        thresholds = {}
+        mp_def = self._thresholds.get(canonical_name, {})
+        for key in ("warn_low", "warn_high", "err_low", "err_high"):
+            val = mp_def.get(key)
+            if val is not None:
+                thresholds[key] = val
+
+        return {
+            "canonical_name": canonical_name,
+            "times": times,
+            "values": values,
+            "thresholds": thresholds,
+        }
+
+    def has_history(self, canonical_name: str) -> bool:
+        """Return True if the canonical name has numeric history data."""
+        return canonical_name in self._history
+
     def _nodata_cell(self, canonical_name: str) -> CellData:
         """Return a no-data cell for a canonical name."""
         return CellData(
@@ -142,11 +184,14 @@ class DataBridge:
             logger.debug("Failed to fetch %s", canonical_name, exc_info=True)
             return self._nodata_cell(canonical_name)
 
+        self._record_history(canonical_name, raw_value)
+
         return CellData(
             canonical_name=canonical_name,
             value=self._format_value(raw_value, fmt),
             css_class=self._compute_css_class(canonical_name, raw_value),
             cell_id=self._make_cell_id(canonical_name),
+            is_numeric=isinstance(raw_value, Number) and not isinstance(raw_value, bool),
         )
 
     def fetch_all(self, config) -> dict[str, CellData]:

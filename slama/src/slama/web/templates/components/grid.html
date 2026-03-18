@@ -4,7 +4,8 @@
     {% set cell = cells.get(cell_def.point) %}
     <span class="grid-label">{{ cell_def.label }}:</span>
     <span id="{{ cell.cell_id if cell else '' }}"
-          class="grid-value {{ cell.css_class if cell else 'cell-nodata' }}">
+          class="grid-value {{ cell.css_class if cell else 'cell-nodata' }}{% if cell and cell.is_numeric %} plotable{% endif %}"
+          {% if cell and cell.is_numeric %}data-canonical="{{ cell.canonical_name }}"{% endif %}>
         {{ cell.value if cell else '---' }}
     </span>
     {% endfor %}

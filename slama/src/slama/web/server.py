@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
@@ -126,6 +126,23 @@ async def display_page(name: str):
         GridBlock=GridBlock,
         CellsBlock=CellsBlock,
     )
+
+
+# ------------------------------------------------------------------
+# History API endpoint — returns JSON for Plotly.js plots
+# ------------------------------------------------------------------
+
+@app.get("/api/history/{canonical_name:path}")
+async def get_history(canonical_name: str):
+    """Return time series history for a monitor point.
+
+    The canonical_name is passed as a path parameter so that colons
+    in names like 'RM:acc1:RM_TRACK_EL_F' are preserved.
+    """
+    history = bridge.get_history(canonical_name)
+    if not history["times"]:
+        return JSONResponse(history, status_code=200)
+    return JSONResponse(history)
 
 
 # ------------------------------------------------------------------

@@ -276,3 +276,70 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
 .cell-error     { background: var(--color-error); color: #721c24; }
 .cell-nodata    { background: var(--color-nodata); color: #383d41; }
 .cell-unchecked { background: var(--color-unchecked); color: #333; }
+
+/* --- Plotable cells (clickable for time series) --- */
+.plotable {
+    cursor: pointer;
+    position: relative;
+}
+.plotable:hover {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -2px;
+}
+
+/* --- Plot modal overlay --- */
+.plot-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plot-modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-accent);
+    border-radius: 8px;
+    width: 85%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.plot-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.plot-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--color-brand);
+}
+
+.plot-close-btn {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.plot-close-btn:hover {
+    color: var(--color-brand);
+}
+
+#plot-container {
+    width: 100%;
+    height: 400px;
+}
