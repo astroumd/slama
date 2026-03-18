@@ -45,8 +45,9 @@ class MonitorPoint(SmaxVarBase):
         self,
         name: str,
         canonical_name: str,
-        smax_type: str,       
+        smax_type: str = None,
         unit: Union[u.Unit | str] = None,
+        units: Union[u.Unit | str] = None,
         description: str = None,
         size: str = None,
         range: str = None,
@@ -58,13 +59,16 @@ class MonitorPoint(SmaxVarBase):
         valid_strings: list = None,
         **kwargs
     ):
-        #print(f"{name=},{canonical_name=},{smax_type=},{description=},{range=},{unit=},{kwargs=}\n")
-        if isinstance(smax_type,dict) :
-            print(f"Found invalid smax_type=[dict] in monitor point {canonical_name=}")
-        elif smax_type in _SMAX_TYPE_MAP.keys():
-            _SMAX_TYPE_MAP[smax_type].__init__(self)
-        else:
-            print(f"Found invalid {smax_type=} in monitor point {canonical_name=}")
+        # Accept "units" (plural, as used in mpdefs.json) as alias for "unit"
+        if unit is None and units is not None:
+            unit = units
+        if smax_type is not None:
+            if isinstance(smax_type, dict):
+                print(f"Found invalid smax_type=[dict] in monitor point {canonical_name=}")
+            elif smax_type in _SMAX_TYPE_MAP.keys():
+                _SMAX_TYPE_MAP[smax_type].__init__(self)
+            else:
+                print(f"Found invalid {smax_type=} in monitor point {canonical_name=}")
         self._name = name
         self.smaxname=canonical_name
         self.description=description

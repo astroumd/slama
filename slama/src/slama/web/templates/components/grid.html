@@ -1,0 +1,11 @@
+<h3>{{ block.title }}</h3>
+<div class="mp-grid" style="grid-template-columns: repeat({{ block.columns }}, auto auto);">
+    {% for cell_def in block.cells %}
+    {% set cell = cells.get(cell_def.point) %}
+    <span class="grid-label">{{ cell_def.label }}:</span>
+    <span id="{{ cell.cell_id if cell else '' }}"
+          class="grid-value {{ cell.css_class if cell else 'cell-nodata' }}">
+        {{ cell.value if cell else '---' }}
+    </span>
+    {% endfor %}
+</div>
