@@ -1,4 +1,4 @@
-# SLAMA Web Display — Design & Implementation
+# SMA Web Display — Design & Implementation
 
 This document describes the design and implementation of the SLAMA web-based
 monitor display system, covering Phase 1 (core infrastructure) and Phase 2
