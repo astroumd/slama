@@ -4,7 +4,7 @@
       "canonical_name" : "RM:acc1:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -14,7 +14,7 @@
       "canonical_name" : "RM:acc2:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -24,7 +24,7 @@
       "canonical_name" : "RM:acc3:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -34,7 +34,7 @@
       "canonical_name" : "RM:acc4:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -44,7 +44,7 @@
       "canonical_name" : "RM:acc5:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -54,7 +54,7 @@
       "canonical_name" : "RM:acc6:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -64,7 +64,7 @@
       "canonical_name" : "RM:acc7:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -74,7 +74,7 @@
       "canonical_name" : "RM:acc8:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : 15.0,
       "warn_high" : 88.0,
       "err_low" : -1.0,
@@ -84,7 +84,7 @@
       "canonical_name" : "RM:acc1:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -94,7 +94,7 @@
       "canonical_name" : "RM:acc2:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -104,7 +104,7 @@
       "canonical_name" : "RM:acc3:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -114,7 +114,7 @@
       "canonical_name" : "RM:acc4:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -124,7 +124,7 @@
       "canonical_name" : "RM:acc5:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -134,7 +134,7 @@
       "canonical_name" : "RM:acc6:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -144,7 +144,7 @@
       "canonical_name" : "RM:acc7:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -154,7 +154,7 @@
       "canonical_name" : "RM:acc8:RM_EL_TRACKING_ERROR_F",
       "description" : "Elevation Error",
       "name" : "El Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -164,7 +164,7 @@
       "canonical_name" : "RM:acc1:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -174,7 +174,7 @@
       "canonical_name" : "RM:acc2:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -184,7 +184,7 @@
       "canonical_name" : "RM:acc3:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -194,7 +194,7 @@
       "canonical_name" : "RM:acc4:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -204,7 +204,7 @@
       "canonical_name" : "RM:acc5:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -214,7 +214,7 @@
       "canonical_name" : "RM:acc6:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -224,7 +224,7 @@
       "canonical_name" : "RM:acc7:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -234,7 +234,7 @@
       "canonical_name" : "RM:acc8:RM_TRACK_AZ_F",
       "description" : "Tracking Azimuth",
       "name" : "Azimuth",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -70.0,
       "warn_high" : 175.0,
       "err_low" : -90.0,
@@ -244,7 +244,7 @@
       "canonical_name" : "RM:acc1:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -254,7 +254,7 @@
       "canonical_name" : "RM:acc2:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -264,7 +264,7 @@
       "canonical_name" : "RM:acc3:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -274,7 +274,7 @@
       "canonical_name" : "RM:acc4:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -284,7 +284,7 @@
       "canonical_name" : "RM:acc5:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -294,7 +294,7 @@
       "canonical_name" : "RM:acc6:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "degree",
+      "unit": "degree",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -304,7 +304,7 @@
       "canonical_name" : "RM:acc7:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -314,7 +314,7 @@
       "canonical_name" : "RM:acc8:RM_AZ_TRACKING_ERROR_F",
       "description" : "Azimuth Error",
       "name" : "Az Error",
-      "units": "arcsec",
+      "unit": "arcsec",
       "warn_low" : -1.0,
       "warn_high" : 1.0,
       "err_low" : -5.0,
@@ -372,7 +372,7 @@
        "canonical_name" : "RM:acc1:RM_TSYS_D",
        "description" : "System Temperature",
        "name" : "Tsys",
-       "units": "K",
+       "unit": "K",
        "warn_low" : 50.0,
        "warn_high" :500.0,
        "err_low" : 25.0,
@@ -382,7 +382,7 @@
        "canonical_name" : "RM:acc2:RM_TSYS_D",
        "description" : "System Temperature",
        "name" : "Tsys",
-       "units": "K",
+       "unit": "K",
        "warn_low" : 50.0,
        "warn_high" :500.0,
        "err_low" : 25.0,
@@ -392,7 +392,7 @@
        "canonical_name" : "RM:acc3:RM_TSYS_D",
        "description" : "System Temperature",
        "name" : "Tsys",
-       "units": "K",
+       "unit": "K",
        "warn_low" : 50.0,
        "warn_high" :500.0,
        "err_low" : 25.0,
@@ -402,7 +402,7 @@
       "canonical_name" : "RM:acc4:RM_TSYS_D",
       "description" : "System Temperature",
       "name" : "Tsys",
-      "units": "K",
+      "unit": "K",
       "warn_low" : 50.0,
       "warn_high" :500.0,
       "err_low" : 25.0,
@@ -412,7 +412,7 @@
       "canonical_name" : "RM:acc5:RM_TSYS_D",
       "description" : "System Temperature",
       "name" : "Tsys",
-      "units": "K",
+      "unit": "K",
       "warn_low" : 50.0,
       "warn_high" :500.0,
       "err_low" : 25.0,
@@ -422,7 +422,7 @@
       "canonical_name" : "RM:acc6:RM_TSYS_D",
       "description" : "System Temperature",
       "name" : "Tsys",
-      "units": "K",
+      "unit": "K",
       "warn_low" : 50.0,
       "warn_high" :500.0,
       "err_low" : 25.0,
@@ -432,7 +432,7 @@
       "canonical_name" : "RM:acc7:RM_TSYS_D",
       "description" : "System Temperature",
       "name" : "Tsys",
-      "units": "K",
+      "unit": "K",
       "warn_low" : 50.0,
       "warn_high" :500.0,
       "err_low" : 25.0,
@@ -442,7 +442,7 @@
       "canonical_name" : "RM:acc8:RM_TSYS_D",
       "description" : "System Temperature",
       "name" : "Tsys",
-      "units": "K",
+      "unit": "K",
       "warn_low" : 50.0,
       "warn_high" :500.0,
       "err_low" : 25.0,
@@ -513,43 +513,43 @@
       "canonical_name" : "RM:acc1:RM_RA_CAT_HOURS_D",
       "description" : "Source Right Ascension",
       "name" : "RA",
-      "units": "hr"
+      "unit": "hr"
     },
     {
       "canonical_name" : "RM:acc1:RM_DEC_CAT_DEG_D",
       "description" : "Source Declination",
       "name" : "DEC",
-      "units": "hr"
+      "unit": "hr"
     },
     {
       "canonical_name" : "RM:acc1:RM_SVEL_KMPS_D",
       "description" : "Source Velocity",
       "name" : "Vel",
-      "units": "km/s"
+      "unit": "km/s"
     },
     {
       "canonical_name" : "RM:acc1:RM_LST_HOURS_F",
       "description" : "Local Sidereal Time",
       "name" : "LST",
-      "units": "hr"
+      "unit": "hr"
     },
     {
       "canonical_name" : "RM:acc1:RM_UTC_HR_D",
       "description" : "Coordinated Universal Time",
       "name" : "UTC",
-      "units": "hr"
+      "unit": "hr"
     },
     {
       "canonical_name" : "RM:acc1:RM_LOW_RX_LO_FREQUENCY_D",
       "description" : "Low RX Local Oscillator Frequency",
       "name" : "LO Freq",
-      "units": "GHz"
+      "unit": "GHz"
     },
     {
       "canonical_name" : "RM:acc1:RM_WEATHER_TEMP_F",
       "description" : "Ambient Temperature",
       "name" : "T(amb)",
-      "units": "Celsius"
+      "unit": "Celsius"
     },
     {
       "canonical_name" : "RM:acc1:RM_WEATHER_HUMIDITY_F",
@@ -560,19 +560,307 @@
       "canonical_name" : "RM:acc1:RM_WEATHER_MBAR_F",
       "description" : "Atmospheric Pressure",
       "name" : "Patm",
-      "units": "mbar"
+      "unit": "mbar"
     },
     {
       "canonical_name" : "RM:acc1:RM_WEATHER_WINDSPEED_F",
       "description" : "Wind Speed",
       "name" : "V(Wind)",
-      "units": "km/s"
+      "unit": "km/s"
     },
     {
       "canonical_name" : "RM:acc1:RM_WEATHER_WINDDIR_F",
       "description" : "Wind Direction",
       "name" : "Wind Dir",
-      "units": "deg"
+      "unit": "deg"
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:109_control",
+        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Ctrl",
+        "unit": ""
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:attenuator",
+        "description": "Actual attenuator control DAC counts.",
+        "name": "Att Ctrl",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:attenuator_control",
+        "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+        "name": "Att Ctrl Req",
+        "unit": "count"
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:frequency",
+        "description": "Estimated actual frequency of current tuning.",
+        "name": "LO Freq (Actual)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:1:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:2:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:3:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:4:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:5:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
+    },
+    {
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:frequency_set",
+        "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
+        "name": "LO Freq (Req)",
+        "unit": "Hz"
     }
   ]
 }
