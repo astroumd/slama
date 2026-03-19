@@ -206,6 +206,25 @@ class FakeObs:
         self.write("RM:acc1:RM_WEATHER_WINDDIR_F", np.round(self._winddir, 2))
         self.write("RM:acc1:RM_WEATHER_MBAR_F", np.round(self._patm, 2))
 
+    def mixerH(self):
+       points = {
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_control": np.array([1,2]),
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_source": np.array([1,2]),
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator": np.arange(0,4095),
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator_control":np.arange(0,4095),
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency":  np.array([180.,220.,350.,410.]),
+           "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency_set": np.array([180.,220.,350.,410.]),
+       }
+       for p in points:
+           for ant in range(1,9):
+               mp = f"{p.format(ant=ant)}"
+               value = random.choice(points[p])
+               if "freq" in p:
+                  self.write(mp, value)
+               else:
+                  self.write(mp, int(value))
+            
+
     def oops(self):
         for i in range(1, 9):
             v = random.random()
@@ -232,4 +251,5 @@ class FakeObs:
 
 if __name__ == "__main__":
     fo = FakeObs()
-    fo.observe("3c279")
+    #fo.observe("3c279")
+    fo.mixerH()

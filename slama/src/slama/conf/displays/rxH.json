@@ -16,8 +16,8 @@
         {"label":"109 MHz Src" ,"points":  "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_source"},
         {"label": "Att Ctrl","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator"},
         {"label": "Att Ctrl Req","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator_control"},
-        {"label" : "LO Freq (Actual)","points": "antenna:1:receiver:H:lo_plate:mixer:1:frequency"},
-        {"label" : "LO Freq (Req)","points": "antenna:1:receiver:H:lo_plate:mixer:1:frequency_set"}
+        {"label" : "LO Freq (Actual)","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency"},
+        {"label" : "LO Freq (Req)","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency_set"}
       ]
     }
   ]

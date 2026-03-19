@@ -653,21 +653,21 @@
         "unit": ""
     },
     {
-        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:109_control",
-        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
-        "name" : "109 MHz Ctrl",
+        "canonical_name" : "antenna:6:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
         "unit": ""
     },
     {
-        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:109_control",
-        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
-        "name" : "109 MHz Ctrl",
+        "canonical_name" : "antenna:7:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
         "unit": ""
     },
     {
-        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:109_control",
-        "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
-        "name" : "109 MHz Ctrl",
+        "canonical_name" : "antenna:8:receiver:H:lo_plate:mixer:1:109_source",
+        "description": "1-based index of the 109 MHz signal used to drive the LO",
+        "name" : "109 MHz Src",
         "unit": ""
     },
     {
