@@ -62,7 +62,14 @@ bridge = DataBridge(
 
 
 def _get_clock_html() -> str:
-    """Return HTML fragment with current UTC, HST, and local times."""
+    """Return HTML fragment with current UTC, HST, and local times.
+
+    Returns
+    -------
+    str
+        ``<span>`` element with ``hx-swap-oob="innerHTML"`` containing
+        formatted UTC, HST, and local server times.
+    """
     now_utc = datetime.now(timezone.utc)
     now_hst = now_utc.astimezone(_HST)
     now_local = datetime.now().astimezone()
@@ -82,7 +89,14 @@ def _get_clock_html() -> str:
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    """List all available display pages."""
+    """List all available display pages.
+
+    Returns
+    -------
+    str
+        Rendered HTML page listing all display configurations as
+        clickable cards.
+    """
     configs = list_display_configs(_DISPLAYS_DIR)
     template = jinja_env.get_template("index.html")
     return template.render(displays=configs)
@@ -90,7 +104,21 @@ async def index():
 
 @app.get("/display/{name}", response_class=HTMLResponse)
 async def display_page(name: str):
-    """Render a display page with initial data."""
+    """Render a display page with initial data.
+
+    Parameters
+    ----------
+    name : str
+        Display config filename stem (e.g., ``"tracking"``). Must match
+        a JSON file in the displays directory.
+
+    Returns
+    -------
+    HTMLResponse
+        Rendered display page, or a 404 response if the config is not
+        found. If SMAX is unreachable, the page renders with ``"---"``
+        placeholder values.
+    """
     config_path = _DISPLAYS_DIR / f"{name}.json"
     if not config_path.exists():
         return HTMLResponse(f"Display '{name}' not found", status_code=404)
@@ -137,7 +165,18 @@ async def get_history(canonical_name: str):
     """Return time series history for a monitor point.
 
     The canonical_name is passed as a path parameter so that colons
-    in names like 'RM:acc1:RM_TRACK_EL_F' are preserved.
+    in names like ``RM:acc1:RM_TRACK_EL_F`` are preserved.
+
+    Parameters
+    ----------
+    canonical_name : str
+        SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``).
+
+    Returns
+    -------
+    JSONResponse
+        JSON with keys ``"canonical_name"``, ``"times"``,
+        ``"values"``, and ``"thresholds"``.
     """
     history = bridge.get_history(canonical_name)
     if not history["times"]:
@@ -151,7 +190,19 @@ async def get_history(canonical_name: str):
 
 @app.websocket("/ws/display/{name}")
 async def ws_display(websocket: WebSocket, name: str):
-    """Push live updates and receive client settings changes."""
+    """Push live updates and receive client settings changes.
+
+    Runs two concurrent asyncio tasks sharing per-connection state:
+    ``send_updates`` pushes HTML fragments at the configured interval,
+    and ``receive_messages`` listens for JSON settings from the client.
+
+    Parameters
+    ----------
+    websocket : WebSocket
+        FastAPI WebSocket connection.
+    name : str
+        Display config filename stem (e.g., ``"tracking"``).
+    """
     await websocket.accept()
 
     config_path = _DISPLAYS_DIR / f"{name}.json"
@@ -226,7 +277,26 @@ async def ws_display(websocket: WebSocket, name: str):
 
 def _render_block(block, index: int, cells: dict,
                   hidden_rows: set = None) -> str:
-    """Render the inner content of a layout block."""
+    """Render the inner content of a layout block.
+
+    Parameters
+    ----------
+    block : TableBlock, GridBlock, or CellsBlock
+        Layout block to render.
+    index : int
+        Zero-based block index, used for the block's HTML id.
+    cells : dict of str to CellData
+        Mapping of canonical name to cell data for template rendering.
+    hidden_rows : set of str or None, optional
+        Row labels to hide in table blocks. Default is None (no rows
+        hidden).
+
+    Returns
+    -------
+    str
+        Rendered HTML fragment for the block interior, or empty string
+        if the block type is unrecognized.
+    """
     if hidden_rows is None:
         hidden_rows = set()
 

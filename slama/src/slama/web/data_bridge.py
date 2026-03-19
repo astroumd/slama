@@ -29,12 +29,27 @@ _HISTORY_MAXLEN = 1800
 
 @dataclass
 class CellData:
-    """Rendered data for one display cell."""
+    """Rendered data for one display cell.
+
+    Attributes
+    ----------
+    canonical_name : str
+        SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``).
+    value : str
+        Formatted display string for the cell.
+    css_class : str
+        Validity CSS class name (e.g., ``cell-good``, ``cell-error``).
+    cell_id : str
+        HTML element id derived from the canonical name with safe chars.
+    is_numeric : bool
+        True if the underlying value is numeric (eligible for time series
+        plots). Default is False.
+    """
     canonical_name: str
-    value: str          # formatted display string
-    css_class: str      # validity CSS class name
-    cell_id: str        # HTML element id (canonical name with safe chars)
-    is_numeric: bool = False  # True if value is numeric (eligible for plots)
+    value: str
+    css_class: str
+    cell_id: str
+    is_numeric: bool = False
 
 
 class DataBridge:
@@ -42,6 +57,19 @@ class DataBridge:
 
     def __init__(self, host: str = "localhost", port: int = 6380,
                  mpdefs_path: Path = None):
+        """Initialize the DataBridge.
+
+        Parameters
+        ----------
+        host : str, optional
+            SMAX/Redis server hostname. Default is ``"localhost"``.
+        port : int, optional
+            SMAX/Redis server port. Default is ``6380``.
+        mpdefs_path : Path or None, optional
+            Path to ``mpdefs.json`` for loading validity thresholds.
+            If None, no thresholds are loaded and all numeric values
+            receive ``cell-good``.
+        """
         self._host = host
         self._port = port
         self._client = None  # lazy connection
@@ -51,7 +79,13 @@ class DataBridge:
             self._load_thresholds(mpdefs_path)
 
     def _get_client(self) -> SmaxRedisClient | None:
-        """Lazy connection to SMAX — only connects when first needed."""
+        """Lazy connection to SMAX — only connects when first needed.
+
+        Returns
+        -------
+        SmaxRedisClient or None
+            Connected client, or None if the connection failed.
+        """
         if self._client is None:
             try:
                 self._client = SmaxRedisClient(self._host, redis_port=self._port)
@@ -61,7 +95,13 @@ class DataBridge:
         return self._client
 
     def _load_thresholds(self, path: Path) -> None:
-        """Load threshold definitions from mpdefs.json, keyed by canonical_name."""
+        """Load threshold definitions from mpdefs.json, keyed by canonical_name.
+
+        Parameters
+        ----------
+        path : Path
+            Path to the ``mpdefs.json`` file.
+        """
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         for mp in data["monitorpoints"]:
@@ -69,11 +109,36 @@ class DataBridge:
 
     @staticmethod
     def _make_cell_id(canonical_name: str) -> str:
-        """Convert canonical name to a valid HTML id."""
+        """Convert canonical name to a valid HTML id.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``).
+
+        Returns
+        -------
+        str
+            HTML-safe element id (e.g., ``cell-RM-acc1-RM-TRACK-EL-F``).
+        """
         return "cell-" + canonical_name.replace(":", "-")
 
     def _format_value(self, value, fmt: str = None) -> str:
-        """Format a value for display."""
+        """Format a value for display.
+
+        Parameters
+        ----------
+        value : float, str, or None
+            Raw value from SMAX.
+        fmt : str or None, optional
+            Python format string (e.g., ``"{:.2f}"``). If None, floats
+            default to 4 decimal places.
+
+        Returns
+        -------
+        str
+            Formatted display string, or ``"---"`` if value is None.
+        """
         if value is None:
             return "---"
         if fmt:
@@ -86,7 +151,21 @@ class DataBridge:
         return str(value)
 
     def _compute_css_class(self, canonical_name: str, value) -> str:
-        """Compute the CSS class based on value and thresholds."""
+        """Compute the CSS class based on value and thresholds.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name used to look up thresholds.
+        value : float, str, bool, or None
+            Raw value from SMAX.
+
+        Returns
+        -------
+        str
+            One of ``CSS_GOOD``, ``CSS_WARNING``, ``CSS_ERROR``,
+            ``CSS_NODATA``, or ``CSS_UNCHECKED``.
+        """
         if value is None:
             return CSS_NODATA
 
@@ -123,7 +202,18 @@ class DataBridge:
         return CSS_UNCHECKED
 
     def _record_history(self, canonical_name: str, raw_value) -> None:
-        """Append a numeric value to the history ring buffer."""
+        """Append a numeric value to the history ring buffer.
+
+        Non-numeric values (strings, booleans) are silently skipped.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name.
+        raw_value : float, str, bool, or None
+            Raw value from SMAX. Only numeric (non-bool) values are
+            recorded.
+        """
         if not isinstance(raw_value, Number) or isinstance(raw_value, bool):
             return
         if canonical_name not in self._history:
@@ -131,9 +221,22 @@ class DataBridge:
         self._history[canonical_name].append((time.time(), float(raw_value)))
 
     def get_history(self, canonical_name: str) -> dict:
-        """Return history for a canonical name as {times, values, thresholds}.
+        """Return time series history for a canonical name.
 
-        Returns empty lists if no history is available.
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name.
+
+        Returns
+        -------
+        dict
+            Dictionary with keys ``"canonical_name"`` (str),
+            ``"times"`` (list of float epoch timestamps),
+            ``"values"`` (list of float), and ``"thresholds"``
+            (dict with optional keys ``warn_low``, ``warn_high``,
+            ``err_low``, ``err_high``). Returns empty lists if no
+            history is available.
         """
         buf = self._history.get(canonical_name, deque())
         times = [t for t, _ in buf]
@@ -154,11 +257,33 @@ class DataBridge:
         }
 
     def has_history(self, canonical_name: str) -> bool:
-        """Return True if the canonical name has numeric history data."""
+        """Check whether numeric history exists for a canonical name.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name.
+
+        Returns
+        -------
+        bool
+            True if at least one numeric data point has been recorded.
+        """
         return canonical_name in self._history
 
     def _nodata_cell(self, canonical_name: str) -> CellData:
-        """Return a no-data cell for a canonical name."""
+        """Return a placeholder cell when data is unavailable.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name.
+
+        Returns
+        -------
+        CellData
+            Cell with value ``"---"`` and CSS class ``cell-nodata``.
+        """
         return CellData(
             canonical_name=canonical_name,
             value="---",
@@ -167,7 +292,27 @@ class DataBridge:
         )
 
     def fetch_cell(self, canonical_name: str, fmt: str = None) -> CellData:
-        """Fetch a single monitor point value from SMAX."""
+        """Fetch a single monitor point value from SMAX.
+
+        Pulls the current value, records it in the history buffer (if
+        numeric), and returns a ``CellData`` with formatted value and
+        validity CSS class.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``).
+        fmt : str or None, optional
+            Python format string for the display value. If None, floats
+            default to 4 decimal places.
+
+        Returns
+        -------
+        CellData
+            Cell with the current value, validity CSS class, and
+            numeric flag. Returns a no-data cell if SMAX is
+            unreachable or the key is missing.
+        """
         client = self._get_client()
         if client is None:
             return self._nodata_cell(canonical_name)
@@ -195,9 +340,21 @@ class DataBridge:
         )
 
     def fetch_all(self, config) -> dict[str, CellData]:
-        """Fetch all values for a display config.
+        """Fetch all monitor point values for a display configuration.
 
-        Returns a dict of canonical_name → CellData.
+        Iterates over all layout blocks in the config and fetches each
+        referenced canonical name from SMAX.
+
+        Parameters
+        ----------
+        config : DisplayConfig
+            Display configuration whose layout blocks define the
+            canonical names to fetch.
+
+        Returns
+        -------
+        dict of str to CellData
+            Mapping of canonical name to its rendered cell data.
         """
         from .display_config import TableBlock, GridBlock, CellsBlock
 

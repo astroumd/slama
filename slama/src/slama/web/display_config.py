@@ -11,41 +11,99 @@ from pathlib import Path
 
 @dataclass
 class TableBlock:
-    """A rows x columns table of monitor points (e.g., antenna tracking)."""
+    """A rows x columns table of monitor points (e.g., antenna tracking).
+
+    Attributes
+    ----------
+    title : str
+        Block heading displayed above the table.
+    column_labels : list of str
+        Header labels for each column (e.g., ``["Ant 1", ..., "Ant 8"]``).
+    rows : list of dict
+        Each dict has keys ``"label"`` (str), ``"points"`` (list of str
+        canonical names), and optionally ``"format"`` (str or None).
+    block_type : str
+        Always ``"table"``.
+    """
     title: str
     column_labels: list[str]
-    rows: list[dict]  # each: {"label": str, "points": list[str]}
+    rows: list[dict]
     block_type: str = "table"
 
 
 @dataclass
 class GridBlock:
-    """Label: Value pairs arranged in a multi-column grid."""
+    """Label: Value pairs arranged in a multi-column CSS grid.
+
+    Attributes
+    ----------
+    title : str
+        Block heading displayed above the grid.
+    columns : int
+        Number of label-value column pairs in the grid layout.
+    cells : list of dict
+        Each dict has keys ``"label"`` (str), ``"point"`` (str canonical
+        name), and optionally ``"format"`` (str or None).
+    block_type : str
+        Always ``"grid"``.
+    """
     title: str
     columns: int
-    cells: list[dict]  # each: {"label": str, "point": str}
+    cells: list[dict]
     block_type: str = "grid"
 
 
 @dataclass
 class CellsBlock:
-    """Free-standing cells in a horizontal row."""
+    """Free-standing cells in a horizontal row.
+
+    Attributes
+    ----------
+    title : str
+        Block heading displayed above the cells.
+    cells : list of dict
+        Each dict has keys ``"label"`` (str), ``"point"`` (str canonical
+        name), and optionally ``"format"`` (str or None).
+    block_type : str
+        Always ``"cells"``.
+    """
     title: str
-    cells: list[dict]  # each: {"label": str, "point": str}
+    cells: list[dict]
     block_type: str = "cells"
 
 
 @dataclass
 class DisplayConfig:
-    """A complete display page definition."""
+    """A complete display page definition.
+
+    Attributes
+    ----------
+    name : str
+        Human-readable display name (e.g., ``"Antenna Tracking"``).
+    description : str
+        Short description shown below the page title.
+    update_interval : float
+        Default WebSocket update interval in seconds.
+    layout : list of TableBlock, GridBlock, or CellsBlock
+        Ordered list of layout blocks rendered top-to-bottom.
+    filename : str
+        Stem of the JSON config file (e.g., ``"tracking"``), used
+        for URL routing.
+    """
     name: str
     description: str
     update_interval: float
-    layout: list  # list of TableBlock, GridBlock, or CellsBlock
+    layout: list
     filename: str = ""
 
     def all_canonical_names(self) -> list[str]:
-        """Return all SMAX canonical names referenced by this display."""
+        """Return all SMAX canonical names referenced by this display.
+
+        Returns
+        -------
+        list of str
+            Canonical names from all layout blocks, in block order.
+        """
         names = []
         for block in self.layout:
             if isinstance(block, TableBlock):
@@ -58,12 +116,48 @@ class DisplayConfig:
 
 
 def _expand_template(template: str, var: str, values: list) -> list[str]:
-    """Expand a template string like 'RM:acc{ant}:FOO' into a list."""
+    """Expand a template string by substituting a variable placeholder.
+
+    Parameters
+    ----------
+    template : str
+        Template string containing a ``{var}`` placeholder
+        (e.g., ``"RM:acc{ant}:RM_TRACK_EL_F"``).
+    var : str
+        Variable name to substitute (e.g., ``"ant"``).
+    values : list
+        Values to substitute, one per expansion
+        (e.g., ``[1, 2, 3, 4, 5, 6, 7, 8]``).
+
+    Returns
+    -------
+    list of str
+        Expanded canonical names, one per value.
+    """
     return [template.replace(f"{{{var}}}", str(v)) for v in values]
 
 
 def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock:
-    """Parse a single layout block from JSON."""
+    """Parse a single layout block from a JSON config dict.
+
+    Parameters
+    ----------
+    raw : dict
+        Raw JSON dict for one block, with at least a ``"type"`` key.
+    index : int
+        Zero-based block index, used for default titles.
+
+    Returns
+    -------
+    TableBlock, GridBlock, or CellsBlock
+        Parsed block dataclass.
+
+    Raises
+    ------
+    ValueError
+        If ``raw["type"]`` is not one of ``"table"``, ``"grid"``,
+        or ``"cells"``.
+    """
     block_type = raw["type"]
 
     if block_type == "table":
@@ -104,7 +198,19 @@ def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock:
 
 
 def load_display_config(path: Path) -> DisplayConfig:
-    """Load a single display config from a JSON file."""
+    """Load a single display configuration from a JSON file.
+
+    Parameters
+    ----------
+    path : Path
+        Path to the JSON config file (e.g.,
+        ``conf/displays/tracking.json``).
+
+    Returns
+    -------
+    DisplayConfig
+        Parsed display configuration with expanded template variables.
+    """
     path = Path(path)
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)
@@ -121,7 +227,18 @@ def load_display_config(path: Path) -> DisplayConfig:
 
 
 def list_display_configs(config_dir: Path) -> list[DisplayConfig]:
-    """Load all display configs from a directory."""
+    """Load all display configurations from a directory.
+
+    Parameters
+    ----------
+    config_dir : Path
+        Directory containing ``*.json`` display config files.
+
+    Returns
+    -------
+    list of DisplayConfig
+        Parsed configurations, sorted alphabetically by filename.
+    """
     config_dir = Path(config_dir)
     configs = []
     for path in sorted(config_dir.glob("*.json")):
