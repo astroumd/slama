@@ -1,1 +1,1 @@
-"""Web display module for SLAMA monitor data."""
+"""Web display module for SMA monitor data."""

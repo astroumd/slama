@@ -1,4 +1,4 @@
-"""FastAPI web server for SLAMA monitor displays.
+"""FastAPI web server for SMA monitor displays.
 
 Usage:
     cd src/slama
@@ -50,7 +50,7 @@ jinja_env = Environment(
 )
 
 # --- FastAPI app ---
-app = FastAPI(title="SLAMA Monitor Display")
+app = FastAPI(title="SMA Monitor Display")
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
 # DataBridge uses lazy SMAX connection — no blocking at import/startup time
