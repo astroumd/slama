@@ -287,53 +287,55 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
     outline-offset: -2px;
 }
 
-/* --- Plot modal overlay --- */
-.plot-modal {
+/* --- Plot panel (non-blocking, floating) --- */
+.plot-panel {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    bottom: 20px;
+    right: 20px;
     z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.plot-modal-content {
+    width: 600px;
+    max-width: calc(100vw - 40px);
     background: var(--color-surface);
     border: 1px solid var(--color-accent);
     border-radius: 8px;
-    width: 85%;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    resize: both;
+    overflow: hidden;
+    min-width: 350px;
+    min-height: 280px;
 }
 
-.plot-modal-header {
+.plot-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 6px 12px;
     border-bottom: 1px solid var(--color-border);
+    cursor: grab;
+    user-select: none;
+}
+.plot-panel-header:active {
+    cursor: grabbing;
 }
 
 .plot-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: var(--color-brand);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .plot-close-btn {
     background: none;
     border: none;
     color: var(--color-text);
-    font-size: 22px;
+    font-size: 20px;
     cursor: pointer;
     padding: 0 4px;
     line-height: 1;
+    flex-shrink: 0;
 }
 .plot-close-btn:hover {
     color: var(--color-brand);
@@ -341,5 +343,6 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
 
 #plot-container {
     width: 100%;
-    height: 400px;
+    height: calc(100% - 34px);
+    min-height: 240px;
 }

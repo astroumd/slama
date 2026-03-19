@@ -54,15 +54,13 @@
     </details>
 </div>
 
-{# --- Plot modal overlay --- #}
-<div id="plot-modal" class="plot-modal" style="display:none;">
-    <div class="plot-modal-content">
-        <div class="plot-modal-header">
-            <span id="plot-title" class="plot-title"></span>
-            <button id="plot-close" class="plot-close-btn">&times;</button>
-        </div>
-        <div id="plot-container"></div>
+{# --- Floating plot panel (non-blocking) --- #}
+<div id="plot-panel" class="plot-panel" style="display:none;">
+    <div id="plot-panel-header" class="plot-panel-header">
+        <span id="plot-title" class="plot-title"></span>
+        <button id="plot-close" class="plot-close-btn">&times;</button>
     </div>
+    <div id="plot-container"></div>
 </div>
 
 <script>
@@ -108,11 +106,12 @@
     });
 
     // =================================================================
-    // Time series plot (Phase 3)
+    // Time series plot (Phase 3) — floating, non-blocking panel
     // =================================================================
 
-    // Currently plotted canonical name (null when modal is closed)
+    // Currently plotted canonical name (null when panel is closed)
     var _plotCanonical = null;
+    var _plotPanel = document.getElementById("plot-panel");
 
     // Plotly dark theme layout matching the observatory CSS
     var _plotLayout = {
@@ -137,11 +136,11 @@
         return epochs.map(function(t) { return new Date(t * 1000); });
     }
 
-    // Open the plot modal for a canonical name
+    // Open the plot panel for a canonical name
     function openPlot(canonical) {
         _plotCanonical = canonical;
         document.getElementById("plot-title").textContent = canonical;
-        document.getElementById("plot-modal").style.display = "flex";
+        _plotPanel.style.display = "block";
 
         fetch("/api/history/" + canonical)
             .then(function(resp) { return resp.json(); })
@@ -186,23 +185,47 @@
             });
     }
 
-    // Close the plot modal
+    // Close the plot panel
     function closePlot() {
         _plotCanonical = null;
-        document.getElementById("plot-modal").style.display = "none";
+        _plotPanel.style.display = "none";
         Plotly.purge("plot-container");
     }
 
-    // Close button and backdrop click
+    // Close button
     document.getElementById("plot-close").addEventListener("click", closePlot);
-    document.getElementById("plot-modal").addEventListener("click", function(evt) {
-        if (evt.target === this) closePlot();
-    });
 
     // Close on Escape key
     document.addEventListener("keydown", function(evt) {
         if (evt.key === "Escape" && _plotCanonical) closePlot();
     });
+
+    // --- Drag the panel by its header ---
+    (function() {
+        var header = document.getElementById("plot-panel-header");
+        var dragX = 0, dragY = 0;
+
+        header.addEventListener("mousedown", function(evt) {
+            if (evt.target.closest(".plot-close-btn")) return;
+            evt.preventDefault();
+            dragX = evt.clientX - _plotPanel.offsetLeft;
+            dragY = evt.clientY - _plotPanel.offsetTop;
+            document.addEventListener("mousemove", onDrag);
+            document.addEventListener("mouseup", stopDrag);
+        });
+
+        function onDrag(evt) {
+            _plotPanel.style.left = (evt.clientX - dragX) + "px";
+            _plotPanel.style.top = (evt.clientY - dragY) + "px";
+            _plotPanel.style.right = "auto";
+            _plotPanel.style.bottom = "auto";
+        }
+
+        function stopDrag() {
+            document.removeEventListener("mousemove", onDrag);
+            document.removeEventListener("mouseup", stopDrag);
+        }
+    })();
 
     // --- Click delegation for plotable cells ---
     document.addEventListener("click", function(evt) {
