@@ -1,0 +1,348 @@
+/* SLAMA Monitor Display Styles */
+
+:root {
+    --color-good: #d4edda;
+    --color-warning: #fff3cd;
+    --color-error: #f8d7da;
+    --color-nodata: #e2e3e5;
+    --color-unchecked: #ffffff;
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-text: #e0e0e0;
+    --color-accent: #0f3460;
+    --color-brand: #53a8b6;
+    --color-border: #2a2a4a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+/* --- Top navigation bar --- */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    background: var(--color-surface);
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.nav-brand {
+    color: var(--color-brand);
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-clock {
+    font-size: 13px;
+    color: #aaa;
+    letter-spacing: 0.5px;
+}
+
+.nav-status {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: var(--color-nodata);
+    color: #333;
+}
+.nav-status.connected { background: var(--color-good); color: #155724; }
+.nav-status.disconnected { background: var(--color-error); color: #721c24; }
+
+/* --- Main content --- */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 { margin-bottom: 5px; color: var(--color-brand); }
+h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
+.display-desc { color: #888; margin-bottom: 10px; }
+
+/* --- Index page: display list --- */
+.display-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.display-card {
+    display: block;
+    padding: 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-accent);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+.display-card:hover { border-color: var(--color-brand); }
+.display-card h2 { color: var(--color-brand); margin-bottom: 8px; font-size: 18px; }
+.display-card p { color: #aaa; font-size: 13px; }
+.update-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 2px 8px;
+    background: var(--color-accent);
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+/* --- Settings menu (collapsed by default) --- */
+.settings-menu {
+    margin-top: 20px;
+}
+
+.settings-toggle {
+    cursor: pointer;
+    font-size: 13px;
+    color: #888;
+    padding: 4px 0;
+    user-select: none;
+}
+
+.settings-toggle:hover { color: var(--color-brand); }
+
+.settings-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 10px 14px;
+    margin-top: 6px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-label {
+    font-size: 13px;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+.control-label span {
+    color: var(--color-brand);
+    font-weight: bold;
+    min-width: 2.5em;
+    display: inline-block;
+    text-align: right;
+}
+
+.interval-slider {
+    width: 140px;
+    accent-color: var(--color-brand);
+    cursor: pointer;
+}
+
+.row-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+}
+
+.toggle-label {
+    font-size: 12px;
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.toggle-label input[type="checkbox"] {
+    accent-color: var(--color-brand);
+    cursor: pointer;
+}
+
+/* --- Layout blocks --- */
+.layout-block { margin-bottom: 20px; }
+
+/* --- Table block --- */
+.mp-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+}
+
+.mp-table th, .mp-table td {
+    padding: 6px 10px;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    min-width: 80px;
+    transition: background-color 0.3s ease;
+}
+
+.mp-table th {
+    background: var(--color-accent);
+    color: var(--color-text);
+    font-weight: bold;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.mp-table .row-label {
+    text-align: right;
+    font-weight: bold;
+    background: var(--color-accent);
+    color: var(--color-text);
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+.mp-table tbody tr:hover td:not(.row-label) {
+    filter: brightness(1.1);
+}
+
+/* --- Grid block --- */
+.mp-grid {
+    display: grid;
+    gap: 5px 12px;
+    background: var(--color-surface);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+}
+
+.grid-label {
+    text-align: right;
+    font-weight: bold;
+    padding: 4px 0;
+}
+
+.grid-value {
+    padding: 4px 8px;
+    border-radius: 3px;
+    min-width: 80px;
+    transition: background-color 0.3s ease;
+}
+
+/* --- Cells block --- */
+.mp-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.standalone-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-surface);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+}
+
+.cell-label {
+    font-weight: bold;
+    color: #aaa;
+}
+
+.cell-value {
+    padding: 2px 8px;
+    border-radius: 3px;
+    min-width: 60px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+/* --- Validity color classes --- */
+.cell-good      { background: var(--color-good); color: #155724; }
+.cell-warning   { background: var(--color-warning); color: #856404; }
+.cell-error     { background: var(--color-error); color: #721c24; }
+.cell-nodata    { background: var(--color-nodata); color: #383d41; }
+.cell-unchecked { background: var(--color-unchecked); color: #333; }
+
+/* --- Plotable cells (clickable for time series) --- */
+.plotable {
+    cursor: pointer;
+    position: relative;
+}
+.plotable:hover {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -2px;
+}
+
+/* --- Plot panel (non-blocking, floating) --- */
+.plot-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    width: 600px;
+    max-width: calc(100vw - 40px);
+    background: var(--color-surface);
+    border: 1px solid var(--color-accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    resize: both;
+    overflow: hidden;
+    min-width: 350px;
+    min-height: 280px;
+}
+
+.plot-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--color-border);
+    cursor: grab;
+    user-select: none;
+}
+.plot-panel-header:active {
+    cursor: grabbing;
+}
+
+.plot-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--color-brand);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plot-close-btn {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.plot-close-btn:hover {
+    color: var(--color-brand);
+}
+
+#plot-container {
+    width: 100%;
+    height: calc(100% - 34px);
+    min-height: 240px;
+}

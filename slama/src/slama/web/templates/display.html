@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.name }} - SMA Monitor{% endblock %}
+
+{% block clock %}{{ clock_html }}{% endblock %}
+
+{% block content %}
+<div class="display-header">
+    <h1>{{ config.name }}</h1>
+    <p class="display-desc">{{ config.description }}</p>
+</div>
+
+<div hx-ext="ws" ws-connect="/ws/display/{{ config.filename }}">
+
+    {# --- Layout blocks --- #}
+    {% for block in config.layout %}
+    <div id="block-{{ loop.index0 }}" class="layout-block">
+        {% if block.block_type == "table" %}
+            {% include "components/table.html" %}
+        {% elif block.block_type == "grid" %}
+            {% include "components/grid.html" %}
+        {% elif block.block_type == "cells" %}
+            {% include "components/cells.html" %}
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {# --- Settings (collapsed, below the data) --- #}
+    <details class="settings-menu">
+        <summary class="settings-toggle">Settings</summary>
+        <div class="settings-body">
+            <div class="control-group">
+                <label class="control-label">Update interval:
+                    <span id="interval-display">{{ config.update_interval }}</span>s
+                </label>
+                <input type="range" id="interval-slider" min="1" max="30" step="0.5"
+                       value="{{ config.update_interval }}" class="interval-slider">
+            </div>
+
+            {% if all_row_labels %}
+            <div class="control-group">
+                <label class="control-label">Visible rows:</label>
+                <div class="row-toggles">
+                    {% for label in all_row_labels %}
+                    <label class="toggle-label">
+                        <input type="checkbox" class="row-toggle" value="{{ label }}" checked>
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </details>
+</div>
+
+{# --- Floating plot panel (non-blocking) --- #}
+<div id="plot-panel" class="plot-panel" style="display:none;">
+    <div id="plot-panel-header" class="plot-panel-header">
+        <span id="plot-title" class="plot-title"></span>
+        <button id="plot-close" class="plot-close-btn">&times;</button>
+    </div>
+    <div id="plot-container"></div>
+</div>
+
+<script>
+    // --- Connection status ---
+    document.body.addEventListener("htmx:wsOpen", function(evt) {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Connected";
+        el.classList.add("connected");
+        el.classList.remove("disconnected");
+        window._slamaWs = evt.detail.socketWrapper;
+    });
+    document.body.addEventListener("htmx:wsClose", function() {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Disconnected";
+        el.classList.add("disconnected");
+        el.classList.remove("connected");
+        window._slamaWs = null;
+    });
+
+    // --- Send settings over WebSocket ---
+    function sendSettings() {
+        if (!window._slamaWs) return;
+        var interval = document.getElementById("interval-slider").value;
+        var hiddenRows = [];
+        document.querySelectorAll(".row-toggle").forEach(function(cb) {
+            if (!cb.checked) hiddenRows.push(cb.value);
+        });
+        var msg = JSON.stringify({interval: parseFloat(interval), hidden_rows: hiddenRows});
+        window._slamaWs.send(msg);
+    }
+
+    // --- Interval slider ---
+    var slider = document.getElementById("interval-slider");
+    var display = document.getElementById("interval-display");
+    slider.addEventListener("input", function() {
+        display.textContent = this.value;
+    });
+    slider.addEventListener("change", sendSettings);
+
+    // --- Row visibility checkboxes ---
+    document.querySelectorAll(".row-toggle").forEach(function(cb) {
+        cb.addEventListener("change", sendSettings);
+    });
+
+    // =================================================================
+    // Time series plot (Phase 3) — floating, non-blocking panel
+    // =================================================================
+
+    // Currently plotted canonical name (null when panel is closed)
+    var _plotCanonical = null;
+    var _plotPanel = document.getElementById("plot-panel");
+
+    // Plotly dark theme layout matching the observatory CSS
+    var _plotLayout = {
+        paper_bgcolor: "#16213e",
+        plot_bgcolor: "#1a1a2e",
+        font: { color: "#e0e0e0", family: "Consolas, Monaco, Courier New, monospace", size: 12 },
+        margin: { t: 10, r: 30, b: 50, l: 60 },
+        xaxis: {
+            title: "Time (UTC)",
+            gridcolor: "#2a2a4a",
+            tickformat: "%H:%M:%S",
+        },
+        yaxis: {
+            title: "",
+            gridcolor: "#2a2a4a",
+        },
+        showlegend: false,
+    };
+
+    // Convert epoch timestamps to JS Date objects for Plotly
+    function epochToDate(epochs) {
+        return epochs.map(function(t) { return new Date(t * 1000); });
+    }
+
+    // Open the plot panel for a canonical name
+    function openPlot(canonical) {
+        _plotCanonical = canonical;
+        document.getElementById("plot-title").textContent = canonical;
+        _plotPanel.style.display = "block";
+
+        fetch("/api/history/" + canonical)
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                var traces = [{
+                    x: epochToDate(data.times),
+                    y: data.values,
+                    type: "scatter",
+                    mode: "lines+markers",
+                    line: { color: "#53a8b6", width: 2 },
+                    marker: { size: 3 },
+                }];
+
+                // Add threshold lines as horizontal shapes
+                var shapes = [];
+                var th = data.thresholds || {};
+                if (th.warn_high != null) {
+                    shapes.push({ type: "line", y0: th.warn_high, y1: th.warn_high,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#fff3cd", width: 1, dash: "dash" } });
+                }
+                if (th.warn_low != null) {
+                    shapes.push({ type: "line", y0: th.warn_low, y1: th.warn_low,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#fff3cd", width: 1, dash: "dash" } });
+                }
+                if (th.err_high != null) {
+                    shapes.push({ type: "line", y0: th.err_high, y1: th.err_high,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#f8d7da", width: 1, dash: "dot" } });
+                }
+                if (th.err_low != null) {
+                    shapes.push({ type: "line", y0: th.err_low, y1: th.err_low,
+                        x0: 0, x1: 1, xref: "paper", line: { color: "#f8d7da", width: 1, dash: "dot" } });
+                }
+
+                var layout = Object.assign({}, _plotLayout, { shapes: shapes });
+                layout.yaxis = Object.assign({}, _plotLayout.yaxis, { title: canonical.split(":").pop() });
+
+                Plotly.newPlot("plot-container", traces, layout, {
+                    responsive: true,
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ["lasso2d", "select2d"],
+                });
+            });
+    }
+
+    // Close the plot panel
+    function closePlot() {
+        _plotCanonical = null;
+        _plotPanel.style.display = "none";
+        Plotly.purge("plot-container");
+    }
+
+    // Close button
+    document.getElementById("plot-close").addEventListener("click", closePlot);
+
+    // Close on Escape key
+    document.addEventListener("keydown", function(evt) {
+        if (evt.key === "Escape" && _plotCanonical) closePlot();
+    });
+
+    // --- Drag the panel by its header ---
+    (function() {
+        var header = document.getElementById("plot-panel-header");
+        var dragX = 0, dragY = 0;
+
+        header.addEventListener("mousedown", function(evt) {
+            if (evt.target.closest(".plot-close-btn")) return;
+            evt.preventDefault();
+            dragX = evt.clientX - _plotPanel.offsetLeft;
+            dragY = evt.clientY - _plotPanel.offsetTop;
+            document.addEventListener("mousemove", onDrag);
+            document.addEventListener("mouseup", stopDrag);
+        });
+
+        function onDrag(evt) {
+            _plotPanel.style.left = (evt.clientX - dragX) + "px";
+            _plotPanel.style.top = (evt.clientY - dragY) + "px";
+            _plotPanel.style.right = "auto";
+            _plotPanel.style.bottom = "auto";
+        }
+
+        function stopDrag() {
+            document.removeEventListener("mousemove", onDrag);
+            document.removeEventListener("mouseup", stopDrag);
+        }
+    })();
+
+    // --- Click delegation for plotable cells ---
+    document.addEventListener("click", function(evt) {
+        var cell = evt.target.closest(".plotable");
+        if (cell && cell.dataset.canonical) {
+            openPlot(cell.dataset.canonical);
+        }
+    });
+
+    // --- Live plot updates ---
+    // After each HTMX WebSocket swap, if a plot is open, read the new value
+    // from the DOM and append it to the Plotly trace.
+    document.body.addEventListener("htmx:wsAfterMessage", function() {
+        if (!_plotCanonical) return;
+        var cellId = "cell-" + _plotCanonical.replace(/:/g, "-");
+        var el = document.getElementById(cellId);
+        if (!el) return;
+        var val = parseFloat(el.textContent);
+        if (isNaN(val)) return;
+        Plotly.extendTraces("plot-container",
+            { x: [[new Date()]], y: [[val]] }, [0]);
+    });
+</script>
+{% endblock %}

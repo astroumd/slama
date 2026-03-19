@@ -1,0 +1,25 @@
+{
+  "name": "Receiver H Mixer 1 Status",
+  "description": "LO frequency and control for Rx H mixer 1",
+  "update_interval": 2,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Mixer State",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label":"109 MHz Ctrl" ,"points":  "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_control"},
+        {"label":"109 MHz Src" ,"points":  "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_source"},
+        {"label": "Att Ctrl","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator"},
+        {"label": "Att Ctrl Req","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:attenuator_control"},
+        {"label" : "LO Freq (Actual)","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency"},
+        {"label" : "LO Freq (Req)","points": "antenna:{ant}:receiver:H:lo_plate:mixer:1:frequency_set"}
+      ]
+    }
+  ]
+}
+

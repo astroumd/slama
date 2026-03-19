@@ -1,0 +1,50 @@
+{
+  "name": "Antenna Tracking",
+  "description": "Real-time antenna positions, tracking errors, and receiver status",
+  "update_interval": 2,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Current Observation",
+      "cells": [
+        {"label": "Source",  "point": "RM:acc1:RM_SOURCE_C34"},
+        {"label": "RA (hr)", "point": "RM:acc1:RM_RA_CAT_HOURS_D"},
+        {"label": "DEC (deg)", "point": "RM:acc1:RM_DEC_CAT_DEG_D"},
+        {"label": "Vel (km/s)", "point": "RM:acc1:RM_SVEL_KMPS_D"},
+        {"label": "LO Freq (GHz)", "point": "RM:acc1:RM_LOW_RX_LO_FREQUENCY_D"},
+        {"label": "LST (hr)", "point": "RM:acc1:RM_LST_HOURS_F"},
+        {"label": "UTC (hr)", "point": "RM:acc1:RM_UTC_HR_D"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Antenna Positions",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "El (deg)",       "points": "RM:acc{ant}:RM_TRACK_EL_F"},
+        {"label": "Az (deg)",       "points": "RM:acc{ant}:RM_TRACK_AZ_F"},
+        {"label": "El Err (arcsec)","points": "RM:acc{ant}:RM_EL_TRACKING_ERROR_F"},
+        {"label": "Az Err (arcsec)","points": "RM:acc{ant}:RM_AZ_TRACKING_ERROR_F"},
+        {"label": "Tsys (K)",       "points": "RM:acc{ant}:RM_TSYS_D"},
+        {"label": "LowRx",          "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "Gunn1 Lock",     "points": "RM:acc{ant}:RM_GUNN1_LOCKED_S"}
+      ]
+    },
+    {
+      "type": "grid",
+      "title": "Weather",
+      "columns": 3,
+      "cells": [
+        {"label": "T(amb) (C)",      "point": "RM:acc1:RM_WEATHER_TEMP_F"},
+        {"label": "RH%",             "point": "RM:acc1:RM_WEATHER_HUMIDITY_F"},
+        {"label": "V(wind) (km/s)",  "point": "RM:acc1:RM_WEATHER_WINDSPEED_F"},
+        {"label": "Wind Dir (deg)",  "point": "RM:acc1:RM_WEATHER_WINDDIR_F"},
+        {"label": "P(atm) (mbar)",   "point": "RM:acc1:RM_WEATHER_MBAR_F"}
+      ]
+    }
+  ]
+}
