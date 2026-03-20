@@ -9,11 +9,15 @@ Usage:
     uv run fakeobs.py
 """
 
+import argparse
 import random
 import time
+import sys
+
 
 import numpy as np
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
 import astropy.units as u
 from pathlib import Path
 from smax import SmaxRedisClient
@@ -26,9 +30,12 @@ from slama.monitor import (
 
 
 class FakeObs:
-    def __init__(self):
+    def __init__(self, conf: Path = None, catalog: Path = "SystemSource.cat", catformat=None):
         self._client = SmaxRedisClient("localhost", redis_port=6380)
-        conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
+        if conf is None:
+            conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
+        else:
+            conf_path = conf
         self._mplist = MonitorPointList.from_file(conf_path)
 
         # Index monitor points by canonical name for quick lookup
@@ -60,10 +67,25 @@ class FakeObs:
         self._patm = 626.8255
         self.weather(init=True)
         self.slew(119.6513, 47.281)
-        self._sources = {
-            "ORIMSR": SkyCoord("5:35:14.5 -05:22:30.5", frame="icrs", unit=(u.hr, u.deg)),
-            "3c279": SkyCoord("12:56:11.167 -05:47:21.52", frame="icrs", unit=(u.hr, u.deg)),
-        }
+        self._catalog=catalog
+        self._source_table = Table.read(self._catalog)
+        self._source_table.add_index("Source")
+        self._cached_sources = {}
+        
+    def _get_source(self,name):
+        """Get a SkyCoord of a source.  Will return cached SkyCoord if
+        this source has previouly been requested.  Will create and 
+        cache source if not.
+        """
+        NAME = name.upper()
+        if NAME not in self._cached_sources:       
+            row = self._source_table.loc(NAME)
+            s = SkyCoord(f'{row["RA"]} {row["DEC"]}',
+                         frame='icrs',
+                         unit=(u.hr,u.deg),
+                         radial_velocity = row["Velocity"]*u.km/u.s)
+        self._cached_sourced[NAME] = s
+        return self._cached_sources[NAME]
 
     def write(self, canonical_name, value):
         """Write a value to a monitor point via the MonitorPointWriter API."""
@@ -84,9 +106,10 @@ class FakeObs:
 
     def observe(self, source):
         self._source = source
-        self._vel = 5.0
+        self._coord = self._get_source(source)
+        self._vel = self._coord.radial_velocity.to(u.km/u.s).value
         self._freq = 230.538
-        self._coord = self._sources[source]
+
         self.setsource(self._source, self._coord, self._vel, self._freq)
         if source == "ORIMSR":
             az = 95
@@ -250,6 +273,17 @@ class FakeObs:
 
 
 if __name__ == "__main__":
+    progname = "SMA monitor system simulator"
+    
+    parser = argparse.ArgumentParser(prog=progname)
+    parser.add_argument("--loop", "-l", action="store", help="number of times to loop", default=4, type=int)
+    parser.add_argument("--catalog", "-c", action="store", help="CARMA style catalog file to use for sources", default=None, type=str)
+    parser.add_argument("--fluxcal", "-f", action="store", help="flux calibrator", default=None, type=str)
+    parser.add_argument("--gaincal", "-g", action="store", help="gain calibrator", default=None, type=str)
+    parser.add_argument("--bandpass", "-f", action="store", help="bandpass calibrator", default=None, type=str)
+    parser.add_argument("--source", "-s", action="store", help="source aka science target", default=None, type=str)
+    args = parser.parse_args()
+    
     fo = FakeObs()
     #fo.observe("3c279")
     fo.mixerH()
