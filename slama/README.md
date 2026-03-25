@@ -1,6 +1,10 @@
 # SMA monitor, fault, alarm, and web display
 
-.. include: webDESIGN.md
+This package encompasses python, jinja2, css, JSON, HTML and JavaScript
+required to server and view SMA monitor data.  It also includes a simple
+simulator for end-to-end testing.
+
+For more info on the server and display design see web/DESIGN.md.
 
 ### Install
 
