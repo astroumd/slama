@@ -30,7 +30,7 @@ from slama.monitor import (
 
 
 class FakeObs:
-    def __init__(self, conf: Path = None, catalog: Path = "SystemSource.cat", catformat=None):
+    def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None):
         self._client = SmaxRedisClient("localhost", redis_port=6380)
         if conf is None:
             conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
@@ -75,6 +75,7 @@ class FakeObs:
         self._patm = 626.8255
         self.weather(init=True)
         self.slew(119.6513, 47.281)
+        print("FakeObs created")
         
     def _get_source(self,name):
         """Get a SkyCoord of a source.  Will return cached SkyCoord if
@@ -128,7 +129,7 @@ class FakeObs:
         timeincr = self.tick_interval.to("hr").value
         self.slew(az, el)
         i = 0
-        while i < 20: #slewing
+        while i < 20: # Slew with some nominal rate.
             i += 1
             if el > 89.0:
                 elincr = -0.016
@@ -147,12 +148,12 @@ class FakeObs:
             self.oops()
             self.time()
 
-        # Integrating
+        # Integrate for the request obstime
         print("Integrating...")
         loopmax = obstime/10.0
         i = 0
         while i < loopmax:
-            print(f"progress {i*10}")
+            #print(f"progress {i*10}")
             self.write("correlator:swarm:progress",i*10.0)
             time.sleep(10.0)
             i = i+1
