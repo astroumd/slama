@@ -18,14 +18,14 @@ URL11 = git@github.com:valkey-io/valkey.git
 URL12 = git@github.com:redis/hiredis.git
 
 # git software directories we need and build here
-GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey xchange smax-server valkey
+GIT_DIRS = git-SMA-Software git-smax-python git-redisx git-SuperNOVAS git-valkey git-xchange git-smax-server git-valkey
 
 # redisx smax
 
 .PHONY:  help install 
 
 install:
-	@echo "No notes yet"
+	@echo "See INSTALL.md for installation steps."
 	@echo ""
 	@echo "Other useful targets:"
 	@echo "    make pull                  update all git repos"
@@ -35,22 +35,23 @@ install:
 	@echo "For a full list, type:  'make help'"
 	@echo ""
 
-build1:
+setup:
 	mkdir -p bin lua
+	chmod +x smax-init.sh valkey-init.sh
 
-build2: anaconda3
+anaconda: anaconda3
 	./install_anaconda3
 
-build3:
+install-valkey: git-valkey
 	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
 
-build4:
+valkey: install-valkey
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
-build5:	smax-server lua
+lua:	git-smax-server lua
 	cp smax-server/lua/*.lua lua
 
-build6: smax-python
+smax-python: git-smax-python
 	pip install -e smax-python
 
 help:
@@ -80,33 +81,34 @@ branch:
 	(echo -n "$$dir: " ;cd $$dir; git branch --show-current); done
 
 # all git targets we need
+# We actually don't need most of these. 
 
-SMA-Software:
+git-SMA-Software:
 	git clone $(URL1)
 
-smax-python:
+git-smax-python:
 	git clone $(URL2)
 
-redisx:
+git-redisx:
 	git clone $(URL3)
 
-SuperNOVAS:
+git-SuperNOVAS:
 	git clone $(URL4)
 
-xchange:
+git-xchange:
 	git clone $(URL7)
 
-smax-server:
+git-smax-server:
 	git clone $(URL8)
 
-smax-clib:
+git-smax-clib:
 	git clone $(URL9)
 
-smax-json:
+git-smax-json:
 	git clone $(URL10)
 
-valkey:
+git-valkey:
 	git clone $(URL11)
 
-hiredis:
+git-hiredis:
 	git clone $(URL12)
