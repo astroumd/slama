@@ -1,5 +1,5 @@
 
-# URLs that we'll need
+# URLs that are of interest. Most of these are not actually needed
 
 _G1_ = https://github.com/
 _G2_ = git@github.com:
@@ -17,7 +17,7 @@ URL10 = git@github.com:Smithsonian/smax-json.git
 URL11 = git@github.com:valkey-io/valkey.git
 URL12 = git@github.com:redis/hiredis.git
 
-# git software directories we need and build here
+# git software directories we may build here
 GIT_DIRS = git-SMA-Software git-smax-python git-redisx git-SuperNOVAS git-valkey git-xchange git-smax-server git-valkey
 
 # redisx smax
@@ -35,6 +35,13 @@ install:
 	@echo "For a full list, type:  'make help'"
 	@echo ""
 
+##
+# Install target should be:
+# configure
+# make setup
+# make valkey
+# make anaconda
+
 setup:
 	mkdir -p bin lua
 	chmod +x smax-init.sh valkey-init.sh
@@ -48,6 +55,7 @@ install-valkey: git-valkey
 valkey: install-valkey
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
+# this is kind of ridiculous just to get the lua files.
 lua:	git-smax-server lua
 	cp smax-server/lua/*.lua lua
 
@@ -80,8 +88,7 @@ branch:
 	-@for dir in $(GIT_DIRS); do\
 	(echo -n "$$dir: " ;cd $$dir; git branch --show-current); done
 
-# all git targets we need
-# We actually don't need most of these. 
+# all git targets
 
 git-SMA-Software:
 	git clone $(URL1)
