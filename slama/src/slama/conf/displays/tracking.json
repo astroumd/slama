@@ -7,11 +7,14 @@
       "type": "cells",
       "title": "Current Observation",
       "cells": [
+        {"label": "Project ID",  "point": "telescope:project:1:id"},
         {"label": "Source",  "point": "RM:acc1:RM_SOURCE_C34"},
         {"label": "RA (hr)", "point": "RM:acc1:RM_RA_CAT_HOURS_D"},
         {"label": "DEC (deg)", "point": "RM:acc1:RM_DEC_CAT_DEG_D"},
         {"label": "Vel (km/s)", "point": "RM:acc1:RM_SVEL_KMPS_D"},
         {"label": "LO Freq (GHz)", "point": "RM:acc1:RM_LOW_RX_LO_FREQUENCY_D"},
+        {"label": "Integ. Time (s)", "point": "correlator:swarm:integration_time"},
+        {"label": "Integ. Progress (s)", "point": "correlator:swarm:progress"},
         {"label": "LST (hr)", "point": "RM:acc1:RM_LST_HOURS_F"},
         {"label": "UTC (hr)", "point": "RM:acc1:RM_UTC_HR_D"}
       ]

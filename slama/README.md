@@ -1,58 +1,49 @@
-# slama python package
-=======
-This will be a package that can interact with smax-server in a CARMA-like monitor system.
+# SMA monitor, fault, alarm, and web display
 
+This package encompasses python, jinja2, css, JSON, HTML and JavaScript
+required to server and view SMA monitor data.  It also includes a simple
+simulator for end-to-end testing.
 
-Install
---------
+For more info on the server and display design see web/DESIGN.md.
 
-in the $SLAMA directory
+### Install
 
-```pip install -e slama```  (anaconda)
-
-or 
-
-```uv pip install -e slama``` (uv)
-
-or
-
-```hatch shell``` (hatch)
-
-Then try a basic test:
+Assuming you have  python 3.11+ already installed.
 
 ```
-cd src/slama
-uv run test_smax.py
-```
-
-This should write a random float to "weather:forecast:gfs:test_tau" and read it back.
-
-Monitor Points
---------------------
-
-The MonitorPoint, MonitorPointUpdater,and MonitorPointWriter classes are in monitor.py
-
-Plotting
------------
-
-MonitorPlot class in plot.py and basic test in test_plot.py.   
+     cd slama
+     uv sync
+     pip install -e .
 
 ```
-uv run test_plot.py
+
+### Run
+
+1.  Start the server:
 ```
-will open an updating plot.  In another ipython window run
+        uv run uvicorn slama.web.server:app --reload --port 8000
 ```
-from slama.monitor import MonitorPoint, MonitorPointUpdater, MonitorPointWriter
-from smax import SmaxRedisClient
 
-smax_client = SmaxRedisClient('localhost',redis_port=6380)
-mp = MonitorPoint("mytestpoint",value=None,units="K",table="weather:forecast:gfs", key="test_temp")
-mpw = MonitorPointWriter(mp,smax_client)
+2.  Open your browser to ``localhost:8000``. You should see:
 
-mpw.write(a value)
-mp.write(another value)
-etc
+    <img src="docs/source/static/SMAmonitorweb.png" alt="SMA Monitor web page" width="600" height="253">
 
+    Clicking on one of the tiles opens that monitor page.   "Connecting..." will change to "Connected."
+
+3.  Run the observation simulation program. This will simulate a observation:  Flux calibrator, Bandpass cal, gain cal, source, gain cal, source, etc.
+  
 ```
-and watch the plot update!
+        cd src/slama 
+        uv run fakeobs.py
+```
 
+4. You can change the default calibrators and integration time with command line arguments (*not fully tested*).  See
+     
+``` 
+        uv run fakeobs.py --help
+```
+
+
+### Testing
+
+Eventually there will be a pytest suite.  The test code in ``test`` is now outdated.

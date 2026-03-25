@@ -10,80 +10,57 @@ Order of steps is important
      # git checkout autoconf   [for now, soon can be skipped]
 ```
 
+
+
 ## 1. configure
 
-Since this repo has just been placed here, nothing else is in place.
+This is to set up the environment needed for the local valkey db.
 
 ```
      ./configure
-     chmod +x smax-init.sh valkey-init.sh
-     make build1
+     make setup
 ```
-will report some env.var, create some shell startup files.
+will report some env.var, create some shell startup files.  
 
-## 2. python
-
-If you don't have a python environment, or a way to make a virtual environment,
-the `install_anaconda3`, with optionally `wget=wgetc` if you have the caching version
-of wget, or even `wget=curl` will work.   Otherwise just this:
-
-```
-     make build2
-```
-
-Now pick one of the install methods:
-
-###  install slama modules: pip
-
-```
-     pip install -e slama
-```
-
-### install slama modules: uv
-
-to be 
-
-```
-pip install uv -U
-uv init slama
-uv add smax-python
-uv add astropy
-uv python install 3.10
-uv add smax-python
-
-uv pip install -e slama
-
-
-
-```
-
-## 3. load environment
+## 2. load environment
 
 This is normally the entry point for any shell that needs to be using SLAMA:
 
 ```
-     source slama_start.sh
+     source slama_start.sh (or csh)
 ```
 
-and can be started from any directory
+## If you do not need to run your own valkey database, skip to step 4. But we recommend you install a local copy here.
 
-## 4. get the other git directories we (may) need
-
-```
-     make git pull
-```
-
-In addition to grabbing the needed git directories, it also updates them
-
-
-
-## 5. build things we need (note we use valkey now, not redis)
+## 3. Install valkey
+This will download and install valkey and copy some init scripts to `bin`. It will also create aliases with sma specific names to distinguish from the system valkey,  e.g. ``valkey-cli_sma, valkey-server_sma``, etc.
 
 ```
-     make build3
-     make build4
-     make build5
-     make build6
+    make valkey
+```
+
+## 4. Optionally install a local python
+
+If you want a python environment completely distinct from whatever other python installation you 
+have, this step will download and install anaconda.  
+```
+     make anaconda
+```
+For `install_anaconda3` target you can optioall add `wget=wgetc` if you have the caching version
+of wget, or even `wget=curl` will work.  
+
+## 5.  Install uv
+
+```
+pip install uv -U
+```
+
+## 5. Install slama modules
+
+```
+    cd slama
+    uv sync
+    uv pip install -e .
 ```
 
 ## 6. dryrun
@@ -92,61 +69,21 @@ Start valkey, this also runs smax-init. You can check port 6380, or check `valke
 
 ```
      valkey-init.sh
-      ...
-      INFO: Valkey is online. Loading SMA-X helper scripts...
-      > Loading HGetWithMeta. New? (integer) 0
-      ...
-      > Loading DelKey. New? (integer) 1
-
+       ...
+       INFO: Valkey is online. Loading SMA-X helper scripts...
+       > Loading HGetWithMeta. New? (integer) 0
+       ...
+       > Loading DelKey. New? (integer) 1
+```
+Check that valkey is up and running on the correct port
+```
+     valkey-cli_sma -p 6380 ping
+       PONG  
 ```
 
-and testing smax-python: (port is wrong etc.)
-
-```
-      pytest smax-python/tests/test_smax_data_types.py
-
-```
-
-## 7. More testing
+## 7. Running the monitor and display 
 
 Follow slama/README.md
-
-```
-      cd slama/src/slama
-      python test_smax.py
-      ->
-      <class 'smax.smax_data_types.SmaxFloat64'>
-      Input weather:forecast:gfs:test_tau=0.40884870974487453, fetched result 0.40884870974487453 of type float64
-      [ 0.00000000e+00  1.12345000e+00 -1.54321000e+00  1.00000123e+05] float64
-      ^C
-
-
-
-      python test_plot.py
-      -> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
-
-
-```
-
-and in an ipython window
-
-```
-
-from slama.monitor import MonitorPoint, MonitorPointUpdater, MonitorPointWriter
-from smax import SmaxRedisClient
-
-smax_client = SmaxRedisClient('localhost',redis_port=6380)
-mp = MonitorPoint("mytestpoint",value=None,units="K",table="weather:forecast:gfs", key="test_temp")
--> TypeError: MonitorPoint.__init__() got an unexpected keyword argument 'table'
-
-mpw = MonitorPointWriter(mp,smax_client)
-
-mpw.write(a value)
-# note typo 'mp' in earlier version
-
-# etc
-
-```
 
 
 ### Comments

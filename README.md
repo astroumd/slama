@@ -1,46 +1,42 @@
 # slama
 
-bootstrap repo for SMA repos
+Bootstrap repo for SMA monitoring, fault, alarm, and web display systems.
+There are two parts included, a section for those who need to run their own valkey database, a
+and a section for the actual code. 
 
-## repos:
+# Repos of Interest
+ 
+## Required by the code 
 
-* https://github.com/Smithsonian/SMA-Software
+These will be installed with ``uv sync``:
 
 * https://github.com/Smithsonian/smax-python
+* https://github.com/Smithsonian/smax-json
 
-* https://github.com/Smithsonian/smax-server
+## Required if running your own valkey server
+* https://github.com/Smithsonian/smax-server  (only for the lua files!)
+* https://github.com/valkey-io/valkey (the OSS redis)
 
-### other
+### Other
+Not required but may be of interest.
 
+* https://github.com/Smithsonian/SMA-Software
 * https://github.com/Smithsonian/redisx
-
 * https://github.com/Smithsonian/SuperNOVAS
-
 * https://github.com/Smithsonian/supernovas-rpm-spec
-
-* QL reduction pipeline
-
-* pyuvdata
-
-* grafana
-
-* compass (matlab based)
-
-* polaris (matlab based)
-
-* CASA
-
-* pyuvdata https://github.com/RadioAstronomySoftwareGroup/pyuvdata
+* QL reduction pipeline (teuben)
+* pyuvdata:  https://github.com/RadioAstronomySoftwareGroup/pyuvdata
 
 ### related
 
-* https://github.com/valkey-io/valkey (the OSS redis)
 * https://github.com/redis/hiredis (the original redis)
 
 
 ## Installation
 
 Installation is covered in INSTALL.md
+
+**PJT - BELOW NEEDS TO BE UPDATED**
 
 ## Configure
 
@@ -58,7 +54,7 @@ After `configure` has been run:
 
 ## Makefile
 
-make install should
+make install should **BUT IT DOESN'T**
     
  * mkdir ${SLAMA}/bin  ${SLAMA}/lua
  

@@ -9,11 +9,15 @@ Usage:
     uv run fakeobs.py
 """
 
+import argparse
 import random
 import time
+import sys
+
 
 import numpy as np
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
 import astropy.units as u
 from pathlib import Path
 from smax import SmaxRedisClient
@@ -26,9 +30,12 @@ from slama.monitor import (
 
 
 class FakeObs:
-    def __init__(self):
+    def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None):
         self._client = SmaxRedisClient("localhost", redis_port=6380)
-        conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
+        if conf is None:
+            conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
+        else:
+            conf_path = conf
         self._mplist = MonitorPointList.from_file(conf_path)
 
         # Index monitor points by canonical name for quick lookup
@@ -44,13 +51,21 @@ class FakeObs:
             for name, mp in self._mp_by_name.items()
         }
 
-        self._coord = SkyCoord(12.936435, -5.7893122222, unit=(u.hr, u.deg), frame="icrs")
-        self._source = "3c279"
         self._freq = 345.0
         self._vel = 0
-        self.setsource(self._source, self._coord, self._vel, self._freq)
+        self._catalog=catalog
+        self._cached_sources = {}
+        self._source_table = Table.read(self._catalog,comment="#",format='ascii.ipac',fast_reader=False,guess=False,data_start=3)
+        self._source_table.add_index("Source")
+        self._source = "3c279"
+        self._coord = self._get_source(self._source)
+        self.set_source(self._source, self._coord, self._vel, self._freq)
+        self.write("correlator:swarm:progress",0.0)
+        self.write("correlator:swarm:integration_time",0.0)
+        self.write("telescope:project:1:id","DDT 12345")
         self._lst = 10.33813
         self._ut = 15.77354516
+        self._tick_interval = 0.003*u.hr
         self.time()
         self.tsys(init=True)
         self._rh = 3.3428
@@ -60,10 +75,22 @@ class FakeObs:
         self._patm = 626.8255
         self.weather(init=True)
         self.slew(119.6513, 47.281)
-        self._sources = {
-            "ORIMSR": SkyCoord("5:35:14.5 -05:22:30.5", frame="icrs", unit=(u.hr, u.deg)),
-            "3c279": SkyCoord("12:56:11.167 -05:47:21.52", frame="icrs", unit=(u.hr, u.deg)),
-        }
+        print("FakeObs created")
+        
+    def _get_source(self,name):
+        """Get a SkyCoord of a source.  Will return cached SkyCoord if
+        this source has previouly been requested.  Will create and 
+        cache source if not.
+        """
+        NAME = name.upper()
+        if NAME not in self._cached_sources:       
+            row = self._source_table.loc[NAME]
+            s = SkyCoord(f'{row["RA"]} {row["DEC"]}',
+                         frame='icrs',
+                         unit=(u.hr,u.deg),
+                         radial_velocity = row["Velocity"]*u.km/u.s)
+            self._cached_sources[NAME] = s
+        return self._cached_sources[NAME]
 
     def write(self, canonical_name, value):
         """Write a value to a monitor point via the MonitorPointWriter API."""
@@ -82,25 +109,27 @@ class FakeObs:
         except (TypeError, ValueError):
             return value
 
-    def observe(self, source):
+    def observe(self, source, obstime):
+        self.write("correlator:swarm:integration_time",obstime)
         self._source = source
-        self._vel = 5.0
+        self._coord = self._get_source(source)
+        self._vel = self._coord.radial_velocity.to(u.km/u.s).value
         self._freq = 230.538
-        self._coord = self._sources[source]
-        self.setsource(self._source, self._coord, self._vel, self._freq)
+
+        self.set_source(self._source, self._coord, self._vel, self._freq)
         if source == "ORIMSR":
             az = 95
             el = 30
-        elif source == "3c279":
+        else:
             az = 170
             el = 45
 
         azincr = 0.004
         elincr = 0.003
-        timeincr = 0.003
+        timeincr = self.tick_interval.to("hr").value
         self.slew(az, el)
         i = 0
-        while i < 20:
+        while i < 20: # Slew with some nominal rate.
             i += 1
             if el > 89.0:
                 elincr = -0.016
@@ -119,15 +148,30 @@ class FakeObs:
             self.oops()
             self.time()
 
-    def setsource(self, source, coord, vel, freq):
+        # Integrate for the request obstime
+        print("Integrating...")
+        loopmax = obstime/10.0
+        i = 0
+        while i < loopmax:
+            #print(f"progress {i*10}")
+            self.write("correlator:swarm:progress",i*10.0)
+            time.sleep(10.0)
+            i = i+1
+
+    def set_source(self, source, coord, vel, freq):
         self.write("RM:acc1:RM_SOURCE_C34", source)
         self.write("RM:acc1:RM_SVEL_KMPS_D", round(vel, 3))
         self.write("RM:acc1:RM_LOW_RX_LO_FREQUENCY_D", round(freq, 4))
         self.write("RM:acc1:RM_RA_CAT_HOURS_D", round(coord.ra.hour, 5))
         self.write("RM:acc1:RM_DEC_CAT_DEG_D", round(coord.dec.degree, 5))
 
+
+    @property
+    def tick_interval(self):
+        return self._tick_interval
+
     def tick(self):
-        timeincr = 0.003
+        timeincr = self.tick_interval.to("hr").value
         self._ut += timeincr
         self._lst += timeincr
 
@@ -250,6 +294,28 @@ class FakeObs:
 
 
 if __name__ == "__main__":
+    progname = "SMA monitor system simulator"
+    
+    parser = argparse.ArgumentParser(prog=progname)
+    parser.add_argument("--loop", "-l", action="store", help="number of times to loop", default=4, type=int)
+    parser.add_argument("--catalog", "-c", action="store", help="CARMA style catalog file to use for sources", default=None, type=str)
+    parser.add_argument("--fluxcal", "-f", action="store", help="flux calibrator", default="3C273", type=str)
+    parser.add_argument("--bandpass", "-b", action="store", help="bandpass calibrator", default="3C279", type=str)
+    parser.add_argument("--gaincal", "-g", action="store", help="gain calibrator", default="0530+135", type=str)
+    parser.add_argument("--source", "-s", action="store", help="source aka science target", default="ORIMSR", type=str)
+    parser.add_argument("--time", "-t", action="store", help="how long to observe each target, in seconds", default=60, type=float)
+    args = parser.parse_args()
+    
     fo = FakeObs()
-    #fo.observe("3c279")
-    fo.mixerH()
+    print(f"Slewing to Flux Calibrator {args.fluxcal}")
+    fo.observe(args.fluxcal,obstime=args.time)
+    print(f"Slewing to Bandpass Calibrator {args.bandpass}")
+    fo.observe(args.bandpass, obstime=args.time)
+    for i in range(args.loop):
+        print(f"Slewing to Gain Calibrator {args.gaincal}")
+        fo.observe(args.gaincal,obstime=args.time)
+        fo.mixerH()
+        print(f"Slewing to Science Target {args.source}")
+        fo.observe(args.source,obstime=args.time)
+    print(f"Final Gain Calibrator {args.gaincal}")
+    fo.observe(args.gaincal,obstime=args.time)

@@ -1,6 +1,36 @@
 {
 "monitorpoints": [
     {
+      "canonical_name" : "telescope:project:1:id",
+      "description" : "Project ID",
+      "name" : "Project ",
+      "unit": "",
+      "warn_low" : "",
+      "warn_high" : "",
+      "err_low" : "",
+      "err_high" : ""
+    },
+    {
+      "canonical_name" : "correlator:swarm:integration_time",
+      "description" : "Integration Time",
+      "name" : "Integ. Time",
+      "unit": "second",
+      "warn_low" : 0.0,
+      "warn_high" : 9000,
+      "err_low" : -1.0,
+      "err_high" : 10000
+    },
+    {
+      "canonical_name" : "correlator:swarm:progress",
+      "description" : "Integration Progress",
+      "name" : "Integ. Prog.",
+      "unit": "second",
+      "warn_low" : 0.0,
+      "warn_high" : 9000,
+      "err_low" : -1.0,
+      "err_high" : 10000
+    },
+    {
       "canonical_name" : "RM:acc1:RM_TRACK_EL_F",
       "description" : "Elevation Error",
       "name" : "Elevation",
