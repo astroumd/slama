@@ -1,1634 +1,1602 @@
 {
   "antenna": {
-    "1": {
-      "air": {
-        "heater": {
-          "description": "Heater level",
-          "range": "0:10",
-          "size": "1",
-          "smax_type": "int"
-        },
-        "temperature": {
-          "description": "Current actual temperature",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "C"
-        },
-        "temperature_target": {
-          "description": "Target temperature",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "C"
-        },
-        "vent": {
-          "description": "Open fraction",
-          "range": "0:1",
-          "size": "1",
-          "smax_type": "float"
-        }
-      },
-      "astrometric": {
-        "apparent": {
-          "dec": {
-            "description": "Astrometric declination of antenna in ICRS",
+    "__each__": {
+      "over": "1-8",
+      "template": {
+        "air": {
+          "heater": {
+            "description": "Heater level",
+            "range": "0:10",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+            "smax_type": "int"
           },
-          "description": "Topocentric apparent equatorial coordinates",
-          "epoch": {
-            "description": "Coordinate epoch, e.g. 2023.662",
+          "temperature": {
+            "description": "Current actual temperature",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "yr"
+            "smax_type": "float",
+            "unit": "C"
           },
-          "position_angle": {
-            "description": "Parallactic angle",
+          "temperature_target": {
+            "description": "Target temperature",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+            "smax_type": "float",
+            "unit": "C"
           },
-          "ra": {
-            "description": "Topocentric apparent R.A. angle of antenna",
+          "vent": {
+            "description": "Open fraction",
+            "range": "0:1",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
-          },
-          "radial_velocity": {
-            "description": "Radial velocity",
-            "size": "1",
-            "smax_type": "float64",
-            "unit": "m/s"
-          },
-          "unit_vector": {
-            "description": "Apparent equatorial source unit vector (xyz)",
-            "size": "3",
-            "smax_type": "float64"
+            "smax_type": "float"
           }
         },
-        "az": {
-          "description": "Astrometric actual azimuth of antenna",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "commanded": {
+        "astrometric": {
+          "apparent": {
+            "dec": {
+              "description": "Astrometric declination of antenna in ICRS",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "description": "Topocentric apparent equatorial coordinates",
+            "epoch": {
+              "description": "Coordinate epoch, e.g. 2023.662",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "yr"
+            },
+            "position_angle": {
+              "description": "Parallactic angle",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "ra": {
+              "description": "Topocentric apparent R.A. angle of antenna",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "radial_velocity": {
+              "description": "Radial velocity",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "m/s"
+            },
+            "unit_vector": {
+              "description": "Apparent equatorial source unit vector (xyz)",
+              "size": "3",
+              "smax_type": "float64"
+            }
+          },
           "az": {
-            "description": "Commanded astrometric azimuth angle",
+            "description": "Astrometric actual azimuth of antenna",
             "size": "1",
             "smax_type": "float64",
             "unit": "rad"
           },
-          "description": "Commanded position",
+          "commanded": {
+            "az": {
+              "description": "Commanded astrometric azimuth angle",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "description": "Commanded position",
+            "el": {
+              "description": "Commanded astrometric elevation angle",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "position_angle": {
+              "description": "Equatorial position angle at the commanded position",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            }
+          },
+          "description": "Astrometric coordinates for antenna",
           "el": {
-            "description": "Commanded astrometric elevation angle",
+            "description": "Astrometric actual elevation of antenna",
             "size": "1",
             "smax_type": "float64",
             "unit": "rad"
           },
-          "position_angle": {
-            "description": "Equatorial position angle at the commanded position",
+          "icrs": {
+            "dec": {
+              "description": "Astrometric declination of antenna in ICRS",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "description": "ICRS coordinates",
+            "ra": {
+              "description": "Topocentric apparent R.A. angle of antenna",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "unit_vector": {
+              "description": "ICRS source unit vector (xyz)",
+              "size": "3",
+              "smax_type": "float64"
+            }
+          },
+          "lst": {
+            "description": "Local sidereal time angle for antenna",
             "size": "1",
             "smax_type": "float64",
             "unit": "rad"
+          },
+          "mjd": {
+            "description": "Modified Julian Date for when coordinates are valid",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "day"
+          },
+          "utc": {
+            "description": "UNIX time (UTC) for when coordinates are valid",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "s"
           }
         },
-        "description": "Astrometric coordinates for antenna",
-        "el": {
-          "description": "Astrometric actual elevation of antenna",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
+        "chiller": {
+          "description": "chiller"
         },
-        "icrs": {
-          "dec": {
-            "description": "Astrometric declination of antenna in ICRS",
+        "chopper": {
+          "chopping": {
+            "description": "Whether we are currently chopping",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+            "smax_type": "boolean"
           },
-          "description": "ICRS coordinates",
-          "ra": {
-            "description": "Topocentric apparent R.A. angle of antenna",
+          "chopping_control": {
+            "description": "Commanded value whether we should be chopping",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+            "smax_type": "boolean"
           },
-          "unit_vector": {
-            "description": "ICRS source unit vector (xyz)",
+          "description": "subreflector",
+          "error_state": {
+            "description": "Error description, or empty string if OK.",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "init_control": {
+            "description": "",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "init_time": {
+            "description": "Unix timestamp of time when initialized for x, y, z",
             "size": "3",
-            "smax_type": "float64"
+            "smax_type": "int"
+          },
+          "position": {
+            "description": "Current x, y, z position",
+            "size": "3",
+            "smax_type": "float",
+            "unit": "mm"
+          },
+          "position_control": {
+            "description": "Commanded x, y, z position",
+            "size": "3",
+            "smax_type": "float",
+            "unit": "mm"
+          },
+          "reset_control": {
+            "description": "",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "reset_time": {
+            "description": "Unix timestamp of last power reset",
+            "size": "1",
+            "smax_type": "int"
+          },
+          "status_bits": {
+            "description": "",
+            "size": "1",
+            "smax_type": "int"
+          },
+          "tilt": {
+            "description": "Actual static tilt angle",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "arcsec"
+          },
+          "tilt_control": {
+            "description": "Commanded static tilt angle",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "arcsec"
           }
         },
-        "lst": {
-          "description": "Local sidereal time angle for antenna",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "mjd": {
-          "description": "Modified Julian Date for when coordinates are valid",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "day"
-        },
-        "utc": {
-          "description": "UNIX time (UTC) for when coordinates are valid",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "s"
-        }
-      },
-      "chiller": {
-        "description": "chiller"
-      },
-      "chopper": {
-        "chopping": {
-          "description": "Whether we are currently chopping",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "chopping_control": {
-          "description": "Commanded value whether we should be chopping",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "description": "subreflector",
-        "error_state": {
-          "description": "Error description, or empty string if OK.",
+        "comment": {
+          "description": "User comment on telescope state or current designated usage. E.g.: \u201ccooling\u201d, \u201ctesting\u201d, engineer name, or empty string.",
           "size": "1",
           "smax_type": "string"
         },
-        "init_control": {
+        "dds": {
           "description": "",
-          "size": "1",
-          "smax_type": "boolean"
+          "size": "",
+          "smax_type": ""
         },
-        "init_time": {
-          "description": "Unix timestamp of time when initialized for x, y, z",
-          "size": "3",
-          "smax_type": "int"
-        },
-        "position": {
-          "description": "Current x, y, z position",
-          "size": "3",
-          "smax_type": "float",
-          "unit": "mm"
-        },
-        "position_control": {
-          "description": "Commanded x, y, z position",
-          "size": "3",
-          "smax_type": "float",
-          "unit": "mm"
-        },
-        "reset_control": {
-          "description": "",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "reset_time": {
-          "description": "Unix timestamp of last power reset",
-          "size": "1",
-          "smax_type": "int"
-        },
-        "status_bits": {
-          "description": "",
-          "size": "1",
-          "smax_type": "int"
-        },
-        "tilt": {
-          "description": "Actual static tilt angle",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "arcsec"
-        },
-        "tilt_control": {
-          "description": "Commanded static tilt angle",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "arcsec"
-        }
-      },
-      "comment": {
-        "description": "User comment on telescope state or current designated usage. E.g.: “cooling”, “testing”, engineer name, or empty string.",
-        "size": "1",
-        "smax_type": "string"
-      },
-      "dds": {
-        "description": "",
-        "size": "",
-        "smax_type": ""
-      },
-      "deice": {
-        "description": "De-ice sub-system",
-        "level": {
-          "description": "Deice level",
-          "size": "1",
-          "smax_type": "int"
-        }
-      },
-      "drive": {
-        "az": {
-          "cmd_pos": {
-            "description": "Commanded encoder position",
+        "deice": {
+          "description": "De-ice sub-system",
+          "level": {
+            "description": "Deice level",
             "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "cmd_vel": {
-            "description": "Commanded velocity",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
-          },
-          "currents": {
-            "description": "Drive current(s). (2 readings for azimuth, 1 for elevation)",
-            "size": "1+",
-            "smax_type": "float",
-            "unit": "A"
-          },
-          "encoder": {
-            "description": "Current actual encoder position",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "fault_status": {
-            "description": "Fault description or empty string if no fault.",
-            "size": "1",
-            "smax_type": "string"
-          },
-          "is_fault": {
-            "description": "Whether the drive has a fault state",
-            "size": "1",
-            "smax_type": "boolean"
-          },
-          "is_online": {
-            "description": "Whether the drive is currently on",
-            "size": "1",
-            "smax_type": "boolean"
-          },
-          "position": {
-            "description": "Current true azimuth and elevation angles",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "status": {
-            "description": "Drive status",
-            "size": "1",
-            "smax_type": "string"
-          },
-          "tracking_error": {
-            "description": "Tracking error",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "velocity": {
-            "description": "Current telescope motion",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
+            "smax_type": "int"
           }
         },
-        "description": "Az/El drives",
-        "el": {
-          "description": "Elevation drive"
+        "drive": {
+          "az": {
+            "cmd_pos": {
+              "description": "Commanded encoder position",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "cmd_vel": {
+              "description": "Commanded velocity",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            },
+            "currents": {
+              "description": "Drive current(s). (2 readings for azimuth, 1 for elevation)",
+              "size": "1+",
+              "smax_type": "float",
+              "unit": "A"
+            },
+            "encoder": {
+              "description": "Current actual encoder position",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "fault_status": {
+              "description": "Fault description or empty string if no fault.",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "is_fault": {
+              "description": "Whether the drive has a fault state",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "is_online": {
+              "description": "Whether the drive is currently on",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "position": {
+              "description": "Current true azimuth and elevation angles",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "status": {
+              "description": "Drive status",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "tracking_error": {
+              "description": "Tracking error",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "velocity": {
+              "description": "Current telescope motion",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            }
+          },
+          "description": "Az/El drives",
+          "el": {
+            "description": "Elevation drive"
+          },
+          "is_irig_locked": {
+            "description": "Whether the servo is locked to the IRIG time.",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "scb_status_bits": {
+            "description": "SBC status bits",
+            "size": "1",
+            "smax_type": "int32"
+          }
         },
-        "is_irig_locked": {
-          "description": "Whether the servo is locked to the IRIG time.",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "scb_status_bits": {
-          "description": "SBC status bits",
-          "size": "1",
-          "smax_type": "int32"
-        }
-      },
-      "if": {
-        "1": {
-          "bdc": {
-            "1": {
-              "attenuator": {
-                "description": "attenuator",
-                "v_det": {
-                  "description": "actual detector voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
+        "if": {
+          "1": {
+            "bdc": {
+              "1": {
+                "attenuator": {
+                  "description": "attenuator",
+                  "v_det": {
+                    "description": "actual detector voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_out": {
+                    "description": "Nominal control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_readback": {
+                    "description": "Readback control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_target": {
+                    "description": "Detector target voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  }
                 },
-                "v_out": {
-                  "description": "Nominal control voltage",
+                "f_hi": {
+                  "description": "High-end of IF bandwidth for this BDC",
                   "size": "1",
                   "smax_type": "float",
-                  "unit": "V"
+                  "unit": "Hz"
                 },
-                "v_readback": {
-                  "description": "Readback control voltage",
+                "f_lo": {
+                  "description": "Low-end of IF bandwidth for this BDC",
                   "size": "1",
                   "smax_type": "float",
-                  "unit": "V"
+                  "unit": "Hz"
                 },
-                "v_target": {
-                  "description": "Detector target voltage",
+                "id": {
+                  "description": "ID, e.g. \u201c4-8\u201d",
                   "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
+                  "smax_type": "string"
                 }
               },
-              "f_hi": {
-                "description": "High-end of IF bandwidth for this BDC",
+              "1\u20268": {
+                "description": "Data on individual BDC units"
+              },
+              "description": "Block downconverters for this antenna IF chain"
+            },
+            "c1dc": {
+              "1": {
+                "alarm": {
+                  "description": "?",
+                  "size": "1",
+                  "smax_type": "?"
+                },
+                "attenuator": {
+                  "description": "attenuator",
+                  "rms_det": {
+                    "description": "RMS detector voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_det": {
+                    "description": "actual detector voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_out": {
+                    "description": "Nominal control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_readback": {
+                    "description": "Readback control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_target": {
+                    "description": "Detector target voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  }
+                },
+                "if_hi": {
+                  "description": "High-end of IF bandwidth for this BDC",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "Hz"
+                },
+                "if_lo": {
+                  "description": "Low-end of IF bandwidth for this BDC",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "Hz"
+                }
+              },
+              "description": "First downconverter"
+            },
+            "cabinspec": {},
+            "contdet": {
+              "description": "Continuum detector data",
+              "power": {
+                "description": "A sequence of the most recent 10ms samples",
+                "size": "100",
+                "smax_type": "float",
+                "unit": "W"
+              }
+            },
+            "processor": {
+              "atten": {
+                "description": "Current actual RF attenuation",
                 "size": "1",
                 "smax_type": "float",
-                "unit": "Hz"
+                "unit": "dBc"
               },
-              "f_lo": {
-                "description": "Low-end of IF bandwidth for this BDC",
+              "atten_control": {
+                "description": "Requested RF attenuation (0-31.5 dB in 0.5 dB increments)",
                 "size": "1",
                 "smax_type": "float",
-                "unit": "Hz"
+                "unit": "dBc"
               },
-              "id": {
-                "description": "ID, e.g. “4-8”",
+              "description": "IF processor data",
+              "input": {
+                "description": "Current IF input port index (1-4)",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "input_control": {
+                "description": "Requested IF input port index (1-4)",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "power": {
+                "description": "Current power level",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBm"
+              }
+            },
+            "scanspec": {
+              "cal_channel_adc": {
+                "description": "The axis description for `cal`\\_`channel_adc` array",
+                "size": "\\<*n*\\>",
+                "smax_type": "int16"
+              },
+              "cal_duration": {
+                "description": "The duration of the calibrating ambient measurement in seconds.",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "channel_adc": {
+                "description": "Array of raw power measurements, with \\<*n*\\> elements. See coordinate system description in [\\<coords\\>:antenna:1:if:1:channel\\_adc](#\\<coords\\>:antenna:1:if:1:channel_adc)",
+                "size": "\\<*n*\\>",
+                "smax_type": "int16"
+              },
+              "description": "Scanning spectrometer data",
+              "gain": {
+                "description": "The voltage to the variable gain amplifier \\[-4,2\\] non-linear.  2 is the highest gain",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "integration_time": {
+                "description": "Scan duration in seconds",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "s"
+              },
+              "is_tsys_valid": {
+                "description": "1 if the Tsys data is valid, or else 0",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "name": {
+                "description": "E.g. \u201cIF frequency\u201d",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "ref_index": {
+                "description": "0-based index of element, for which we\u2019ll define a reference coordinate value",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "ref_value": {
+                "description": "Value (in the defined axis `unit`).",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "scene": {
+                "description": "\u201cAmbient\u201d, \u201cSky\u201d, or \u201cunknown\u201d (we may add allowed values as necessary)",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "step": {
+                "description": "The spacing of measurements in consecutive array bins in the defined `unit`.",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "tsys": {
+                "description": "The axis description for `tsys` array",
+                "size": "\\<*n*\\>",
+                "smax_type": "float"
+              },
+              "unit": {
+                "description": "E.g. \u201cHz\u201d",
                 "size": "1",
                 "smax_type": "string"
               }
             },
-            "1…8": {
-              "description": "Data on individual BDC units"
-            },
-            "description": "Block downconverters for this antenna IF chain"
-          },
-          "c1dc": {
-            "1": {
-              "alarm": {
-                "description": "?",
-                "size": "1",
-                "smax_type": "?"
-              },
-              "attenuator": {
-                "description": "attenuator",
-                "rms_det": {
-                  "description": "RMS detector voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                },
-                "v_det": {
-                  "description": "actual detector voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                },
-                "v_out": {
-                  "description": "Nominal control voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                },
-                "v_readback": {
-                  "description": "Readback control voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                },
-                "v_target": {
-                  "description": "Detector target voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                }
-              },
-              "if_hi": {
-                "description": "High-end of IF bandwidth for this BDC",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "Hz"
-              },
-              "if_lo": {
-                "description": "Low-end of IF bandwidth for this BDC",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "Hz"
-              }
-            },
-            "description": "First downconverter"
-          },
-          "cabinspec": { },
-          "contdet": {
-            "description": "Continuum detector data",
-            "power": {
-              "description": "A sequence of the most recent 10ms samples",
-              "size": "100",
-              "smax_type": "float",
-              "unit": "W"
-            }
-          },
-          "processor": {
-            "atten": {
-              "description": "Current actual RF attenuation",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "dBc"
-            },
-            "atten_control": {
-              "description": "Requested RF attenuation (0-31.5 dB in 0.5 dB increments)",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "dBc"
-            },
-            "description": "IF processor data",
-            "input": {
-              "description": "Current IF input port index (1-4)",
-              "size": "1",
-              "smax_type": "int"
-            },
-            "input_control": {
-              "description": "Requested IF input port index (1-4)",
-              "size": "1",
-              "smax_type": "int"
-            },
-            "power": {
-              "description": "Current power level",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "dBm"
-            }
-          },
-          "scanspec": {
-            "cal_channel_adc": {
-              "description": "The axis description for `cal`\\_`channel_adc` array",
-              "size": "\\<*n*\\>",
-              "smax_type": "int16"
-            },
-            "cal_duration": {
-              "description": "The duration of the calibrating ambient measurement in seconds.",
-              "size": "1",
-              "smax_type": "float"
-            },
-            "channel_adc": {
-              "description": "Array of raw power measurements, with \\<*n*\\> elements. See coordinate system description in [\\<coords\\>:antenna:1:if:1:channel\\_adc](#\\<coords\\>:antenna:1:if:1:channel_adc)",
-              "size": "\\<*n*\\>",
-              "smax_type": "int16"
-            },
-            "description": "Scanning spectrometer data",
-            "gain": {
-              "description": "The voltage to the variable gain amplifier \\[-4,2\\] non-linear.  2 is the highest gain",
-              "size": "1",
-              "smax_type": "float"
-            },
-            "integration_time": {
-              "description": "Scan duration in seconds",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "s"
-            },
-            "is_tsys_valid": {
-              "description": "1 if the Tsys data is valid, or else 0",
-              "size": "1",
-              "smax_type": "boolean"
-            },
-            "name": {
-              "description": "E.g. “IF frequency”",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "ref_index": {
-              "description": "0-based index of element, for which we’ll define a reference coordinate value",
-              "size": "1",
-              "smax_type": "float"
-            },
-            "ref_value": {
-              "description": "Value (in the defined axis `unit`).",
-              "size": "1",
-              "smax_type": "float"
-            },
-            "scene": {
-              "description": "“Ambient”, “Sky”, or “unknown” (we may add allowed values as necessary)",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "step": {
-              "description": "The spacing of measurements in consecutive array bins in the defined `unit`.",
-              "size": "1",
-              "smax_type": "float"
-            },
-            "tsys": {
-              "description": "The axis description for `tsys` array",
-              "size": "\\<*n*\\>",
-              "smax_type": "float"
-            },
-            "unit": {
-              "description": "E.g. “Hz”",
+            "source": {
+              "description": "\u2019receiver:a\u2019 or \u2018receiver:b\u2019 if RxA / RxB,  or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
               "size": "1",
               "smax_type": "string"
             }
           },
-          "source": {
-            "description": "’receiver:a’ or ‘receiver:b’ if RxA / RxB,  or “noise:1” if connected to noise box 1, or “noise:2”, or “none”, or “unknown”",
-            "size": "1",
-            "smax_type": "string"
-          }
+          "description": "IF chains"
         },
-        "description": "IF chains"
-      },
-      "is_online": {
-        "description": "1 if the antenna is currently usable, or else 0\\.",
-        "size": "1",
-        "smax_type": "boolean"
-      },
-      "is_scanning": {
-        "description": "1 if the antenna is currently scanning, or else 0\\. See `scan` for more info.",
-        "size": "1",
-        "smax_type": "boolean"
-      },
-      "lo": {
-        "1": {
-          "ref_109_mhz": {
-            "control_voltage": {
-              "description": "Attenuator voltage",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
-            },
-            "description": "109 MHz frequency reference",
-            "level": {
-              "description": "actual output power level",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
-            },
-            "level_control": {
-              "description": "target output power level",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
-            }
-          },
-          "ref_200_mhz": {
-            "description": "200 MHz frequency reference"
-          },
-          "yig": {
-            "attenuator": {
+        "is_online": {
+          "description": "1 if the antenna is currently usable, or else 0\\.",
+          "size": "1",
+          "smax_type": "boolean"
+        },
+        "is_scanning": {
+          "description": "1 if the antenna is currently scanning, or else 0\\. See `scan` for more info.",
+          "size": "1",
+          "smax_type": "boolean"
+        },
+        "lo": {
+          "1": {
+            "ref_109_mhz": {
               "control_voltage": {
-                "description": "Attenuator control voltage",
+                "description": "Attenuator voltage",
                 "size": "1",
                 "smax_type": "float",
                 "unit": "V"
               },
-              "description": "Attenuator data",
+              "description": "109 MHz frequency reference",
               "level": {
-                "description": "Actual readback voltage",
+                "description": "actual output power level",
                 "size": "1",
                 "smax_type": "float",
                 "unit": "V"
               },
               "level_control": {
-                "description": "Requested readback voltage",
+                "description": "target output power level",
                 "size": "1",
                 "smax_type": "float",
                 "unit": "V"
               }
             },
-            "description": "Antenna YIG for this LO chain",
-            "is_locked": {
-              "description": "Whether the MRG is PLL locked",
-              "size": "1",
-              "smax_type": "boolean"
+            "ref_200_mhz": {
+              "description": "200 MHz frequency reference"
             },
-            "mrg_index": {
-              "description": "1-based index of associated MRG",
-              "size": "1",
-              "smax_type": "int"
-            },
-            "pll_sideband": {
-              "description": "“USB” or “LSB”, or “unknown”",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "requested_rf_power": {
-              "description": "Requested RF power level",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "dBm"
-            },
-            "rf_power": {
-              "description": "Measured RF power level",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "dBm"
-            },
-            "v_quad": {
-              "description": "quad voltage",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
-            },
-            "v_stress": {
-              "description": "stress voltage",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
-            },
-            "v_tune": {
-              "description": "tuning voltage",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "V"
+            "yig": {
+              "attenuator": {
+                "control_voltage": {
+                  "description": "Attenuator control voltage",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "V"
+                },
+                "description": "Attenuator data",
+                "level": {
+                  "description": "Actual readback voltage",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "V"
+                },
+                "level_control": {
+                  "description": "Requested readback voltage",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "V"
+                }
+              },
+              "description": "Antenna YIG for this LO chain",
+              "is_locked": {
+                "description": "Whether the MRG is PLL locked",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "mrg_index": {
+                "description": "1-based index of associated MRG",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "pll_sideband": {
+                "description": "\u201cUSB\u201d or \u201cLSB\u201d, or \u201cunknown\u201d",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "requested_rf_power": {
+                "description": "Requested RF power level",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBm"
+              },
+              "rf_power": {
+                "description": "Measured RF power level",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBm"
+              },
+              "v_quad": {
+                "description": "quad voltage",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "V"
+              },
+              "v_stress": {
+                "description": "stress voltage",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "V"
+              },
+              "v_tune": {
+                "description": "tuning voltage",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "V"
+              }
             }
+          },
+          "1 \u2026 2": {
+            "description": "Data for each LO chain"
+          },
+          "description": "LO chains"
+        },
+        "optel": {
+          "description": "optical telescope"
+        },
+        "optics": {
+          "description": "optics configuration",
+          "load_assembly": {
+            "ambient_load": {
+              "cal_state": {
+                "description": "Current calibration state (1: calibrated, 0: uncalibrated)",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "cal_state_control": {
+                "description": "Command to calibrate",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "description": "Information on the load assembly",
+              "encoder": {
+                "description": "encoder reading",
+                "size": "1",
+                "smax_type": "int",
+                "unit": "counts"
+              },
+              "error_state": {
+                "description": "Error description, or empty string if OK.",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "is_valid": {
+                "description": "Whether the load is currently in a well-defined state (e.g. not moving)",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "state": {
+                "description": "Current steady state \u2018in\u2019, \u2018out\u2019, or \u2018unknown\u2019 (lower-case)",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "state_control": {
+                "description": "Commanded state \u2018In\u2019, or \u2018out\u2019 (lower-case)",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "temperature": {
+                "description": "Current load temperature",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "C"
+              }
+            },
+            "waveplate_230": {
+              "description": "Information on the 230 GHz waveplate",
+              "encoder": {
+                "description": "Current encoder position",
+                "size": "1",
+                "smax_type": "int",
+                "unit": "counts"
+              },
+              "encoder_control": {
+                "description": "Commanded encoder position",
+                "size": "1",
+                "smax_type": "int",
+                "unit": "counts"
+              },
+              "error_state": {
+                "description": "Error description, or empty string if OK.",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "is_valid": {
+                "description": "Whether the waveplate is currently in a well-defined state (e.g. not moving)",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "state": {
+                "description": "\u2018L\u2019, \u2018R\u2019, \u2018out\u2019, or \u2018unknown\u2019",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "state_control": {
+                "description": "\u2018L\u2019, \u2018R\u2019, or \u2018out\u2019.",
+                "size": "1",
+                "smax_type": "string"
+              }
+            },
+            "waveplate_345": {}
+          },
+          "selector": {
+            "description": "Cabin receiver selector optics configuration"
           }
         },
-        "1 … 2": {
-          "description": "Data for each LO chain"
+        "pad": {
+          "description": "Pad ID",
+          "size": "1",
+          "smax_type": "int"
         },
-        "description": "LO chains"
-      },
-      "optel": {
-        "description": "optical telescope"
-      },
-      "optics": {
-        "description": "optics configuration",
-        "load_assembly": {
-          "ambient_load": {
-            "cal_state": {
-              "description": "Current calibration state (1: calibrated, 0: uncalibrated)",
-              "size": "1",
-              "smax_type": "int"
-            },
-            "cal_state_control": {
-              "description": "Command to calibrate",
-              "size": "1",
-              "smax_type": "int"
-            },
-            "description": "Information on the load assembly",
-            "encoder": {
-              "description": "encoder reading",
-              "size": "1",
-              "smax_type": "int",
-              "unit": "counts"
-            },
-            "error_state": {
-              "description": "Error description, or empty string if OK.",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "is_valid": {
-              "description": "Whether the load is currently in a well-defined state (e.g. not moving)",
-              "size": "1",
-              "smax_type": "boolean"
-            },
-            "state": {
-              "description": "Current steady state ‘in’, ‘out’, or ‘unknown’ (lower-case)",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "state_control": {
-              "description": "Commanded state ‘In’, or ‘out’ (lower-case)",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "temperature": {
-              "description": "Current load temperature",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "C"
-            }
-          },
-          "waveplate_230": {
-            "description": "Information on the 230 GHz waveplate",
-            "encoder": {
-              "description": "Current encoder position",
-              "size": "1",
-              "smax_type": "int",
-              "unit": "counts"
-            },
-            "encoder_control": {
-              "description": "Commanded encoder position",
-              "size": "1",
-              "smax_type": "int",
-              "unit": "counts"
-            },
-            "error_state": {
-              "description": "Error description, or empty string if OK.",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "is_valid": {
-              "description": "Whether the waveplate is currently in a well-defined state (e.g. not moving)",
-              "size": "1",
-              "smax_type": "boolean"
-            },
-            "state": {
-              "description": "‘L’, ‘R’, ‘out’, or ‘unknown’",
-              "size": "1",
-              "smax_type": "string"
-            },
-            "state_control": {
-              "description": "‘L’, ‘R’, or ‘out’.",
-              "size": "1",
-              "smax_type": "string"
-            }
-          },
-          "waveplate_345": { }
-        },
-        "selector": {
-          "description": "Cabin receiver selector optics configuration"
-        }
-      },
-      "pad": {
-        "description": "Pad ID",
-        "size": "1",
-        "smax_type": "int"
-      },
-      "pointing": {
-        "chopper": {
-          "az": {
-            "description": "Azimuth correction parameters"
-          },
-          "description": "chopper tilt",
-          "el": {
-            "description": "Elevation correction parameters"
-          }
-        },
-        "correction": {
-          "az": {
-            "description": "Aggregated azimuth correction",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "boresight": {
-            "az": {
-              "description": "pointing tilt correction in azimuth",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "description": "Pointing corrections due to receiver boresight",
-            "el": {
-              "description": "pointing tilt correction in elevation",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            }
-          },
-          "description": "Pointing corrections and terms",
-          "el": {
-            "description": "Aggregated elevation correction",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "focus": {
+        "pointing": {
+          "chopper": {
             "az": {
               "description": "Azimuth correction parameters"
             },
-            "description": "Pointing corrections due to focus offsets",
+            "description": "chopper tilt",
             "el": {
               "description": "Elevation correction parameters"
             }
           },
-          "model": {
+          "correction": {
             "az": {
-              "description": "Azimuth correction parameters"
-            },
-            "description": "Pointing corrections due to pointing model",
-            "el": {
-              "description": "Elevation correction parameters"
-            }
-          },
-          "refraction": {
-            "description": "Applied refraction correction",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "tilt": {
-            "az": {
-              "description": "pointing tilt correction in azimuth",
+              "description": "Aggregated azimuth correction",
               "size": "1",
               "smax_type": "float",
               "unit": "rad"
             },
-            "description": "Pointing corrections doe to tilt",
-            "el": {
-              "description": "pointing tilt correction in elevation",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "model": {
+            "boresight": {
               "az": {
                 "description": "pointing tilt correction in azimuth",
                 "size": "1",
                 "smax_type": "float",
                 "unit": "rad"
               },
-              "description": "Pointing corrections from tilt model",
+              "description": "Pointing corrections due to receiver boresight",
               "el": {
                 "description": "pointing tilt correction in elevation",
                 "size": "1",
                 "smax_type": "float",
                 "unit": "rad"
               }
-            }
-          }
-        },
-        "description": "telescope pointing model & corrections",
-        "is_tilt_corrected": {
-          "description": "– 1 if pointing is adjusted for measured tilt, or else 0\\.",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "model": {
-          "az": {
-            "collimation": {
-              "description": "",
+            },
+            "description": "Pointing corrections and terms",
+            "el": {
+              "description": "Aggregated elevation correction",
               "size": "1",
               "smax_type": "float",
               "unit": "rad"
             },
-            "description": "Azimuth correction parameters",
-            "el_tilt": {
-              "description": "",
+            "focus": {
+              "az": {
+                "description": "Azimuth correction parameters"
+              },
+              "description": "Pointing corrections due to focus offsets",
+              "el": {
+                "description": "Elevation correction parameters"
+              }
+            },
+            "model": {
+              "az": {
+                "description": "Azimuth correction parameters"
+              },
+              "description": "Pointing corrections due to pointing model",
+              "el": {
+                "description": "Elevation correction parameters"
+              }
+            },
+            "refraction": {
+              "description": "Applied refraction correction",
               "size": "1",
               "smax_type": "float",
               "unit": "rad"
             },
-            "el_tilt_cos": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "el_tilt_cos2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "el_tilt_sin": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "el_tilt_sin2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_cos": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_cos2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_cos3": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_sin": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_sin2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "enc_sin3": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "offset": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "rms": {
-              "description": "Model fit RMS in azimuth",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
+            "tilt": {
+              "az": {
+                "description": "pointing tilt correction in azimuth",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "description": "Pointing corrections doe to tilt",
+              "el": {
+                "description": "pointing tilt correction in elevation",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "model": {
+                "az": {
+                  "description": "pointing tilt correction in azimuth",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "rad"
+                },
+                "description": "Pointing corrections from tilt model",
+                "el": {
+                  "description": "pointing tilt correction in elevation",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "rad"
+                }
+              }
             }
           },
-          "el": {
-            "az_tilt_cos": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "az_tilt_cos2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "az_tilt_sin": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "az_tilt_sin2": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "description": "Elevation correction parameters",
-            "offset": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "rms": {
-              "description": "Model fit RMS in azimuth",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            },
-            "sag": {
-              "description": "",
-              "size": "1",
-              "smax_type": "float",
-              "unit": "rad"
-            }
-          },
-          "is_optical": {
-            "description": "– true (1) if optical pointing model, or false (0) if radio model.",
+          "description": "telescope pointing model & corrections",
+          "is_tilt_corrected": {
+            "description": "\u2013 1 if pointing is adjusted for measured tilt, or else 0\\.",
             "size": "1",
             "smax_type": "boolean"
           },
-          "model_date": {
-            "description": "UNIX time of when the model was derived.",
-            "size": "1",
-            "smax_type": "int64"
+          "model": {
+            "az": {
+              "collimation": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "description": "Azimuth correction parameters",
+              "el_tilt": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "el_tilt_cos": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "el_tilt_cos2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "el_tilt_sin": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "el_tilt_sin2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_cos": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_cos2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_cos3": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_sin": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_sin2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "enc_sin3": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "offset": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "rms": {
+                "description": "Model fit RMS in azimuth",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              }
+            },
+            "el": {
+              "az_tilt_cos": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "az_tilt_cos2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "az_tilt_sin": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "az_tilt_sin2": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "description": "Elevation correction parameters",
+              "offset": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "rms": {
+                "description": "Model fit RMS in azimuth",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "sag": {
+                "description": "",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "rad"
+              }
+            },
+            "is_optical": {
+              "description": "\u2013 true (1) if optical pointing model, or false (0) if radio model.",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "model_date": {
+              "description": "UNIX time of when the model was derived.",
+              "size": "1",
+              "smax_type": "int64"
+            }
+          },
+          "offset": {
+            "az": {
+              "description": "User defined pointing offset in azimuth",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "description": "User specified pointing offsets",
+            "el": {
+              "description": "User defined pointing offset  in elevation",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            }
+          },
+          "receiver": {
+            "boresight": {
+              "description": "Receiver boresight smax_type: \u2018none\u2019, \u2018RxA\u2019, or \u2018RxB\u2019, \u2018RxA+RxB\u2019",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "description": "Receiver pointing parameters",
+            "id": {
+              "description": "Receiver ID for which pointing is corrected. E.g. \u201c230\u201d or \u201c230+345\u201d",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "x": {
+              "description": "Feed offset A1",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "y": {
+              "description": "Feed offset A2",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            }
           }
         },
-        "offset": {
-          "az": {
-            "description": "User defined pointing offset in azimuth",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "description": "User specified pointing offsets",
-          "el": {
-            "description": "User defined pointing offset  in elevation",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          }
+        "project_index": {
+          "description": "0 if not in project, else 1 or 2 matching that in `telescope:project`",
+          "size": "1",
+          "smax_type": "string"
         },
         "receiver": {
-          "boresight": {
-            "description": "Receiver boresight smax_type: ‘none’, ‘RxA’, or ‘RxB’, ‘RxA+RxB’",
-            "size": "1",
-            "smax_type": "string"
-          },
-          "description": "Receiver pointing parameters",
-          "id": {
-            "description": "Receiver ID for which pointing is corrected. E.g. “230” or “230+345”",
-            "size": "1",
-            "smax_type": "string"
-          },
-          "x": {
-            "description": "Feed offset A1",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "y": {
-            "description": "Feed offset A2",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          }
-        }
-      },
-      "project_index": {
-        "description": "0 if not in project, else 1 or 2 matching that in `telescope:project`",
-        "size": "1",
-        "smax_type": "string"
-      },
-      "receiver": {
-        "H": {
-          "description": "Information on the H-band cartridge",
-          "lo_plate": {
-            "mixer": {
-              "1": {
-                "109_control": {
-                  "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
-                  "range": "1:2",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "109_source": {
-                  "description": "1-based index of the 109 MHz signal used to drive the LO",
-                  "range": "1:2",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "attenuator": {
-                  "description": "Actual attenuator control DAC counts.",
-                  "range": "0:4095",
-                  "size": "1",
-                  "smax_type": "int16"
-                },
-                "attenuator_control": {
-                  "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
-                  "range": "0:4095",
-                  "size": "1",
-                  "smax_type": "int16"
-                },
-                "frequency": {
-                  "description": "Estimated actual frequency of current tuning.",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "Hz"
-                },
-                "frequency_set": {
-                  "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "Hz"
-                },
-                "pll": {
-                  "bandpass_power": {
-                    "description": "Bandpass filter power level",
-                    "size": "1",
-                    "smax_type": "float",
-                    "unit": "?"
-                  },
-                  "description": "PLL data",
-                  "gain": {
-                    "description": "Actual PLL gain value",
-                    "range": "0:255",
-                    "size": "1",
-                    "smax_type": "int16"
-                  },
-                  "gain_control": {
-                    "description": "Requested PLL gain value",
-                    "range": "0:255",
-                    "size": "1",
-                    "smax_type": "int16"
-                  },
-                  "is_locked": {
-                    "description": "Whether the PLL is locked",
-                    "size": "1",
-                    "smax_type": "boolean"
-                  },
-                  "lock_command": {
-                    "description": "Command to lock LO to desired frequency and PLL sideband. (Uses **`lo:frequency_set`**, and **`lo:pll:sideband_set`**, and updates **`lo:frequency`**`, lo:pll:sideband, and lo:pll_is_locked.`)",
+          "H": {
+            "description": "Information on the H-band cartridge",
+            "lo_plate": {
+              "mixer": {
+                "1": {
+                  "109_control": {
+                    "description": "Command to set the 1-based index of the 109 MHz signal used to drive the LO",
+                    "range": "1:2",
                     "size": "1",
                     "smax_type": "int"
                   },
-                  "notch_power": {
-                    "description": "Notch filter power level",
+                  "109_source": {
+                    "description": "1-based index of the 109 MHz signal used to drive the LO",
+                    "range": "1:2",
+                    "size": "1",
+                    "smax_type": "int"
+                  },
+                  "attenuator": {
+                    "description": "Actual attenuator control DAC counts.",
+                    "range": "0:4095",
+                    "size": "1",
+                    "smax_type": "int16"
+                  },
+                  "attenuator_control": {
+                    "description": "Requested attenuator control DAC counts. Useful range is limited to approximately **\\[600:1700\\",
+                    "range": "0:4095",
+                    "size": "1",
+                    "smax_type": "int16"
+                  },
+                  "frequency": {
+                    "description": "Estimated actual frequency of current tuning.",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "?"
+                    "unit": "Hz"
                   },
-                  "sideband": {
-                    "description": "Actual PLL sideband: “USB” or “LSB” (or “unknown”)",
+                  "frequency_set": {
+                    "description": "Requested LO frequency to tune. (Applied with **`pll:lock_command`**.)",
                     "size": "1",
-                    "smax_type": "string"
+                    "smax_type": "float",
+                    "unit": "Hz"
                   },
-                  "sideband_set": {
-                    "description": "Requested sideband: “USB” or “LSB”. (Applied with **`lock_command`**.)",
-                    "size": "1",
-                    "smax_type": "string"
+                  "pll": {
+                    "bandpass_power": {
+                      "description": "Bandpass filter power level",
+                      "size": "1",
+                      "smax_type": "float",
+                      "unit": "?"
+                    },
+                    "description": "PLL data",
+                    "gain": {
+                      "description": "Actual PLL gain value",
+                      "range": "0:255",
+                      "size": "1",
+                      "smax_type": "int16"
+                    },
+                    "gain_control": {
+                      "description": "Requested PLL gain value",
+                      "range": "0:255",
+                      "size": "1",
+                      "smax_type": "int16"
+                    },
+                    "is_locked": {
+                      "description": "Whether the PLL is locked",
+                      "size": "1",
+                      "smax_type": "boolean"
+                    },
+                    "lock_command": {
+                      "description": "Command to lock LO to desired frequency and PLL sideband. (Uses **`lo:frequency_set`**, and **`lo:pll:sideband_set`**, and updates **`lo:frequency`**`, lo:pll:sideband, and lo:pll_is_locked.`)",
+                      "size": "1",
+                      "smax_type": "int"
+                    },
+                    "notch_power": {
+                      "description": "Notch filter power level",
+                      "size": "1",
+                      "smax_type": "float",
+                      "unit": "?"
+                    },
+                    "sideband": {
+                      "description": "Actual PLL sideband: \u201cUSB\u201d or \u201cLSB\u201d (or \u201cunknown\u201d)",
+                      "size": "1",
+                      "smax_type": "string"
+                    },
+                    "sideband_set": {
+                      "description": "Requested sideband: \u201cUSB\u201d or \u201cLSB\u201d. (Applied with **`lock_command`**.)",
+                      "size": "1",
+                      "smax_type": "string"
+                    },
+                    "state": {
+                      "description": "Whether the PLL is turned on (0: off, 1: on)",
+                      "size": "1",
+                      "smax_type": "int"
+                    },
+                    "state_control": {
+                      "description": "Command to turn PLL on/off",
+                      "size": "1",
+                      "smax_type": "int"
+                    },
+                    "stress": {
+                      "description": "PLL stress voltage",
+                      "size": "1",
+                      "smax_type": "float",
+                      "unit": "mV"
+                    },
+                    "stress_command": {
+                      "description": "Command to reduce stress (1: to reduce stress)",
+                      "size": "1",
+                      "smax_type": "boolean"
+                    }
                   },
                   "state": {
-                    "description": "Whether the PLL is turned on (0: off, 1: on)",
+                    "description": "Whether the LO is turned on (0: off, 1: on)",
                     "size": "1",
                     "smax_type": "int"
                   },
                   "state_control": {
-                    "description": "Command to turn PLL on/off",
+                    "description": "Command to turn LO on or off (0: off, 1: on)",
                     "size": "1",
                     "smax_type": "int"
                   },
-                  "stress": {
-                    "description": "PLL stress voltage",
+                  "tune_v": {
+                    "description": "Actual tuning voltage",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "mV"
+                    "unit": "V"
                   },
-                  "stress_command": {
-                    "description": "Command to reduce stress (1: to reduce stress)",
+                  "yig_control": {
+                    "description": "Command to set the 1-based index of the YIG signal used to drive the LO",
+                    "range": "1:2",
                     "size": "1",
-                    "smax_type": "boolean"
+                    "smax_type": "int"
+                  },
+                  "yig_source": {
+                    "description": "1-based index of the YIG signal used to drive the LO",
+                    "range": "1:2",
+                    "size": "1",
+                    "smax_type": "int"
                   }
-                },
-                "state": {
-                  "description": "Whether the LO is turned on (0: off, 1: on)",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "state_control": {
-                  "description": "Command to turn LO on or off (0: off, 1: on)",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "tune_v": {
-                  "description": "Actual tuning voltage",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "V"
-                },
-                "yig_control": {
-                  "description": "Command to set the 1-based index of the YIG signal used to drive the LO",
-                  "range": "1:2",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "yig_source": {
-                  "description": "1-based index of the YIG signal used to drive the LO",
-                  "range": "1:2",
-                  "size": "1",
-                  "smax_type": "int"
                 }
               }
-            }
-          },
-          "mixer": {
-            "1": {
-              "bfield_current": {
-                "description": "Actual B-field current",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "uA"
-              },
-              "bfield_current_control": {
-                "description": "Requested B-field current  in **\\[-200:200\\]** range.",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "uA"
-              },
-              "bias": {
-                "description": "Actual bias voltage",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "mV"
-              },
-              "bias_control": {
-                "description": "Requested bias voltage in **\\[-20:20\\]** range.",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "mV"
-              },
-              "current": {
-                "description": "Actual mixer current",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "uA"
-              },
-              "current_control": {
-                "description": "Requested mixer current. (Note: move from LO attenuator)",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "uA"
-              },
-              "if_power": {
-                "description": "Linear IF power",
-                "size": "1",
-                "smax_type": "float",
-                "unit": "uW?"
-              },
-              "ivp_curve": {
-                "current": {
-                  "description": "current readings (*n* points)",
-                  "size": "n",
+            },
+            "mixer": {
+              "1": {
+                "bfield_current": {
+                  "description": "Actual B-field current",
+                  "size": "1",
                   "smax_type": "float",
                   "unit": "uA"
                 },
-                "description": "Last IVP curve data",
-                "power": {
-                  "description": "IF power values (*n* points)",
-                  "size": "n",
+                "bfield_current_control": {
+                  "description": "Requested B-field current  in **\\[-200:200\\]** range.",
+                  "size": "1",
                   "smax_type": "float",
-                  "unit": "uW"
+                  "unit": "uA"
                 },
-                "smax_type": {
-                  "description": "Type of measurement, e.g. “hot”, “cold”",
+                "bias": {
+                  "description": "Actual bias voltage",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "mV"
+                },
+                "bias_control": {
+                  "description": "Requested bias voltage in **\\[-20:20\\]** range.",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "mV"
+                },
+                "current": {
+                  "description": "Actual mixer current",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "uA"
+                },
+                "current_control": {
+                  "description": "Requested mixer current. (Note: move from LO attenuator)",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "uA"
+                },
+                "if_power": {
+                  "description": "Linear IF power",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "uW?"
+                },
+                "ivp_curve": {
+                  "current": {
+                    "description": "current readings (*n* points)",
+                    "size": "n",
+                    "smax_type": "float",
+                    "unit": "uA"
+                  },
+                  "description": "Last IVP curve data",
+                  "power": {
+                    "description": "IF power values (*n* points)",
+                    "size": "n",
+                    "smax_type": "float",
+                    "unit": "uW"
+                  },
+                  "smax_type": {
+                    "description": "Type of measurement, e.g. \u201chot\u201d, \u201ccold\u201d",
+                    "size": "1",
+                    "smax_type": "string"
+                  },
+                  "voltage": {
+                    "description": "voltages (*n* points)",
+                    "size": "n",
+                    "smax_type": "float",
+                    "unit": "mV"
+                  }
+                },
+                "ivp_curve_command": {
+                  "description": "Command to measure IVP curve of the designated smax_type, e.g. \u201chot\u201d or \u201ccold\u201d.",
                   "size": "1",
                   "smax_type": "string"
                 },
-                "voltage": {
-                  "description": "voltages (*n* points)",
-                  "size": "n",
+                "ivp_curve_range": {
+                  "description": "Scan voltage range (min, max) for next IVP curve. Voltages in the range of **\\[-20:20\\]** are acceptable.",
+                  "size": "2",
                   "smax_type": "float",
                   "unit": "mV"
+                },
+                "lna_state": {
+                  "description": "Whether LNA is on or off (0: off, 1: on).",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "lna_state_control": {
+                  "description": "Command to turn LNA on or off (0: off, 1: on).",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "lna_state_string": {
+                  "description": "LNA state, e.g. \u201cOFF\u201d",
+                  "size": "1",
+                  "smax_type": "string"
                 }
               },
-              "ivp_curve_command": {
-                "description": "Command to measure IVP curve of the designated smax_type, e.g. “hot” or “cold”.",
-                "size": "1",
-                "smax_type": "string"
-              },
-              "ivp_curve_range": {
-                "description": "Scan voltage range (min, max) for next IVP curve. Voltages in the range of **\\[-20:20\\]** are acceptable.",
-                "size": "2",
-                "smax_type": "float",
-                "unit": "mV"
-              },
-              "lna_state": {
-                "description": "Whether LNA is on or off (0: off, 1: on).",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "lna_state_control": {
-                "description": "Command to turn LNA on or off (0: off, 1: on).",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "lna_state_string": {
-                "description": "LNA state, e.g. “OFF”",
-                "size": "1",
-                "smax_type": "string"
-              }
+              "description": "SIS mixer data"
+            }
+          },
+          "L": {
+            "description": "Information on the L-band cartridge"
+          },
+          "a": {
+            "cartridge": {
+              "description": "Cartridge ID (matching under `antenna:1:receiver`), e.g. \u201cwsma:h-band\u201d, if information is under [antenna:1:receiver:wsma:h-band](#heading=h.jbpkdzhwvgvf), or empty string if no receiver cartridge is configured for the RxA chain at present.",
+              "size": "1",
+              "smax_type": "string"
             },
-            "description": "SIS mixer data"
-          }
-        },
-        "L": {
-          "description": "Information on the L-band cartridge"
-        },
-        "a": {
-          "cartridge": {
-            "description": "Cartridge ID (matching under `antenna:1:receiver`), e.g. “wsma:h-band”, if information is under [antenna:1:receiver:wsma:h-band](#heading=h.jbpkdzhwvgvf), or empty string if no receiver cartridge is configured for the RxA chain at present.",
-            "size": "1",
-            "smax_type": "string"
+            "description": "Receiver \u2018A\u2019 chain (assembly)",
+            "is_excluded": {
+              "description": "Whether the receiver is (temporarily) excluded from the project. (default: false/0)",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "mixer_index": {
+              "description": "1-based mixer index in associated physical receiver LO unit (default: 1\\)",
+              "size": "1",
+              "smax_type": "int"
+            },
+            "unit_index": {
+              "description": "1-based index of cartridge LO sub-unit used. (default: 1\\)",
+              "size": "1",
+              "smax_type": "int"
+            },
+            "yig_index": {
+              "description": "1-based index of the antenna YIG (default: 1\\)",
+              "size": "1",
+              "smax_type": "int"
+            }
           },
-          "description": "Receiver ‘A’ chain (assembly)",
-          "is_excluded": {
-            "description": "Whether the receiver is (temporarily) excluded from the project. (default: false/0)",
-            "size": "1",
-            "smax_type": "boolean"
+          "b": {
+            "description": "Receiver \u2018B\u2019 chain (assembly)"
           },
-          "mixer_index": {
-            "description": "1-based mixer index in associated physical receiver LO unit (default: 1\\)",
-            "size": "1",
-            "smax_type": "int"
-          },
-          "unit_index": {
-            "description": "1-based index of cartridge LO sub-unit used. (default: 1\\)",
-            "size": "1",
-            "smax_type": "int"
-          },
-          "yig_index": {
-            "description": "1-based index of the antenna YIG (default: 1\\)",
-            "size": "1",
-            "smax_type": "int"
-          }
-        },
-        "b": {
-          "description": "Receiver ‘B’ chain (assembly)"
-        },
-        "description": "Dada on all physical receivers and receiver chains",
-        "wsma": {
-          "<removed>": {
-            "description": "",
-            "size": "",
-            "smax_type": ""
-          },
-          "cryostat": {
-            "compressor": {
-              "compressor_control": {
-                "description": "",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "coolant_in": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "coolant_out": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "delta_pressure_average": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "description": "wSMA cryostat compressor system",
-              "enabled": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "error_code": {
-                "description": "Error",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "errors": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
-              },
-              "frequency_control": {
-                "description": "",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "helium_temp": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "high_pressure": {
-                "description": "",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "high_pressure_average": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "hours": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "inverter": {
-                "current": {
+          "description": "Dada on all physical receivers and receiver chains",
+          "wsma": {
+            "<removed>": {
+              "description": "",
+              "size": "",
+              "smax_type": ""
+            },
+            "cryostat": {
+              "compressor": {
+                "compressor_control": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "coolant_in": {
                   "description": "Operator p2",
                   "size": "1",
                   "smax_type": "float"
                 },
-                "description": "",
-                "frequency": {
+                "coolant_out": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "delta_pressure_average": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "description": "wSMA cryostat compressor system",
+                "enabled": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "error_code": {
+                  "description": "Error",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "errors": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "str"
+                },
+                "frequency_control": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "helium_temp": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "high_pressure": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "high_pressure_average": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "hours": {
                   "description": "Operator",
                   "size": "1",
                   "smax_type": "float"
                 },
-                "power": {
-                  "description": "Operator p2",
-                  "size": "1",
-                  "smax_type": "float"
+                "inverter": {
+                  "current": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "description": "",
+                  "frequency": {
+                    "description": "Operator",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "power": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "voltage": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "float"
+                  }
                 },
-                "voltage": {
-                  "description": "Operator p2",
-                  "size": "1",
-                  "smax_type": "float"
-                }
-              },
-              "low_pressure": {
-                "description": "",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "low_pressure_average": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "oil_temp": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "state": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
-              },
-              "state_code": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "warning_code": {
-                "description": "Warning",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "warnings": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
-              }
-            },
-            "heater_control": {
-              "description": "Control key used to turn the cryostat heaters on and off via `lakeshore_smax_daemon`",
-              "size": "1",
-              "smax_type": "int (bool)"
-            },
-            "heaters": {
-              "4K-plate": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "50K-bottom": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "50K-top": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "description": "wSMA cryostat internal heater status readouts",
-              "heater_enabled": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
-              }
-            },
-            "selector": {
-              "angle": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "angle_error": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "angle_tolerance": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "commanded_position": {
-                "description": "",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "description": "wSMA cryostat selector wheel",
-              "last_move_time": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "position": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "position_control": {
-                "description": "",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "resolver_position": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "resolver_turns": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "speed": {
-                "description": "Eng",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "speed_control": {
-                "description": "",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "status": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
-              }
-            },
-            "temperatures": {
-              "4K-plate": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "50K-bottom": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "50K-top": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "cold-load": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "description": "wSMA cryostat internal temperature readouts",
-              "refl-50K": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "refl-fixed": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "refl-float": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "thru-50K": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "thru-fixed": {
-                "description": "Operator p2",
-                "size": "1",
-                "smax_type": "float"
-              },
-              "thru-float": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "float"
-              }
-            },
-            "vacuum": {
-              "backing": {
-                "description": "",
-                "power": {
+                "low_pressure": {
                   "description": "",
                   "size": "1",
                   "smax_type": "float"
                 },
-                "speed": {
-                  "description": "",
+                "low_pressure_average": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "oil_temp": {
+                  "description": "Operator p2",
                   "size": "1",
                   "smax_type": "float"
                 },
                 "state": {
-                  "description": "Operator p2",
+                  "description": "",
                   "size": "1",
                   "smax_type": "str"
                 },
                 "state_code": {
-                  "description": "Operator p2",
+                  "description": "Operator",
                   "size": "1",
                   "smax_type": "int"
+                },
+                "warning_code": {
+                  "description": "Warning",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "warnings": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "str"
                 }
               },
-              "backing_control": {
-                "description": "Operator",
+              "heater_control": {
+                "description": "Control key used to turn the cryostat heaters on and off via `lakeshore_smax_daemon`",
                 "size": "1",
                 "smax_type": "int (bool)"
               },
-              "description": "wSMA cryostat vacuum system",
-              "error_code": {
-                "description": "Error",
-                "size": "1",
-                "smax_type": "int"
+              "heaters": {
+                "4K-plate": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "50K-bottom": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "50K-top": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "description": "wSMA cryostat internal heater status readouts",
+                "heater_enabled": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                }
               },
-              "errors": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
+              "selector": {
+                "angle": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "angle_error": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "angle_tolerance": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "commanded_position": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "description": "wSMA cryostat selector wheel",
+                "last_move_time": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "position": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "position_control": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "resolver_position": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "resolver_turns": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "speed": {
+                  "description": "Eng",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "speed_control": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "status": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                }
               },
-              "gate_valve_control": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
+              "temperatures": {
+                "4K-plate": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "50K-bottom": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "50K-top": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "cold-load": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "description": "wSMA cryostat internal temperature readouts",
+                "refl-50K": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "refl-fixed": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "refl-float": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "thru-50K": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "thru-fixed": {
+                  "description": "Operator p2",
+                  "size": "1",
+                  "smax_type": "float"
+                },
+                "thru-float": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "float"
+                }
               },
-              "gauge_<1": {
-                "3>": {
-                  "state": {
+              "vacuum": {
+                "backing": {
+                  "description": "",
+                  "power": {
                     "description": "",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "speed": {
+                    "description": "",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "state": {
+                    "description": "Operator p2",
                     "size": "1",
                     "smax_type": "str"
                   },
@@ -1636,69 +1604,61 @@
                     "description": "Operator p2",
                     "size": "1",
                     "smax_type": "int"
-                  },
-                  "value": {
-                    "description": "Operator",
-                    "size": "1",
-                    "smax_type": "float"
                   }
-                }
-              },
-              "relay_<1": {
-                "3>": {
-                  "state": {
-                    "description": "",
-                    "size": "1",
-                    "smax_type": "str"
-                  },
-                  "state_code": {
-                    "description": "Operator",
-                    "size": "1",
-                    "smax_type": "int"
-                  }
-                }
-              },
-              "state": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
-              },
-              "state_code": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "system_control": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "turbo": {
-                "cycle_time": {
+                },
+                "backing_control": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "description": "wSMA cryostat vacuum system",
+                "error_code": {
+                  "description": "Error",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "errors": {
                   "description": "",
                   "size": "1",
-                  "smax_type": "float"
+                  "smax_type": "str"
                 },
-                "description": "",
-                "normal": {
-                  "description": "Operator p2",
+                "gate_valve_control": {
+                  "description": "Operator",
                   "size": "1",
-                  "smax_type": "int(bool)"
+                  "smax_type": "int (bool)"
                 },
-                "power": {
-                  "description": "Operator p2",
-                  "size": "1",
-                  "smax_type": "float"
+                "gauge_<1": {
+                  "3>": {
+                    "state": {
+                      "description": "",
+                      "size": "1",
+                      "smax_type": "str"
+                    },
+                    "state_code": {
+                      "description": "Operator p2",
+                      "size": "1",
+                      "smax_type": "int"
+                    },
+                    "value": {
+                      "description": "Operator",
+                      "size": "1",
+                      "smax_type": "float"
+                    }
+                  }
                 },
-                "speed": {
-                  "description": "Operator p2",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "standby": {
-                  "description": "Operator p2",
-                  "size": "1",
-                  "smax_type": "int(bool)"
+                "relay_<1": {
+                  "3>": {
+                    "state": {
+                      "description": "",
+                      "size": "1",
+                      "smax_type": "str"
+                    },
+                    "state_code": {
+                      "description": "Operator",
+                      "size": "1",
+                      "smax_type": "int"
+                    }
+                  }
                 },
                 "state": {
                   "description": "",
@@ -1709,401 +1669,444 @@
                   "description": "Operator",
                   "size": "1",
                   "smax_type": "int"
+                },
+                "system_control": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "turbo": {
+                  "cycle_time": {
+                    "description": "",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "description": "",
+                  "normal": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "int(bool)"
+                  },
+                  "power": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "speed": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "float"
+                  },
+                  "standby": {
+                    "description": "Operator p2",
+                    "size": "1",
+                    "smax_type": "int(bool)"
+                  },
+                  "state": {
+                    "description": "",
+                    "size": "1",
+                    "smax_type": "str"
+                  },
+                  "state_code": {
+                    "description": "Operator",
+                    "size": "1",
+                    "smax_type": "int"
+                  }
+                },
+                "turbo_control": {
+                  "description": "Operator",
+                  "size": "1",
+                  "smax_type": "int (bool)"
+                },
+                "warning_code": {
+                  "description": "Warning",
+                  "size": "1",
+                  "smax_type": "int"
+                },
+                "warnings": {
+                  "description": "",
+                  "size": "1",
+                  "smax_type": "str"
                 }
-              },
-              "turbo_control": {
-                "description": "Operator",
-                "size": "1",
-                "smax_type": "int (bool)"
-              },
-              "warning_code": {
-                "description": "Warning",
-                "size": "1",
-                "smax_type": "int"
-              },
-              "warnings": {
-                "description": "",
-                "size": "1",
-                "smax_type": "str"
               }
+            },
+            "description": "Data from wSMA receiver"
+          }
+        },
+        "scan": {
+          "acceleration": {
+            "az": {
+              "description": "Current scanning acceleration in azimuth",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s2"
+            },
+            "description": "Current scanning acceleration",
+            "el": {
+              "description": "Current scanning acceleration in elevation",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s2"
             }
           },
-          "description": "Data from wSMA receiver"
-        }
-      },
-      "scan": {
-        "acceleration": {
-          "az": {
-            "description": "Current scanning acceleration in azimuth",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s2"
+          "description": "Scanning motion around target",
+          "linear": {
+            "description": "Linear scan parameters, if `smax_type` is \u2018linear\u2019",
+            "index": {
+              "description": "0-based index of current scan leg",
+              "size": "1",
+              "smax_type": "int"
+            },
+            "is_centered": {
+              "description": "Whether scan is centered on source position",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "is_equatorial": {
+              "description": "Whether scan is relative to local equatorial system, or else In horizontal system.",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "legs": {
+              "description": "Number of linear scan legs in total",
+              "size": "1",
+              "smax_type": "int"
+            },
+            "length": {
+              "description": "Length of current scan leg",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "position_angle": {
+              "description": "Scanning direction relative to scanning system",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "speed": {
+              "description": "Scanning speed",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            }
           },
-          "description": "Current scanning acceleration",
-          "el": {
-            "description": "Current scanning acceleration in elevation",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s2"
-          }
-        },
-        "description": "Scanning motion around target",
-        "linear": {
-          "description": "Linear scan parameters, if `smax_type` is ‘linear’",
-          "index": {
-            "description": "0-based index of current scan leg",
-            "size": "1",
-            "smax_type": "int"
+          "lissajous": {
+            "description": "Lissajous scan parameters, if `smax_type` is \u2018lissajous\u2019",
+            "height": {
+              "description": "Lissajous box height",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "is_equatorial": {
+              "description": "Whether scan is relative to local equatorial system, or else In horizontal system.",
+              "size": "1",
+              "smax_type": "boolean"
+            },
+            "position_angle": {
+              "description": "Lissajous box orientation relative to scanning system",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "ref_time": {
+              "description": "Reference UNIX time (scan origin in time)",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "s"
+            },
+            "v_ave": {
+              "description": "Mean scanning velocity",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            },
+            "width": {
+              "description": "Lissajous box width",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "y_period_ratio": {
+              "description": "Ratio of period in y-direction relative to period in x-direction.",
+              "size": "1",
+              "smax_type": "float"
+            },
+            "y_phase_offset": {
+              "description": "Phase offset of y motion (at `ref_time`)",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            }
           },
-          "is_centered": {
-            "description": "Whether scan is centered on source position",
-            "size": "1",
-            "smax_type": "boolean"
-          },
-          "is_equatorial": {
-            "description": "Whether scan is relative to local equatorial system, or else In horizontal system.",
-            "size": "1",
-            "smax_type": "boolean"
-          },
-          "legs": {
-            "description": "Number of linear scan legs in total",
-            "size": "1",
-            "smax_type": "int"
-          },
-          "length": {
-            "description": "Length of current scan leg",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "position_angle": {
-            "description": "Scanning direction relative to scanning system",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
+          "offset": {
+            "az": {
+              "description": "Current scanning offset in azimuth",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            },
+            "description": "Current scanning offsets",
+            "el": {
+              "description": "Current scanning offset in elevation",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad"
+            }
           },
           "speed": {
-            "description": "Scanning speed",
+            "az": {
+              "description": "Current scanning velocity in azimuth",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            },
+            "description": "Current scanning speed",
+            "el": {
+              "description": "Current scanning velocity in elevation",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            }
+          },
+          "smax_type": {
+            "description": "Scan smax_type: \u2018linear\u2019, \u2018lissajous\u2019, or \u2018none\u2019",
             "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
+            "smax_type": "string"
           }
         },
-        "lissajous": {
-          "description": "Lissajous scan parameters, if `smax_type` is ‘lissajous’",
-          "height": {
-            "description": "Lissajous box height",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "is_equatorial": {
-            "description": "Whether scan is relative to local equatorial system, or else In horizontal system.",
+        "scanspec": {
+          "description": "Common properties of this antenna\u2019s scanning spectrometer",
+          "is_auto_gain": {
+            "description": "1 if the scanning spectrometer is operated with automatically adjusted gains, or else 0",
             "size": "1",
             "smax_type": "boolean"
-          },
-          "position_angle": {
-            "description": "Lissajous box orientation relative to scanning system",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "ref_time": {
-            "description": "Reference UNIX time (scan origin in time)",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "s"
-          },
-          "v_ave": {
-            "description": "Mean scanning velocity",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
-          },
-          "width": {
-            "description": "Lissajous box width",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "y_period_ratio": {
-            "description": "Ratio of period in y-direction relative to period in x-direction.",
-            "size": "1",
-            "smax_type": "float"
-          },
-          "y_phase_offset": {
-            "description": "Phase offset of y motion (at `ref_time`)",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
           }
         },
-        "offset": {
-          "az": {
-            "description": "Current scanning offset in azimuth",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          },
-          "description": "Current scanning offsets",
-          "el": {
-            "description": "Current scanning offset in elevation",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad"
-          }
+        "selector_optics": {
+          "description": "Receiver selector optics configuration"
         },
-        "speed": {
-          "az": {
-            "description": "Current scanning velocity in azimuth",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
-          },
-          "description": "Current scanning speed",
-          "el": {
-            "description": "Current scanning velocity in elevation",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
-          }
-        },
-        "smax_type": {
-          "description": "Scan smax_type: ‘linear’, ‘lissajous’, or ‘none’",
-          "size": "1",
-          "smax_type": "string"
-        }
-      },
-      "scanspec": {
-        "description": "Common properties of this antenna’s scanning spectrometer",
-        "is_auto_gain": {
-          "description": "1 if the scanning spectrometer is operated with automatically adjusted gains, or else 0",
-          "size": "1",
-          "smax_type": "boolean"
-        }
-      },
-      "selector_optics": {
-        "description": "Receiver selector optics configuration"
-      },
-      "site": {
-        "altitude": {
-          "description": "Altitude above sea level",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "m"
-        },
-        "description": "Site location",
-        "latitude": {
-          "description": "Geodetic latitude",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "longitude": {
-          "description": "Geodetic longitude",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "xyz": {
-          "description": "Cartesian ECRS coordinates",
-          "size": "3",
-          "smax_type": "float64",
-          "unit": "m"
-        }
-      },
-      "smoke_detector": {
-        "description": "Smoke detector"
-      },
-      "source": {
-        "apparent": {
-          "angular_size": {
-            "description": "Apparent angular diameter of Solar-system body, or 0.0 if not a Solar-system source.",
+        "site": {
+          "altitude": {
+            "description": "Altitude above sea level",
             "size": "1",
             "smax_type": "float64",
-            "unit": "rad"
-          },
-          "dec_dot": {
-            "description": "Apparent declination rate of change",
-            "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
-          },
-          "description": "Apparent equatorial coordinates",
-          "distance": {
-            "description": "Solar-system body distance from observer, or 0.0 if not a Solar-system object.",
-            "size": "1",
-            "smax_type": "float",
             "unit": "m"
           },
-          "ra_dot": {
-            "description": "Apparent right-ascension rate of change",
+          "description": "Site location",
+          "latitude": {
+            "description": "Geodetic latitude",
             "size": "1",
-            "smax_type": "float",
-            "unit": "rad/s"
+            "smax_type": "float64",
+            "unit": "rad"
           },
-          "radial_velocity": {
-            "description": "Radial velocity",
+          "longitude": {
+            "description": "Geodetic longitude",
             "size": "1",
-            "smax_type": "float",
-            "unit": "m/s**"
+            "smax_type": "float64",
+            "unit": "rad"
+          },
+          "xyz": {
+            "description": "Cartesian ECRS coordinates",
+            "size": "3",
+            "smax_type": "float64",
+            "unit": "m"
           }
         },
-        "catalog": {
-          "dec": {
-            "description": "Declination coordinate",
-            "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+        "smoke_detector": {
+          "description": "Smoke detector"
+        },
+        "source": {
+          "apparent": {
+            "angular_size": {
+              "description": "Apparent angular diameter of Solar-system body, or 0.0 if not a Solar-system source.",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "dec_dot": {
+              "description": "Apparent declination rate of change",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            },
+            "description": "Apparent equatorial coordinates",
+            "distance": {
+              "description": "Solar-system body distance from observer, or 0.0 if not a Solar-system object.",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "m"
+            },
+            "ra_dot": {
+              "description": "Apparent right-ascension rate of change",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "rad/s"
+            },
+            "radial_velocity": {
+              "description": "Radial velocity",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "m/s**"
+            }
           },
-          "description": "Equatorial catalog coordinates",
-          "parallax": {
-            "description": "Parallax (or 0.0 if not defined / not important)",
-            "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
-          },
-          "proper_motion": {
+          "catalog": {
             "dec": {
               "description": "Declination coordinate",
               "size": "1",
               "smax_type": "float64",
               "unit": "rad"
             },
-            "description": "Proper motion of source",
+            "description": "Equatorial catalog coordinates",
+            "parallax": {
+              "description": "Parallax (or 0.0 if not defined / not important)",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "proper_motion": {
+              "dec": {
+                "description": "Declination coordinate",
+                "size": "1",
+                "smax_type": "float64",
+                "unit": "rad"
+              },
+              "description": "Proper motion of source",
+              "ra": {
+                "description": "Right ascension coordinate",
+                "size": "1",
+                "smax_type": "float64",
+                "unit": "rad"
+              }
+            },
             "ra": {
               "description": "Right ascension coordinate",
               "size": "1",
               "smax_type": "float64",
               "unit": "rad"
+            },
+            "system": {
+              "description": "Catalog coordinate reference system, e.g. \u2018ICRS\u2019, \u2018J2000\u2019 or \u2018B1950\u2019.",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "v_lsr": {
+              "description": "LSR velocity",
+              "size": "1",
+              "smax_type": "float",
+              "unit": "m/s**"
             }
           },
-          "ra": {
-            "description": "Right ascension coordinate",
+          "description": "Currently observed position or celestial source",
+          "is_band_calibrator": {
+            "description": "1 if the source is a bandpass calibrator, or else 0",
             "size": "1",
-            "smax_type": "float64",
-            "unit": "rad"
+            "smax_type": "boolean"
           },
-          "system": {
-            "description": "Catalog coordinate reference system, e.g. ‘ICRS’, ‘J2000’ or ‘B1950’.",
+          "is_celestial": {
+            "description": "1 if target is a celestial object, or else 0 if Az/El position",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "is_flux_calibrator": {
+            "description": "1 if source is a flux calibrator, or else 0",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "is_gain_calibrator": {
+            "description": "1 if source is a gain calibrator, or else 0",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "is_lookup": {
+            "description": "1 if source is a known catalog or ephemeris source, or else 0 if it is a user-defined source",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "is_solar_system": {
+            "description": "1 if target is a Solar-system object, or else 0",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "naif": {
+            "description": "NAIF ID of Solar-System body, or \\-1 if not a Solar-system object. (use only if `is_solar_system` is non-zero)",
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "name": {
+            "description": "Source name, e.g. \u201cmars\u201d, \u201c3c84\u201d, \u201clocal\u201d, \u201cbeacon\u201d...",
             "size": "1",
             "smax_type": "string"
           },
-          "v_lsr": {
-            "description": "LSR velocity",
+          "offset": {
+            "dec": {
+              "description": "Offset from catalog position in R.A.",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            },
+            "description": "Celestial offset position from catalog coordinates",
+            "ra": {
+              "description": "Offset from catalog position in declination.",
+              "size": "1",
+              "smax_type": "float64",
+              "unit": "rad"
+            }
+          },
+          "velocity_smax_type": {
+            "description": "Velocity reference frame, e.g. \u201ctopocentric\u201d, or \u201cLSR\u201d",
             "size": "1",
-            "smax_type": "float",
-            "unit": "m/s**"
+            "smax_type": "string"
           }
         },
-        "description": "Currently observed position or celestial source",
-        "is_band_calibrator": {
-          "description": "1 if the source is a bandpass calibrator, or else 0",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "is_celestial": {
-          "description": "1 if target is a celestial object, or else 0 if Az/El position",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "is_flux_calibrator": {
-          "description": "1 if source is a flux calibrator, or else 0",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "is_gain_calibrator": {
-          "description": "1 if source is a gain calibrator, or else 0",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "is_lookup": {
-          "description": "1 if source is a known catalog or ephemeris source, or else 0 if it is a user-defined source",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "is_solar_system": {
-          "description": "1 if target is a Solar-system object, or else 0",
-          "size": "1",
-          "smax_type": "boolean"
-        },
-        "naif": {
-          "description": "NAIF ID of Solar-System body, or \\-1 if not a Solar-system object. (use only if `is_solar_system` is non-zero)",
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "name": {
-          "description": "Source name, e.g. “mars”, “3c84”, “local”, “beacon”...",
-          "size": "1",
-          "smax_type": "string"
-        },
-        "offset": {
-          "dec": {
-            "description": "Offset from catalog position in R.A.",
+        "sun": {
+          "angle": {
+            "description": "Sun\u2019s angular distance from current pointing",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "rad"
+          },
+          "az": {
+            "description": "Sun\u2019s astrometric azimuth",
             "size": "1",
             "smax_type": "float64",
             "unit": "rad"
           },
-          "description": "Celestial offset position from catalog coordinates",
-          "ra": {
-            "description": "Offset from catalog position in declination.",
+          "description": "Sun\u2019s position seem from antenna",
+          "el": {
+            "description": "Sun\u2019s astrometric elevation",
             "size": "1",
             "smax_type": "float64",
             "unit": "rad"
+          },
+          "refraction": {
+            "description": "Refraction correction for Sun",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "rad"
           }
         },
-        "velocity_smax_type": {
-          "description": "Velocity reference frame, e.g. “topocentric”, or “LSR”",
-          "size": "1",
-          "smax_type": "string"
+        "tilt": {
+          "description": "Tiltmeter data"
+        },
+        "tracking": {
+          "description": "Information on the Track program on antenna",
+          "host": {
+            "description": "Host name on which the Track program is running from",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "start_time": {
+            "description": "UNIX time when Track was started",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "s"
+          }
+        },
+        "ups": {
+          "description": "UPS data"
         }
-      },
-      "sun": {
-        "angle": {
-          "description": "Sun’s angular distance from current pointing",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "rad"
-        },
-        "az": {
-          "description": "Sun’s astrometric azimuth",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "description": "Sun’s position seem from antenna",
-        "el": {
-          "description": "Sun’s astrometric elevation",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "rad"
-        },
-        "refraction": {
-          "description": "Refraction correction for Sun",
-          "size": "1",
-          "smax_type": "float",
-          "unit": "rad"
-        }
-      },
-      "tilt": {
-        "description": "Tiltmeter data"
-      },
-      "tracking": {
-        "description": "Information on the Track program on antenna",
-        "host": {
-          "description": "Host name on which the Track program is running from",
-          "size": "1",
-          "smax_type": "string"
-        },
-        "start_time": {
-          "description": "UNIX time when Track was started",
-          "size": "1",
-          "smax_type": "float64",
-          "unit": "s"
-        }
-      },
-      "ups": {
-        "description": "UPS data"
       }
     }
   },
@@ -2144,14 +2147,14 @@
                     "unit": "dB"
                   },
                   "source": {
-                    "description": "“antenna:1:if:1`”` or “antenna1:if:2”, or “noise:1” if connected to noise box 1, or “noise:2”, or “none”, or “unknown”",
+                    "description": "\u201cantenna:1:if:1`\u201d` or \u201cantenna1:if:2\u201d, or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
                     "size": "1",
                     "smax_type": "string"
                   }
                 }
               }
             },
-            "description": "Antenna-specific correlator unit’s for this band."
+            "description": "Antenna-specific correlator unit\u2019s for this band."
           },
           "frequency_offset": {
             "description": "IF frequency offset for the given band",
@@ -2228,7 +2231,7 @@
                 "description": "Segment continuum levels for each baseline product"
               }
             },
-            "a1-a2 … a7-a8": {
+            "a1-a2 \u2026 a7-a8": {
               "description": "Segment pseudo continuum for each individual baseline"
             },
             "description": "Segment statistics for all baselines and products"
@@ -2272,7 +2275,7 @@
             "description": "Pseudo continuum for each correlator product by input pairs"
           }
         },
-        "a1-a2 … a7-a8": {
+        "a1-a2 \u2026 a7-a8": {
           "description": "Pseudo continuum for each individual baseline"
         },
         "description": "Full-band statistics for all baselines and products"
@@ -2285,7 +2288,7 @@
   "infrastructure": {
     "building": {
       "ac": {
-        "computer_room": { },
+        "computer_room": {},
         "pacu": {
           "description": "PACU"
         }
@@ -2294,7 +2297,7 @@
         "description": "Control room infrastructure"
       },
       "correlator_room": {
-        "bdc_chassis": { },
+        "bdc_chassis": {},
         "description": "Correlator room infrastructure",
         "holography": {
           "description": ""
@@ -2346,20 +2349,20 @@
           }
         }
       },
-      "description": "SMA’s computers",
+      "description": "SMA\u2019s computers",
       "roach2": {
-        "01": { },
+        "01": {},
         "description": ""
       }
     },
     "net": {
-      "description": "SMA’s summit networks and switches",
+      "description": "SMA\u2019s summit networks and switches",
       "dot_11": {
         "description": "Storage network",
         "size": "",
         "smax_type": ""
       },
-      "dot_4": { },
+      "dot_4": {},
       "dot_5": {
         "description": "SWARM network",
         "size": "",
@@ -2401,7 +2404,7 @@
     },
     "power": {
       "description": "Electrical power",
-      "generator": { },
+      "generator": {},
       "helco": {
         "description": ""
       },
@@ -2424,7 +2427,7 @@
         "unit": "Hz"
       },
       "lo_sidebands": {
-        "description": "LO sidebands (array or ‘u’ for USB or ‘l’ for LSB, or ‘0’ for unspecified)",
+        "description": "LO sidebands (array or \u2018u\u2019 for USB or \u2018l\u2019 for LSB, or \u20180\u2019 for unspecified)",
         "size": "2+",
         "smax_type": "char"
       },
@@ -2481,7 +2484,7 @@
             "smax_type": "boolean"
           },
           "sideband": {
-            "description": "“USB” or “LSB”, or “unknown”",
+            "description": "\u201cUSB\u201d or \u201cLSB\u201d, or \u201cunknown\u201d",
             "size": "1",
             "smax_type": "string"
           },
@@ -2516,7 +2519,7 @@
       "description": "10 MHz frequency reference"
     }
   },
-  "settings": { },
+  "settings": {},
   "telescope": {
     "iers": {
       "description": "IERS Earth orientation data",
@@ -2615,7 +2618,7 @@
                 "unit": "m"
               }
             },
-            "1 … 8": {
+            "1 \u2026 8": {
               "description": "DDS data for each particular antenna"
             },
             "description": "Antenna-specific DDS information"
@@ -2688,7 +2691,7 @@
                     "unit": "rad"
                   }
                 },
-                "1 … 8": {
+                "1 \u2026 8": {
                   "description": "Details for each concurrent science or engineering projects"
                 },
                 "description": "DDS data for each antenna receiver"
@@ -2700,7 +2703,7 @@
                 "unit": "Hz"
               }
             },
-            "a … b": {
+            "a \u2026 b": {
               "description": "DDS data breakdown per individual receiver chain"
             },
             "description": "Details for each receiver"
@@ -2749,7 +2752,7 @@
             "unit": "rad"
           },
           "reference_time": {
-            "description": "UNIX time at which velocity stays ‘fixed’.",
+            "description": "UNIX time at which velocity stays \u2018fixed\u2019.",
             "size": "1",
             "smax_type": "float64",
             "unit": "s"
@@ -2760,7 +2763,7 @@
             "smax_type": "string"
           },
           "system": {
-            "description": "Reference frame, e.g. “FK5”, “ICRS”",
+            "description": "Reference frame, e.g. \u201cFK5\u201d, \u201cICRS\u201d",
             "size": "1",
             "smax_type": "string"
           },
@@ -2771,7 +2774,7 @@
             "unit": "m/s"
           },
           "v_smax_type": {
-            "description": "Velocity smax_type, e.g. “topocentric” or “LSR”",
+            "description": "Velocity smax_type, e.g. \u201ctopocentric\u201d or \u201cLSR\u201d",
             "size": "1",
             "smax_type": "string"
           },
@@ -2784,8 +2787,8 @@
         },
         "file": {
           "antennas": {
-            "description": "List of antennas contained in file, e.g. “1 2 4 7 8”",
-            "size": "0–8",
+            "description": "List of antennas contained in file, e.g. \u201c1 2 4 7 8\u201d",
+            "size": "0\u20138",
             "smax_type": "int"
           },
           "creation_time": {
@@ -2835,7 +2838,7 @@
             "unit": "bytes"
           },
           "smax_type": {
-            "description": "File classification smax_type, e.g. ‘science’, ‘pointing’, ‘engineering’, ‘baseline’, ‘flux’, ‘priming’, or ‘garbage’",
+            "description": "File classification smax_type, e.g. \u2018science\u2019, \u2018pointing\u2019, \u2018engineering\u2019, \u2018baseline\u2019, \u2018flux\u2019, \u2018priming\u2019, or \u2018garbage\u2019",
             "size": "1",
             "smax_type": "string"
           }
@@ -2889,7 +2892,7 @@
                 "unit": "m/s**"
               },
               "system": {
-                "description": "Coordinate reference frame/system, e.g. “FK5” or “ICRS”",
+                "description": "Coordinate reference frame/system, e.g. \u201cFK5\u201d or \u201cICRS\u201d",
                 "size": "1",
                 "smax_type": "string"
               },
@@ -2899,7 +2902,7 @@
                 "smax_type": "float64"
               },
               "v_smax_type": {
-                "description": "Velocity reference frame, e.g. “topocentric”, or “LSR”",
+                "description": "Velocity reference frame, e.g. \u201ctopocentric\u201d, or \u201cLSR\u201d",
                 "size": "1",
                 "smax_type": "string"
               }
@@ -2942,7 +2945,7 @@
                   "unit": "rad/s"
                 }
               },
-              "…": {
+              "\u2026": {
                 "description": "Same as [telescope:project:1:target:apparent](#telescope:project:1:target:celestial:apparent), plus:",
                 "size": "",
                 "smax_type": ""
@@ -2983,7 +2986,7 @@
                 "unit": "m"
               },
               "ephem_smax_type": {
-                "description": "Ephemeris provider name / ID. Eg. “JPL” or “MPC” or “DE440”.",
+                "description": "Ephemeris provider name / ID. Eg. \u201cJPL\u201d or \u201cMPC\u201d or \u201cDE440\u201d.",
                 "size": "1",
                 "smax_type": "string"
               },
@@ -3001,7 +3004,7 @@
           },
           "description": "Currently observed target",
           "file_name": {
-            "description": "Source name to appear in file (which may be different than the catalog name in [`celestial`](#telescope:project:1:target:celestial), and may include e.g. modifiers for polarization state, e.g. “3c84\\_LR”)",
+            "description": "Source name to appear in file (which may be different than the catalog name in [`celestial`](#telescope:project:1:target:celestial), and may include e.g. modifiers for polarization state, e.g. \u201c3c84\\_LR\u201d)",
             "size": "1",
             "smax_type": "string"
           },
@@ -3031,7 +3034,7 @@
             "smax_type": "string"
           },
           "observing_mode": {
-            "description": "Current observing mode, e.g. “standard”, “OTF”, “mosaic”, “ipoint”, or empty string.",
+            "description": "Current observing mode, e.g. \u201cstandard\u201d, \u201cOTF\u201d, \u201cmosaic\u201d, \u201cipoint\u201d, or empty string.",
             "size": "1",
             "smax_type": "string"
           },
@@ -3073,15 +3076,15 @@
               "unit": "Hz"
             }
           },
-          "a … b": {
+          "a \u2026 b": {
             "description": "Specific tuning information for each requested tuning"
           }
         }
       },
-      "1 … 2": {
+      "1 \u2026 2": {
         "description": "Details for each concurrent science or engineering projects"
       },
-      "2": { },
+      "2": {},
       "description": "Active observing / engineering project(s)"
     },
     "site": {
@@ -3093,13 +3096,13 @@
       },
       "description": "Telescope site data",
       "ecrs": {
-        "description": "Observatory’s x,y,z coordinates in ECRS (Earth fixed frame)",
+        "description": "Observatory\u2019s x,y,z coordinates in ECRS (Earth fixed frame)",
         "size": "3",
         "smax_type": "float64",
         "unit": "m"
       },
       "gcrs": {
-        "description": "Observatory’s x,y,z coordinates in GCRS (rotated \\+ wobbled)",
+        "description": "Observatory\u2019s x,y,z coordinates in GCRS (rotated \\+ wobbled)",
         "size": "3",
         "smax_type": "float64",
         "unit": "m"
@@ -3156,7 +3159,7 @@
         "unit": "rad"
       },
       "v_bcrs": {
-        "description": "Sun’s velocity in BCRS (e.g. for LSR motion calculation)",
+        "description": "Sun\u2019s velocity in BCRS (e.g. for LSR motion calculation)",
         "size": "3",
         "smax_type": "float",
         "unit": "m/s"
@@ -3298,11 +3301,11 @@
     },
     "phase": {
       "baseline": {
-        "1-2": { }
+        "1-2": {}
       },
       "description": "Phase monitor data",
       "station": {
-        "1": { },
+        "1": {},
         "description": "Station data"
       }
     },
@@ -3310,7 +3313,7 @@
       "description": "Weather data from the Subaru telescope"
     },
     "summit_road_status": {
-      "description": "“open”, “closed”, or “unknown”",
+      "description": "\u201copen\u201d, \u201cclosed\u201d, or \u201cunknown\u201d",
       "size": "1",
       "smax_type": "string"
     },
@@ -3340,4 +3343,3 @@
     }
   }
 }
-

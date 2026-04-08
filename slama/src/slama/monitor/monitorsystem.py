@@ -7,6 +7,50 @@ import treelib
 from .monitorpoint import MonitorPoint
 
 
+def _parse_index_set(spec: str) -> list[str]:
+    """
+    Parse an index-set specification string into an ordered list of string keys.
+
+    The spec is a comma-separated list of tokens. Each token is either a single
+    value or a numeric range ``lo-hi`` (inclusive). If both endpoints of a range
+    parse as integers, the range is expanded inclusively. Otherwise the token is
+    treated as a literal string. Order is preserved; duplicate values are an error.
+
+    Examples:
+        "1-8"        -> ["1","2","3","4","5","6","7","8"]
+        "1-3,5,7-9"  -> ["1","2","3","5","7","8","9"]
+        "H,V"        -> ["H","V"]
+    """
+    if not isinstance(spec, str) or not spec.strip():
+        raise ValueError(f"index set spec must be a non-empty string, got {spec!r}")
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in spec.split(","):
+        token = raw.strip()
+        if not token:
+            raise ValueError(f"empty token in index set spec {spec!r}")
+        if "-" in token:
+            lo_s, hi_s = token.split("-", 1)
+            lo_s, hi_s = lo_s.strip(), hi_s.strip()
+            try:
+                lo, hi = int(lo_s), int(hi_s)
+            except ValueError:
+                raise ValueError(
+                    f"non-integer range endpoints in token {token!r} of spec {spec!r}"
+                )
+            if hi < lo:
+                raise ValueError(f"reversed range in token {token!r} of spec {spec!r}")
+            values = [str(i) for i in range(lo, hi + 1)]
+        else:
+            values = [token]
+        for v in values:
+            if v in seen:
+                raise ValueError(f"duplicate index value {v!r} in spec {spec!r}")
+            seen.add(v)
+            out.append(v)
+    return out
+
+
 class MonitorSubsystem:
     """Represents a JSON dictionary (branch node) in the monitor hierarchy."""
     def __init__(self, name: str, data: dict):
@@ -43,6 +87,26 @@ class MonitorSystem(treelib.Tree):
     def _build_tree(self, parent_id: str, data: dict, smax_path: str) -> None:
         """Recursively builds the tree from a JSON dict."""
         for key, value in data.items():
+            if key == "__each__":
+                # Template expansion: instantiate `template` once per index in `over`.
+                if not isinstance(value, dict) or "over" not in value or "template" not in value:
+                    raise ValueError(
+                        f"__each__ at {smax_path or '<root>'} must be a dict with "
+                        f"'over' and 'template' keys"
+                    )
+                template = value["template"]
+                if not isinstance(template, dict):
+                    raise ValueError(
+                        f"__each__ template at {smax_path or '<root>'} must be a dict"
+                    )
+                for idx in _parse_index_set(value["over"]):
+                    idx_path = f"{smax_path}:{idx}" if smax_path else idx
+                    self.create_node(tag=idx, identifier=idx_path,
+                                     parent=parent_id,
+                                     data=MonitorSubsystem(idx, template))
+                    self._build_tree(idx_path, template, idx_path)
+                continue
+
             child_path = f"{smax_path}:{key}" if smax_path else key
 
             if isinstance(value, dict):
