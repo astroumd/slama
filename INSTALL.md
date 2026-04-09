@@ -1,4 +1,4 @@
-# installation
+ec# installation
 
 Order of steps is important
 
@@ -33,10 +33,12 @@ This is normally the entry point for any shell that needs to be using SLAMA:
 ## If you do not need to run your own valkey database, skip to step 4. But we recommend you install a local copy here.
 
 ## 3. Install valkey
-This will download and install valkey and copy some init scripts to `bin`. It will also create aliases with sma specific names to distinguish from the system valkey,  e.g. ``valkey-cli_sma, valkey-server_sma``, etc.
+This will download and install valkey and copy some init scripts to `bin`. It will also create aliases with sma
+specific names to distinguish from the system valkey,  e.g. ``valkey-cli_sma, valkey-server_sma``, etc.
 
 ```
-    make valkey
+    make install_valkey
+    make install_lua
 ```
 
 ## 4. Optionally install a local python
@@ -46,7 +48,7 @@ have, this step will download and install anaconda.
 ```
      make anaconda
 ```
-For `install_anaconda3` target you can optioall add `wget=wgetc` if you have the caching version
+For `install_anaconda3` target you can optionally add `wget=wgetc` if you have the caching version
 of wget, or even `wget=curl` will work.  
 
 ## 5.  Install uv
