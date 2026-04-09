@@ -51,17 +51,19 @@ setup:
 anaconda: anaconda3
 	./install_anaconda3
 
-install-valkey: valkey
+## install_valkey:	install valkey
+install_valkey: valkey
 	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
-
-i_valkey: install-valkey
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
-# this is kind of ridiculous just to get the lua files.
-lua:	smax-server lua
+## install_lua:         install lua files
+#  this is kind of ridiculous just to get the lua files.
+install_lua:	smax-server
+	mkdir -p lua
 	cp smax-server/lua/*.lua lua
 
-i_smax-python: smax-python
+## install_smax-python:   install these
+install_smax-python: smax-python
 	pip install -e smax-python
 
 help:
