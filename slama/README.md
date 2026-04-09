@@ -30,7 +30,8 @@ Assuming you have  python 3.11+ already installed.
 
     Clicking on one of the tiles opens that monitor page.   "Connecting..." will change to "Connected."
 
-3.  Run the observation simulation program. This will simulate a observation:  Flux calibrator, Bandpass cal, gain cal, source, gain cal, source, etc.
+3.  Run the observation simulation program. This will simulate a observation:
+    Flux calibrator, Bandpass cal, gain cal, source, gain cal, source, etc.
   
 ```
         cd src/slama 
