@@ -16,9 +16,11 @@ URL9  = git@github.com:Smithsonian/smax-clib.git
 URL10 = git@github.com:Smithsonian/smax-json.git
 URL11 = git@github.com:valkey-io/valkey.git
 URL12 = git@github.com:redis/hiredis.git
+URL13 = git@github.com:Smithsonian/sma-legacy-observing-scripts
 
 # git software directories we may build here
-GIT_DIRS = git-SMA-Software git-smax-python git-redisx git-SuperNOVAS git-valkey git-xchange git-smax-server git-valkey
+GIT_DIRS = SMA-Software smax-python redisx SuperNOVAS valkey \
+           xchange smax-server valkey sma-legacy-observing-scripts
 
 # redisx smax
 
@@ -49,17 +51,17 @@ setup:
 anaconda: anaconda3
 	./install_anaconda3
 
-install-valkey: git-valkey
+install-valkey: valkey
 	(cd valkey; make -j PROG_SUFFIX="_sma" PREFIX=$(SLAMA) install)
 
-valkey: install-valkey
+i_valkey: install-valkey
 	(cd bin; ln -sf ../valkey-init.sh ; ln -sf ../smax-init.sh)
 
 # this is kind of ridiculous just to get the lua files.
-lua:	git-smax-server lua
+lua:	smax-server lua
 	cp smax-server/lua/*.lua lua
 
-smax-python: git-smax-python
+i_smax-python: smax-python
 	pip install -e smax-python
 
 help:
@@ -70,6 +72,7 @@ help : Makefile
 
 ## git:       Get all git repos for this install
 git:  $(GIT_DIRS)
+	@echo $(GIT_DIRS)
 
 ## pull:      Update all git repos
 pull:
@@ -90,32 +93,35 @@ branch:
 
 # all git targets
 
-git-SMA-Software:
+SMA-Software:
 	git clone $(URL1)
 
-git-smax-python:
+smax-python:
 	git clone $(URL2)
 
-git-redisx:
+redisx:
 	git clone $(URL3)
 
-git-SuperNOVAS:
+SuperNOVAS:
 	git clone $(URL4)
 
-git-xchange:
+xchange:
 	git clone $(URL7)
 
-git-smax-server:
+smax-server:
 	git clone $(URL8)
 
-git-smax-clib:
+smax-clib:
 	git clone $(URL9)
 
-git-smax-json:
+smax-json:
 	git clone $(URL10)
 
-git-valkey:
+valkey:
 	git clone $(URL11)
 
-git-hiredis:
+hiredis:
 	git clone $(URL12)
+
+sma-legacy-observing-scripts:
+	git clone $(URL13)
