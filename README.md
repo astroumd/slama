@@ -36,33 +36,3 @@ Not required but may be of interest.
 
 Installation is covered in INSTALL.md
 
-**PJT - BELOW NEEDS TO BE UPDATED**
-
-## Configure
-
-After `configure` has been run:
-
-* created slama_start.sh 
-
-* create and set global environment variables like REDIS_NAME, REDIS_CLI, RESIS_SERVER, REDIS_PORT, LUA 
-    - maybe add $REDIS_DBFILE to the list (sma-shared-variables.rdb)
-
-* update data/valkey_sma.conf to use $REDIS_PORT, REDIS_DBFILE
-
-* create smax-init.sh and valkey-init.sh from *.in 
-
-
-## Makefile
-
-make install should **BUT IT DOESN'T**
-    
- * mkdir ${SLAMA}/bin  ${SLAMA}/lua
- 
- * build valkey and  install valkey*_sma in ${SLAMA}/bin
-   - make -jN PROG_SUFFIX="_sma" PREFIX=${SLAMA}/bin
-   (where N is number of cores to use)
-* install valkey-init.sh and smax-init.sh in $SLAMA/bin
- 
-* copy smax-server/lua to ${SLAMA}/lua
-
-* update data/valkey_sma.conf with REDIS_PORT, REDIS_DBFILE(?
