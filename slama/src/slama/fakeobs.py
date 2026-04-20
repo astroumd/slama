@@ -253,6 +253,16 @@ class FakeObs:
         self.write("RM:acc1:RM_WEATHER_WINDDIR_F", np.round(self._winddir, 2))
         self.write("RM:acc1:RM_WEATHER_MBAR_F", np.round(self._patm, 2))
 
+    def cabin(self):
+        points = [
+                "antenna:{ant}:air:heater",np.array([True,False]),
+                "antenna:{ant}:air:temperature",np.arange(0,40),
+                ]
+        for ant in range(1,9):
+           mp = f"{p.format(ant=ant)}"
+           value = random.choice(points[p])
+           self.write(mp, value)
+
     def mixerH(self):
        points = {
            "antenna:{ant}:receiver:H:lo_plate:mixer:1:109_control": np.array([1,2]),
