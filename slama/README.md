@@ -46,4 +46,4 @@ Assuming you have  python 3.11+ already installed.
 
 ### Testing
 
-Eventually there will be a pytest suite.  The test code in ``test`` is now outdated.
+Eventually there will be a pytest suite.  
