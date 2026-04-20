@@ -28,8 +28,7 @@ uv pip install -e slama
 **Run tests** (require a running SMAX/Redis server):
 ```bash
 cd src/slama
-uv run test/test_smax.py       # Basic Redis I/O connectivity
-uv run test/test_plot.py       # Real-time plot (requires concurrent smax_share() calls)
+uv run pytest -n auto       # Basic Redis I/O connectivity
 uv run test/treetest.py        # TreeLib hierarchy test (no server needed)
 ```
 
@@ -59,13 +58,6 @@ JSON config (conf/mpdefs.json, conf/smax.json)
 - `MonitorPointSubscriber` — Subscribe to changes; invokes callback when a monitor point updates.
 - `MonitorPointWriter` — Writes values back to SMAX via `smax_share()`.
 
-**`src/slama/plot/`** — Visualization:
-- **Important** The code  in this subdirectory is mostly prototype and test code and will not be the final display mechanism. However, it captures some ideas about what the final displays may look like.
-- `MonitorPointPlot` — Real-time matplotlib plot for a single monitor point.
-- `MpTableWidget` (PyQt6) — Grid table: rows = monitor points, columns = array antennas, color-coded by validity.
-- `MpGridWidget` (PyQt6) — Label+value grid display.
-- `MainWindow` (PyQt6) — Full GUI, updates every 2 seconds via `QTimer`.
-
 **`src/slama/fakeobs.py`** — Simulates observatory observations; writes fake antenna tracking, weather, and tsys data to SMAX.
 
 **`src/slama/recursewithtreelib.py`** — Utility that recursively builds a `treelib.Tree` from nested JSON.
@@ -88,5 +80,4 @@ SMAX data is addressed as `table:key` pairs. The SMAX library (`smax-python`) pr
 - `smax` — from `ssh://git@github.com/Smithsonian/smax-python.git`
 - `treelib` — hierarchical monitor system tree
 - `astropy` — time/units handling
-- `PyQt6` — GUI table/grid display
 - `matplotlib`, `numpy`
