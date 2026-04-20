@@ -16,7 +16,7 @@ import sys
 
 
 import numpy as np
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import SkyCoord, EarthLocation
 from astropy.table import Table
 import astropy.units as u
 from pathlib import Path
@@ -27,8 +27,11 @@ from slama.monitor import (
     MonitorPointUpdater,
     MonitorPointWriter,
 )
+# from CARMA's Observatory.cat 
+# sma        -155:28:46.4    19:49:33.8       4080       reference      none
 
-
+SMALOC = EarthLocation.from_geodetic(-155.47955558*u.degree,
+                                     19.826055555*u.degree, 4080*u.m)
 class FakeObs:
     def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None):
         self._client = SmaxRedisClient("localhost", redis_port=6380)

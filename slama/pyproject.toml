@@ -18,17 +18,44 @@ classifiers = [
 dependencies = [
     "astropy>=7.0.1",
     "fastapi>=0.115.0",
+    "ipython",
     "jinja2>=3.1.0",
     "jsoneditor>=1.6.0",
     "matplotlib",
     "numpy",
-    "pytest-timeout>=2.4.0",
-    "pytest-xdist>=3.8.0",
     "smax",
     "treelib>=1.8.0",
     "uvicorn[standard]>=0.30.0",
     "pillow>=12.0.0",
 ]
 
+#all = ["slama"]
+
+[dependency-groups]
+dev = [
+  "coverage[toml]",
+  #"myst-nb",
+  #"nbclient",
+  #"nbformat",
+  "numpydoc",
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "pytest-xdist>=3.6.1",
+  "pytest-timeout>=2.4.0",
+  "ruff",
+  "sphinx",
+  "sphinx-autobuild",
+  #"sphinx-book-theme",
+  #"sphinx-copybutton",
+  #"sphinx-design",
+  #"sphinx-inline-tabs",
+  #"sphinxcontrib-mermaid",
+  "slama", # ensure that all extras are included in dev envs
+]
+
 [tool.uv.sources]
 smax = { git = "ssh://git@github.com/Smithsonian/smax-python.git" }
+
+[tool.setuptools.dynamic]
+version = {attr = "slama.__version__"}   
