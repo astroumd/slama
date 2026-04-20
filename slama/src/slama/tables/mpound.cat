@@ -1,0 +1,29 @@
+#  Source     RA              DEC          Parallax   Velocity   VelFrame   VelDef    PMRA       PMDEC        ID     PntType 
+#   s         hms             dms             r          r          s         s        r           r          i      s       
+#                                           arcsec      Rm/s                          asec/cent   asec/cent                  
+M16         18:18:51.29     -13:50:02.32    0.0         25.0       LSR       RADIO    0.000       0.000      1       RADIO   
+G013        17:46:24.00     -28:54:03.99    0.0         30.0       LSR       RADIO    0.000       0.000      1       RADIO   
+HORSHEAD    05:41:01.20     -02:28:12.49    0.0          9.0       LSR       RADIO    0.000       0.000      1       RADIO   
+W51         19:23:41.66      14:30:43.18    0.0        -44.0       LSR       RADIO    0.000       0.000      1       RADIO   
+ORIONKL     05:35:14.47     -05:22:27.55    0.0          9.0       LSR       RADIO    0.000       0.000      1       RADIO  
+IRS16293    16:32:22.80     -24:28:33.00    0.0          0.0       LSR       RADIO    0.000       0.000      1       RADIO 
+HLTAU       04:31:38.47      18:13:58.10    0.0          0.0       LSR       RADIO    0.000       0.000      1       RADIO 
+FAKE273     12:29:07.700     02:03:23.60    0.0          0.0       LSR       RADIO    0.000       0.000      1       RADIO 
+FAKE454     22:54:15.54      16:09:08.60    0.0          0.0       LSR       RADIO    0.000       0.000      1       RADIO   
+454blank     23:54:00.0      16:09:08.60    0.0          0.0       LSR       RADIO    0.000       0.000      1       RADIO   
+IRC10216    09:47:57.47      13:16:47.78    0.0        -26.2       LSR       RADIO    0.000       0.000      1       RADIO   
+M17SW       18:20:23.13     -16:13:56.25    0.0         20.0       LSR       RADIO    0.000       0.000      1       RADIO   
+ADLEO       10:19:36.00      19:52:12       0.0          0.0       LSR       RADIO    0.000   0.000      1       RADIO   
+#BADDEF      10:19:36.00         19:52:12       0.0      0.0       LSR       OPTICAL  0.000   0.000      1       RADIO   
+#BADFRAME    10:19:36.00         19:52:12       0.0      0.0       HELIOCENTRIC     RADIO    0.000    0.000      1       
+#ILLEGALF    10:19:36.00         19:52:12       0.0      0.0       FOO       RADIO    0.000   0.000      1       RADIO   
+NGC7538M    23:13:45.00      61:27:30.00    0.0        -56.00      LSR       RADIO    0.000       0.000      1       RADIO
+NGC7538X    19:13:45.00      61:27:30.00    0.0        -56.00      LSR       RADIO    0.000       0.000      1       RADIO
+M51MOSA      13:29:53.54    +47:11:30.39    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO  
+M51FAKE      20:14:00.00    +47:11:30.39    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO   
+NORTHERN      18:39:00.00    +37:17:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO  
+TOOLOW       07:30:00.00    -32:12:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO   
+TOOLOW2       07:30:00.00    -34:00:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO  
+TOOLOW3       07:30:00.00    -35:00:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO  
+BADDEC        07:30:00.00    -91:00:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO  
+BADRA         27:30:00.00    11:00:00.00    0.0         0.0        LSR       RADIO    0.000       0.000      1       RADIO   
