@@ -5,6 +5,7 @@ Created on Tue Sep 30 14:07:57 2025
 
 @author: mpound
 """
+import argparse
 import json
 from slama.monitor.monitorpoint import MonitorPoint
 from slama.monitor.monitorsystem import MonitorSubsystem, MonitorSystem
@@ -14,7 +15,7 @@ import json
 from pathlib import Path
 path = Path("../conf/smax.json")
 mpdefs = json.load(open(path,"r"))
-monsys = MonitorSystem()
+monsys = MonitorSystem(path)
 topparent = "SMA Monitor System"
 def createitems(mpdefs, monsys, parent):
 
@@ -40,6 +41,12 @@ class DictNode:
             else:
                 self.children.append(ValueNode(key, value))
 
+    def str_rep(self, brief=False):
+        if not brief:
+            return self.__repr__()
+        else:
+            return f"<{self.name}>"
+
     def __repr__(self):
         return f"<DictNode {self.name}: {len(self.children)} children>"
 
@@ -57,6 +64,12 @@ class ListNode:
             else:
                 self.children.append(ValueNode(f"{name}[{idx}]", item))
 
+    def str_rep(self, brief=False):
+        if not brief:
+            return self.__repr__()
+        else:
+            return f"<{self.name}: {len(self.children)} children>"
+
     def __repr__(self):
         return f"<ListNode {self.name}: {len(self.children)} items>"
 
@@ -66,6 +79,12 @@ class ValueNode:
     def __init__(self, key, value):
         self.key = key
         self.value = value
+
+    def str_rep(self, brief=False):
+        if not brief:
+            return self.__repr__()
+        else:
+            return None
 
     def __repr__(self):
         return f"<ValueNode {self.key}={self.value!r}>"
@@ -91,19 +110,25 @@ def read_json_file(file_path):
 
 
 if __name__ == "__main__":
-    # Example usage
-    json_data = read_json_file("../conf/smax.json")
+    progname = "SMA monitor system printer"
+    
+    parser = argparse.ArgumentParser(prog=progname)
+    parser.add_argument("--brief", "-b", action="store_true", help="Brief display", default=False)
+    parser.add_argument("--file", "-f", action="store", help="Input file", default="../conf/smax.json", type=str)
+    args = parser.parse_args()
+    print(args)
+    json_data = read_json_file(args.file)
     root = build_tree(json_data)
     print(root)
 
-    # Optional: pretty print the tree
-    def print_tree(node, indent=0):
-        print("  " * indent + repr(node))
+    # Pretty print the tree
+    def print_tree(node, indent=0, brief=args.brief):
+        rep = node.str_rep(args.brief)
+        if rep is not None:
+            print("  " * indent + rep)
         if hasattr(node, "children"):
             for child in node.children:
-                print_tree(child, indent + 1)
+                print_tree(child, indent + 1, args.brief)
 
     print_tree(root)
 
-
-        
