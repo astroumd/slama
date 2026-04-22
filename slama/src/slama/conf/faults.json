@@ -1,0 +1,44 @@
+{
+  "_note": [
+    "The `parents` field encodes physical/causal fault dependency, NOT",
+    "the colon-separated canonical-name hierarchy. A sibling leaf under",
+    "the same branch (e.g. antenna:1:air:temperature and antenna:1:air:heater)",
+    "does NOT imply a parent/child fault relationship. Edges here should",
+    "capture the real dependency chain, e.g. a power or site-level monitor",
+    "upstream of subsystem leaves. All entries below are root-only until",
+    "those causal relationships are filled in."
+  ],
+  "defaults": {
+    "transient_filter_s": 5,
+    "interval_s": 2
+  },
+  "actions": {
+    "log": { "type": "log_file", "path": "/tmp/slama-faults.log" }
+  },
+  "faults": [
+    {
+      "canonical_name": "correlator:swarm:progress",
+      "actions": ["log"]
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "canonical_name": "antenna:{i}:air:temperature",
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "canonical_name": "antenna:{i}:air:heater",
+          "actions": ["log"]
+        }
+      }
+    }
+  ]
+}
