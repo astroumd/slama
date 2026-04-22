@@ -1640,7 +1640,7 @@ requires-dist = [
     { name = "numpy" },
     { name = "pillow", specifier = ">=12.0.0" },
     { name = "requests", specifier = ">=2.33.0" },
-    { name = "smax", git = "ssh://git@github.com/Smithsonian/smax-python.git" },
+    { name = "smax", git = "https://github.com/Smithsonian/smax-python.git?rev=main" },
     { name = "treelib", specifier = ">=1.8.0" },
     { name = "urllib3", specifier = ">=2.6.3" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
@@ -1664,7 +1664,7 @@ dev = [
 [[package]]
 name = "smax"
 version = "1.2.4"
-source = { git = "ssh://git@github.com/Smithsonian/smax-python.git#a16d1167cf790da912a0c8c88d3b8518d3f6a154" }
+source = { git = "https://github.com/Smithsonian/smax-python.git?rev=main#a16d1167cf790da912a0c8c88d3b8518d3f6a154" }
 dependencies = [
     { name = "hiredis" },
     { name = "numpy" },

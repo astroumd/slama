@@ -58,7 +58,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-smax = { git = "ssh://git@github.com/Smithsonian/smax-python.git" }
+smax = { git = "https://github.com/Smithsonian/smax-python.git", rev="main" }
 
 [tool.setuptools.dynamic]
 version = {attr = "slama.__version__"}   
