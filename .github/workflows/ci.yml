@@ -89,7 +89,7 @@ jobs:
           merge-multiple: true
       - name: Combine coverage
         run: |
-          uv run coverage combine coverage-data/coverage.*
+          uv run coverage combine coverage.*
           uv run coverage html --skip-covered --skip-empty
 
           # Report and write to summary.
