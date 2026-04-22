@@ -10,6 +10,9 @@ on:
   workflow_dispatch: # needed for "Run" button to show up in action
 env:
   FORCE_COLOR: '1' # Make tools pretty.
+defaults:
+  run:
+    working-directory: ./slama
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
