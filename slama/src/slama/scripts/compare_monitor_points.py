@@ -104,6 +104,8 @@ def main() -> None:
                        help="Show Valkey names absent from smax.json (default)")
     group.add_argument("--in-smax", action="store_true",
                        help="Show smax.json names absent from Valkey")
+    group.add_argument("--common", action="store_true",
+                       help="Show names present in both files")
     parser.add_argument("--smax", type=Path,
                         default=Path(__file__).parent.parent / "conf" / "smax.json",
                         help="Path to smax.json")
@@ -118,20 +120,23 @@ def main() -> None:
     valkey_names = load_valkey_names(args.valkey)
 
     if args.in_smax:
-        diff = sorted(smax_names - valkey_names)
+        result = sorted(smax_names - valkey_names)
         label = "In smax.json but NOT in Valkey"
+    elif args.common:
+        result = sorted(smax_names & valkey_names)
+        label = "In both smax.json and Valkey"
     else:
-        diff = sorted(valkey_names - smax_names)
+        result = sorted(valkey_names - smax_names)
         label = "In Valkey but NOT in smax.json"
 
-    print(f"# {label} ({len(diff)} entries)\n")
-    for name in diff:
+    print(f"# {label} ({len(result)} entries)\n")
+    for name in result:
         print(name)
 
     print(f"\n# Summary")
     print(f"  smax.json canonical names : {len(smax_names)}")
     print(f"  Valkey names              : {len(valkey_names)}")
-    print(f"  Difference ({label[:8]}...): {len(diff)}")
+    print(f"  {label[:40]}: {len(result)}")
 
 
 if __name__ == "__main__":
