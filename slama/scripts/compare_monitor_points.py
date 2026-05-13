@@ -106,11 +106,11 @@ def main() -> None:
                        help="Show smax.json names absent from Valkey")
     group.add_argument("--common", action="store_true",
                        help="Show names present in both files")
+    # scripts/ sits at the repo root
+    _repo_root = Path(__file__).resolve().parent.parent
     parser.add_argument("--smax", type=Path,
-                        default=Path(__file__).parent.parent / "conf" / "smax.json",
+                        default=_repo_root / "src" / "slama" / "conf" / "smax.json",
                         help="Path to smax.json")
-    # Walk up from scripts/ → slama/ → src/ → slama/ (repo root)
-    _repo_root = Path(__file__).resolve().parents[3]
     parser.add_argument("--valkey", type=Path,
                         default=_repo_root / "docs" / "all_monitor_points.txt",
                         help="Path to all_monitor_points.txt")
