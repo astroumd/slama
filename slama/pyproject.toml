@@ -18,15 +18,18 @@ classifiers = [
 dependencies = [
     "astropy>=7.0.1",
     "fastapi>=0.115.0",
+    "fonttools>=4.60.2", # dependabot
     "ipython",
     "jinja2>=3.1.0",
     "jsoneditor>=1.6.0",
     "matplotlib",
+    "pillow>=12.0.0",  # dependabot
+    "requests>=2.33.0",  # dependabot
     "numpy",
     "smax",
     "treelib>=1.8.0",
+    "urllib3>=2.6.3", #dependabot
     "uvicorn[standard]>=0.30.0",
-    "pillow>=12.0.0",
 ]
 
 #all = ["slama"]
@@ -55,7 +58,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-smax = { git = "ssh://git@github.com/Smithsonian/smax-python.git" }
+smax = { git = "https://github.com/Smithsonian/smax-python.git", rev="main" }
 
 [tool.setuptools.dynamic]
 version = {attr = "slama.__version__"}   
