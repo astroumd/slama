@@ -5,14 +5,18 @@ Valkey database (docs/all_monitor_points.txt) and report what is missing from
 smax.json.
 
 Usage:
-    uv run src/slama/scripts/compare_monitor_points.py [--in-smax] [--missing]
+    uv run scripts/compare_monitor_points.py [--in-smax] [--missing] [--compact]
 
 Options:
     --missing   (default) Print names present in Valkey but absent from smax.json
     --in-smax   Print names present in smax.json but absent from Valkey
+    --common    Print names present in both files
+    --summary   Print only the summary counts, no names
+    --compact   Collapse numeric variants, e.g. DSM:acc[1-8]:foo
 """
 
 import argparse
+import re
 import json
 from pathlib import Path
 
@@ -97,6 +101,72 @@ def load_valkey_names(txt_path: Path) -> set[str]:
     return names
 
 
+def _fmt_nums(vals: set[int]) -> str:
+    """Format a set of integers as a compact string for use inside brackets."""
+    s = sorted(vals)
+    if len(s) == 1:
+        return str(s[0])
+    if s == list(range(s[0], s[-1] + 1)):
+        return f"[{s[0]}-{s[-1]}]"
+    return "[" + ",".join(str(v) for v in s) + "]"
+
+
+def compact_names(names: list[str]) -> list[str]:
+    """
+    Collapse names that differ only in embedded digit sequences.
+
+    For example, ``DSM:acc1:FOO``, ``DSM:acc2:FOO``, ``DSM:acc3:FOO``
+    become ``DSM:acc[1-3]:FOO``.  Each `:``-delimited segment is split on
+    digit runs; names sharing the same non-digit skeleton are grouped and
+    their per-position digit sets are merged.
+
+    Parameters
+    ----------
+    names : list[str]
+        Canonical monitor-point names to compress.
+
+    Returns
+    -------
+    list[str]
+        Sorted list of compressed names.
+    """
+    # template: tuple of per-segment tuples, each alternating (str, None, str, ...)
+    # where None marks a digit-run placeholder.
+    groups: dict[tuple, list[set[int]]] = {}
+
+    for name in names:
+        segs = name.split(":")
+        tmpl_segs = []
+        num_positions: list[int] = []
+        for seg in segs:
+            chunks = re.split(r"(\d+)", seg)
+            tmpl_segs.append(tuple(None if i % 2 == 1 else c for i, c in enumerate(chunks)))
+            for i, c in enumerate(chunks):
+                if i % 2 == 1:
+                    num_positions.append(int(c))
+        tmpl = tuple(tmpl_segs)
+        if tmpl not in groups:
+            groups[tmpl] = [set() for _ in num_positions]
+        for idx, val in enumerate(num_positions):
+            groups[tmpl][idx].add(val)
+
+    result = []
+    for tmpl, num_sets in groups.items():
+        num_iter = iter(num_sets)
+        parts = []
+        for seg_tmpl in tmpl:
+            seg = ""
+            for chunk in seg_tmpl:
+                if chunk is None:
+                    seg += _fmt_nums(next(num_iter))
+                else:
+                    seg += chunk
+            parts.append(seg)
+        result.append(":".join(parts))
+
+    return sorted(result)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group()
@@ -108,6 +178,8 @@ def main() -> None:
                        help="Show names present in both files")
     group.add_argument("--summary", action="store_true",
                        help="Print only the summary counts, no names")
+    parser.add_argument("--compact", action="store_true",
+                        help="Collapse numeric variants, e.g. DSM:acc[1-8]:foo")
     # scripts/ sits at the repo root
     _repo_root = Path(__file__).resolve().parent.parent
     parser.add_argument("--smax", type=Path,
@@ -135,8 +207,10 @@ def main() -> None:
         label = "In Valkey but NOT in smax.json"
 
     if not args.summary:
-        print(f"# {label} ({len(result)} entries)\n")
-        for name in result:
+        display = compact_names(result) if args.compact else result
+        qualifier = " (compact)" if args.compact else ""
+        print(f"# {label} ({len(display)} entries{qualifier})\n")
+        for name in display:
             print(name)
         print()
 
