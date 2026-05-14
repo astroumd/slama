@@ -106,6 +106,8 @@ def main() -> None:
                        help="Show smax.json names absent from Valkey")
     group.add_argument("--common", action="store_true",
                        help="Show names present in both files")
+    group.add_argument("--summary", action="store_true",
+                       help="Print only the summary counts, no names")
     # scripts/ sits at the repo root
     _repo_root = Path(__file__).resolve().parent.parent
     parser.add_argument("--smax", type=Path,
@@ -125,18 +127,28 @@ def main() -> None:
     elif args.common:
         result = sorted(smax_names & valkey_names)
         label = "In both smax.json and Valkey"
+    elif args.summary:
+        result = []
+        label = ""
     else:
         result = sorted(valkey_names - smax_names)
         label = "In Valkey but NOT in smax.json"
 
-    print(f"# {label} ({len(result)} entries)\n")
-    for name in result:
-        print(name)
+    if not args.summary:
+        print(f"# {label} ({len(result)} entries)\n")
+        for name in result:
+            print(name)
+        print()
 
-    print(f"\n# Summary")
+    missing = valkey_names - smax_names
+    in_smax_only = smax_names - valkey_names
+    common = smax_names & valkey_names
+    print(f"# Summary")
     print(f"  smax.json canonical names : {len(smax_names)}")
     print(f"  Valkey names              : {len(valkey_names)}")
-    print(f"  {label[:40]}: {len(result)}")
+    print(f"  In both                   : {len(common)}")
+    print(f"  In Valkey, not smax.json  : {len(missing)}")
+    print(f"  In smax.json, not Valkey  : {len(in_smax_only)}")
 
 
 if __name__ == "__main__":
