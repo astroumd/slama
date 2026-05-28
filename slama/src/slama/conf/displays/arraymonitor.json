@@ -1,0 +1,62 @@
+{
+  "name": "Array Monitor",
+  "description": "Overall array status: project, weather, source, receiver — DSM rows are placeholders",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Project / Observation (DSM — placeholders)",
+      "cells": [
+        {"label": "Project ID (DSM)",    "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
+        {"label": "Observer (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Location (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
+        {"label": "Scans remain (DSM)",  "point": "dsm:placeholder:DSM_SCANS_REMAINING"},
+        {"label": "FullPol (DSM)",       "point": "dsm:placeholder:DSM_FULLPOL_STATUS"},
+        {"label": "SWARM status (DSM)",  "point": "dsm:placeholder:DSM_SWARM_STATUS"},
+        {"label": "DUT (DSM)",           "point": "dsm:placeholder:DSM_DUT"},
+        {"label": "Tau225 (DSM)",        "point": "dsm:placeholder:DSM_TAU225"},
+        {"label": "Tau350 (DSM)",        "point": "dsm:placeholder:DSM_TAU350"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Current Source (RM — live)",
+      "cells": [
+        {"label": "Source",         "point": "RM:acc1:RM_SOURCE_C34"},
+        {"label": "RA (hr)",        "point": "RM:acc1:RM_RA_CAT_HOURS_D",  "format": "{:.4f}", "display_min": 0,    "display_max": 24},
+        {"label": "Dec (deg)",      "point": "RM:acc1:RM_DEC_CAT_DEG_D",   "format": "{:.4f}", "display_min": -90,  "display_max": 90},
+        {"label": "LST (hr)",       "point": "RM:acc1:RM_LST_HOURS_F",     "format": "{:.4f}", "display_min": 0,    "display_max": 24},
+        {"label": "Sun Az (deg)",   "point": "RM:acc1:RM_SUN_AZ_DEG_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360},
+        {"label": "Sun El (deg)",   "point": "RM:acc1:RM_SUN_EL_DEG_F",   "format": "{:.1f}", "display_min": -90,  "display_max": 90}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Antenna Positions (RM — live)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Az (deg)", "points": "RM:acc{ant}:RM_ACTUAL_AZ_DEG_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
+        {"label": "El (deg)", "points": "RM:acc{ant}:RM_ACTUAL_EL_DEG_F", "format": "{:.2f}", "display_min": -5,   "display_max": 90},
+        {"label": "Low Rx",   "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "High Rx",  "points": "RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10"},
+        {"label": "Tsys (K)", "points": "RM:acc{ant}:RM_TSYS_D", "format": "{:.1f}", "display_min": 0, "display_max": 10000}
+      ]
+    },
+    {
+      "type": "grid",
+      "title": "Weather (RM — live)",
+      "columns": 3,
+      "cells": [
+        {"label": "T(amb) (F)",     "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
+        {"label": "RH%",            "point": "RM:acc1:RM_WEATHER_HUMIDITY_F",  "format": "{:.1f}", "display_min": 0,    "display_max": 100},
+        {"label": "Wind (mph)",     "point": "RM:acc1:RM_WEATHER_WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
+        {"label": "Wind dir (deg)", "point": "RM:acc1:RM_WEATHER_WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360},
+        {"label": "P(atm) (mbar)",  "point": "RM:acc1:RM_WEATHER_MBAR_F",     "format": "{:.1f}", "display_min": 400,  "display_max": 900}
+      ]
+    }
+  ]
+}

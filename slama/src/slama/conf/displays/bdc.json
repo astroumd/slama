@@ -1,0 +1,46 @@
+{
+  "name": "BDC Backend",
+  "description": "Backend doubler chassis: detector voltages, VGA, attenuators (4-8, 8-12, 10-12, 12-16 GHz) — DSM placeholders",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "BDC 4-8 GHz (DSM — placeholders)",
+      "cells": [
+        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_4_8_DET_V_CH1"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_4_8_DET_V_CH2"},
+        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_4_8_VGA"},
+        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_4_8_ATTN"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "BDC 8-12 GHz (DSM — placeholders)",
+      "cells": [
+        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_8_12_DET_V_CH1"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_8_12_DET_V_CH2"},
+        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_8_12_VGA"},
+        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_8_12_ATTN"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "BDC 10-12 GHz (DSM — placeholders)",
+      "cells": [
+        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_10_12_DET_V_CH1"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_10_12_DET_V_CH2"},
+        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_10_12_ATTN"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "BDC 12-16 GHz (DSM — placeholders)",
+      "cells": [
+        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_12_16_DET_V_CH1"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_12_16_DET_V_CH2"},
+        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_12_16_VGA"},
+        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_12_16_ATTN"}
+      ]
+    }
+  ]
+}

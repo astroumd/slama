@@ -1,0 +1,31 @@
+{
+  "name": "Allan Variance",
+  "description": "Receiver frequency stability (Allan variance) across time bins per antenna",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Allan Variance (2 bands x 10 time bins) — raw array per antenna",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Variance [band,bin]", "points": "RM:acc{ant}:RM_SYNCDET2_ALLAN_VARIANCE_V2_V10_F"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Timestamps",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Tsys timestamp", "points": "RM:acc{ant}:RM_UNHEATEDLOAD_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
+      ]
+    }
+  ]
+}

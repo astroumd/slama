@@ -1,0 +1,37 @@
+{
+  "name": "Optical Telescopes (C90 / CCD)",
+  "description": "Celestron C90 guide telescope and CCD camera status (C90 on antennas 1-6 only)",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "table",
+      "title": "C90 Guide Telescope (Antennas 1-6)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6]
+      },
+      "rows": [
+        {"label": "Humidity (%)",  "points": "RM:acc{ant}:RM_CELESTRON_HUMIDITY_F",      "format": "{:.1f}", "display_min": -1,   "display_max": 102},
+        {"label": "Temp (C)",      "points": "RM:acc{ant}:RM_CELESTRON_TEMPERATURE_F",   "format": "{:.1f}", "display_min": -50,  "display_max": 100},
+        {"label": "Focus (mils)",  "points": "RM:acc{ant}:RM_CELESTRON_FOCUS_MILS_F",    "format": "{:.2f}", "display_min": 0,    "display_max": 500},
+        {"label": "Motor present", "points": "RM:acc{ant}:RM_CELESTRON_FOCUS_MOTOR_PRESENT_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "CCD Camera",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "CCD Max pixel",     "points": "RM:acc{ant}:RM_CCD_MAX_PIXEL_VALUE_S",   "display_min": -1,  "display_max": 255},
+        {"label": "CCD Min pixel",     "points": "RM:acc{ant}:RM_CCD_MIN_PIXEL_VALUE_S",   "display_min": -1,  "display_max": 255},
+        {"label": "Integration (ms)",  "points": "RM:acc{ant}:RM_CCD_INTEGRATION_SEC_S",   "display_min": 0,   "display_max": 9999},
+        {"label": "Last image (time)", "points": "RM:acc{ant}:RM_CCD_TIMESTAMP_L",         "display_min": 0,   "display_max": 2000000000}
+      ]
+    }
+  ]
+}

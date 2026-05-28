@@ -1,0 +1,58 @@
+{
+  "name": "Misc DSM (deice, genset, network, c1DC)",
+  "description": "Deicing, generator, network, C1DC correlator — all DSM placeholders",
+  "update_interval": 30,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Deicing System (DSM — placeholders)",
+      "cells": [
+        {"label": "Deice state (DSM)",       "point": "dsm:placeholder:DSM_DEICE_STATE"},
+        {"label": "Deice temp (C) (DSM)",    "point": "dsm:placeholder:DSM_DEICE_TEMP_C"},
+        {"label": "Deice status bits (DSM)", "point": "dsm:placeholder:DSM_DEICE_STATUS_BITS"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Generator Set (DSM — placeholders)",
+      "cells": [
+        {"label": "Genset power (W) (DSM)",  "point": "dsm:placeholder:DSM_GENSET_POWER_W"},
+        {"label": "Genset status (DSM)",     "point": "dsm:placeholder:DSM_GENSET_STATUS"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Network Interfaces (DSM — placeholders)",
+      "cells": [
+        {"label": "IP status (DSM)",         "point": "dsm:placeholder:DSM_NETWORK_IP_STATUS"},
+        {"label": "Bandwidth (DSM)",         "point": "dsm:placeholder:DSM_NETWORK_BANDWIDTH"},
+        {"label": "Packet errors (DSM)",     "point": "dsm:placeholder:DSM_NETWORK_ERRORS"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "C1DC Correlator Power (DSM — placeholders)",
+      "cells": [
+        {"label": "C1DC power level (DSM)",  "point": "dsm:placeholder:DSM_C1DC_POWER_LEVEL"},
+        {"label": "C1DC status (DSM)",       "point": "dsm:placeholder:DSM_C1DC_STATUS"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "YIG Frequencies (DSM — placeholders)",
+      "cells": [
+        {"label": "YIG freq (GHz) (DSM)",    "point": "dsm:placeholder:DSM_YIG_FREQ_GHZ"},
+        {"label": "YIG lock status (DSM)",   "point": "dsm:placeholder:DSM_YIG_LOCK_STATUS"},
+        {"label": "YIG tune word (DSM)",     "point": "dsm:placeholder:DSM_YIG_TUNE_WORD"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "SMA Initialization (DSM — placeholders)",
+      "cells": [
+        {"label": "Init state (DSM)",        "point": "dsm:placeholder:DSM_SMAINIT_STATE"},
+        {"label": "Init progress (DSM)",     "point": "dsm:placeholder:DSM_SMAINIT_PROGRESS"}
+      ]
+    }
+  ]
+}

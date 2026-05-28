@@ -1,0 +1,41 @@
+{
+  "name": "SWARM Correlator",
+  "description": "ROACH2 board temperatures, delays, Walsh patterns, loading factors — DSM placeholders",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "table",
+      "title": "ROACH2 Board Temperatures (C) (DSM — placeholders)",
+      "columns": {
+        "labels": ["R2-01", "R2-02", "R2-03", "R2-04", "R2-05", "R2-06", "R2-07", "R2-08"],
+        "var": "roach",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Ambient (C) (DSM)",   "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_AMBIENT"},
+        {"label": "Inlet (C) (DSM)",     "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_INLET"},
+        {"label": "Outlet (C) (DSM)",    "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_OUTLET"},
+        {"label": "PowerPC (C) (DSM)",   "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_PPC"},
+        {"label": "FPGA (C) (DSM)",      "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_FPGA"},
+        {"label": "Temp age (DSM)",      "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_AGE"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Delays and Walsh Patterns (DSM — placeholders)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "DDS Delay (ns) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_DDS_DELAY"},
+        {"label": "FPGA Delay (ns) (DSM)", "points": "dsm:placeholder:DSM_ANT{ant}_FPGA_DELAY"},
+        {"label": "Sum Delay (ns) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_SUM_DELAY"},
+        {"label": "Walsh pattern (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_WALSH"},
+        {"label": "LF load factor (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_LF_LF"},
+        {"label": "HF load factor (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_LF_HF"}
+      ]
+    }
+  ]
+}

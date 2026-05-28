@@ -1,0 +1,19 @@
+{
+  "name": "Coherence / Fringes",
+  "description": "Interferometer fringe visibility and coherence metrics — DSM placeholders",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Fringe / Coherence Status (DSM — placeholders)",
+      "cells": [
+        {"label": "Fringe amplitude (DSM)",   "point": "dsm:placeholder:DSM_FRINGE_AMPLITUDE"},
+        {"label": "Fringe phase (deg) (DSM)", "point": "dsm:placeholder:DSM_FRINGE_PHASE"},
+        {"label": "Coherence (%) (DSM)",      "point": "dsm:placeholder:DSM_COHERENCE_PCT"},
+        {"label": "Baseline (m) (DSM)",       "point": "dsm:placeholder:DSM_BASELINE_M"},
+        {"label": "Integration (s) (DSM)",    "point": "dsm:placeholder:DSM_COHERENCE_INTEG"},
+        {"label": "Last update (DSM)",        "point": "dsm:placeholder:DSM_FRINGE_TIMESTAMP"}
+      ]
+    }
+  ]
+}

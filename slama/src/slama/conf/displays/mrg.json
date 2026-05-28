@@ -1,0 +1,19 @@
+{
+  "name": "Master Reference Generator",
+  "description": "MRG frequency lock and tuning status — DSM placeholders",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "MRG Status (DSM — placeholders)",
+      "cells": [
+        {"label": "Lock status (DSM)",     "point": "dsm:placeholder:DSM_MRG_LOCK_STATUS"},
+        {"label": "Freq (GHz) (DSM)",      "point": "dsm:placeholder:DSM_MRG_FREQ_GHZ"},
+        {"label": "Tune word (DSM)",       "point": "dsm:placeholder:DSM_MRG_TUNE_WORD"},
+        {"label": "Phase err (DSM)",       "point": "dsm:placeholder:DSM_MRG_PHASE_ERROR"},
+        {"label": "Power (dBm) (DSM)",     "point": "dsm:placeholder:DSM_MRG_POWER_DBM"},
+        {"label": "Last update (DSM)",     "point": "dsm:placeholder:DSM_MRG_TIMESTAMP"}
+      ]
+    }
+  ]
+}

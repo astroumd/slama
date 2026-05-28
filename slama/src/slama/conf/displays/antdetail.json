@@ -1,0 +1,75 @@
+{
+  "name": "Antenna Detail",
+  "description": "Per-antenna detail: sync detector, feed offsets, tilt offsets, sun avoidance (from antMonitor.c)",
+  "update_interval": 2,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Synchronous Detector",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Cont1 Det1 (mV)",    "points": "RM:acc{ant}:RM_CONT1_DET1_F",             "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "Cont2 Det1 (mV)",    "points": "RM:acc{ant}:RM_CONT2_DET1_F",             "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "Cont1 pwr (uW)",     "points": "RM:acc{ant}:RM_CONT1_DET1_POWER_MUWATT_F","format": "{:.3f}", "display_min": 0,     "display_max": 1e6},
+        {"label": "Cont2 pwr (uW)",     "points": "RM:acc{ant}:RM_CONT2_DET1_MUWATT_F",      "format": "{:.3f}", "display_min": 0,     "display_max": 1e6},
+        {"label": "SyncDet channels",   "points": "RM:acc{ant}:RM_SYNCDET2_CHANNELS_V2_F"},
+        {"label": "SyncDet stats [6]",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F"},
+        {"label": "SyncDet timestamp",  "points": "RM:acc{ant}:RM_SYNCDET2_TIMESTAMP_L",     "display_min": 0,   "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Feed Offsets",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Feed",              "points": "RM:acc{ant}:RM_FEED_C10"},
+        {"label": "Feed Off A1 (asec)","points": "RM:acc{ant}:RM_FEEDOFFSET_A1_ARCSEC_D", "format": "{:.2f}", "display_min": -999, "display_max": 999},
+        {"label": "Feed Off A2 (asec)","points": "RM:acc{ant}:RM_FEEDOFFSET_A2_ARCSEC_D", "format": "{:.2f}", "display_min": -999, "display_max": 999}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Tilt Offsets and Pointing Corrections (arcsec)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Tilt Az Off (asec)", "points": "RM:acc{ant}:RM_TILT_AZOFF_ARCSEC_D",   "format": "{:+.2f}", "display_min": -1000, "display_max": 1000},
+        {"label": "Tilt El Off (asec)", "points": "RM:acc{ant}:RM_TILT_ELOFF_ARCSEC_D",   "format": "{:+.2f}", "display_min": -1000, "display_max": 1000},
+        {"label": "PM Az Tilt (asec)",  "points": "RM:acc{ant}:RM_PMAZTILT_AZOFF_D",      "format": "{:+.2f}", "display_min": -1000, "display_max": 1000},
+        {"label": "PM El Tilt (asec)",  "points": "RM:acc{ant}:RM_PMAZTILT_ELOFF_D",      "format": "{:+.2f}", "display_min": -1000, "display_max": 1000},
+        {"label": "Refraction (asec)",  "points": "RM:acc{ant}:RM_REFRACTION_ARCSEC_D",   "format": "{:.2f}", "display_min": 0,     "display_max": 3600},
+        {"label": "PM Az Err (asec)",   "points": "RM:acc{ant}:RM_PMDAZ_F",               "format": "{:+.2f}", "display_min": -10000, "display_max": 10000},
+        {"label": "PM El Err (asec)",   "points": "RM:acc{ant}:RM_PMDEL_F",               "format": "{:+.2f}", "display_min": -10000, "display_max": 10000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Sun Avoidance and Drive",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Sun Az (deg)",       "points": "RM:acc{ant}:RM_SUN_AZ_DEG_F",               "format": "{:.1f}", "display_min": 0,      "display_max": 360},
+        {"label": "Sun El (deg)",       "points": "RM:acc{ant}:RM_SUN_EL_DEG_F",               "format": "{:.1f}", "display_min": -90,    "display_max": 90},
+        {"label": "Sun-safe now (min)", "points": "RM:acc{ant}:RM_PRESENT_SUN_SAFE_MINUTES_S", "display_min": -1,  "display_max": 10000},
+        {"label": "Sun-safe req (min)", "points": "RM:acc{ant}:RM_REQUIERD_SUN_SAFE_MINUTES_S","display_min": -1,  "display_max": 10000},
+        {"label": "Pad ID",             "points": "RM:acc{ant}:RM_PAD_ID_B",                   "display_min": 1,   "display_max": 30},
+        {"label": "Pad ID fake",        "points": "RM:acc{ant}:RM_PAD_ID_IS_FAKE_B"},
+        {"label": "Drives timeout",     "points": "RM:acc{ant}:RM_DRIVES_TIMEOUT_FLAG_S"}
+      ]
+    }
+  ]
+}
