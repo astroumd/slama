@@ -28,7 +28,7 @@ dependencies = [
     "numpy",
     "smax",
     "treelib>=1.8.0",
-    "urllib3>=2.6.3", #dependabot
+    "urllib3>=2.7.0", #dependabot
     "uvicorn[standard]>=0.30.0",
 ]
 
