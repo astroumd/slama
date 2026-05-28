@@ -1,0 +1,64 @@
+{
+  "name": "Pointing Models",
+  "description": "Antenna pointing model correction terms (arcsec) per antenna",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Feed / Model Date",
+      "cells": [
+        {"label": "Feed (Ant 1)", "point": "RM:acc1:RM_FEED_C10"},
+        {"label": "Feed (Ant 2)", "point": "RM:acc2:RM_FEED_C10"},
+        {"label": "Feed (Ant 3)", "point": "RM:acc3:RM_FEED_C10"},
+        {"label": "Feed (Ant 4)", "point": "RM:acc4:RM_FEED_C10"},
+        {"label": "Feed (Ant 5)", "point": "RM:acc5:RM_FEED_C10"},
+        {"label": "Feed (Ant 6)", "point": "RM:acc6:RM_FEED_C10"},
+        {"label": "Feed (Ant 7)", "point": "RM:acc7:RM_FEED_C10"},
+        {"label": "Feed (Ant 8)", "point": "RM:acc8:RM_FEED_C10"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Azimuth Model Terms (arcsec)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "AzDC",        "points": "RM:acc{ant}:RM_AZDC_ARCSEC_D",           "format": "{:.1f}", "display_min": -36000, "display_max": 36000},
+        {"label": "AzColl",      "points": "RM:acc{ant}:RM_AZCOLLIMATION_ARCSEC_D",  "format": "{:.1f}", "display_min": -36000, "display_max": 36000},
+        {"label": "ElTilt",      "points": "RM:acc{ant}:RM_AZELAXISTILT_ARCSEC_D",   "format": "{:.1f}", "display_min": -36000, "display_max": 36000},
+        {"label": "AAzTltSin",   "points": "RM:acc{ant}:RM_AZAZTILTSIN_ARCSEC_D",    "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AAzTltCos",   "points": "RM:acc{ant}:RM_AZAZTILTCOS_ARCSEC_D",    "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AAzTltSin2",  "points": "RM:acc{ant}:RM_AZAZTILTSIN2_ARCSEC_D",   "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AAzTltCos2",  "points": "RM:acc{ant}:RM_AZAZTILTCOS2_ARCSEC_D",   "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncSin",    "points": "RM:acc{ant}:RM_AZENCSIN_ARCSEC_D",       "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncCos",    "points": "RM:acc{ant}:RM_AZENCCOS_ARCSEC_D",       "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncSin2",   "points": "RM:acc{ant}:RM_AZENCSIN2_ARCSEC_D",      "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncCos2",   "points": "RM:acc{ant}:RM_AZENCCOS2_ARCSEC_D",      "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncSin3",   "points": "RM:acc{ant}:RM_AZENCSIN3_ARCSEC_D",      "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzEncCos3",   "points": "RM:acc{ant}:RM_AZENCCOS3_ARCSEC_D",      "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "AzRMS",       "points": "RM:acc{ant}:RM_AZRMS_ARCSEC_D",          "format": "{:.1f}", "display_min": 0,      "display_max": 100}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Elevation Model Terms (arcsec)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "ElDC",        "points": "RM:acc{ant}:RM_ELDC_ARCSEC_D",           "format": "{:.1f}", "display_min": -36000, "display_max": 36000},
+        {"label": "ElSag",       "points": "RM:acc{ant}:RM_ELSAG_ARCSEC_D",          "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "EAzTltSin",   "points": "RM:acc{ant}:RM_ELAZTILTSIN_ARCSEC_D",    "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "EAzTltCos",   "points": "RM:acc{ant}:RM_ELAZTILTCOS_ARCSEC_D",    "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "EAzTltSin2",  "points": "RM:acc{ant}:RM_ELAZTILTSIN2_ARCSEC_D",   "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "EAzTltCos2",  "points": "RM:acc{ant}:RM_ELAZTILTCOS2_ARCSEC_D",   "format": "{:.1f}", "display_min": -3600,  "display_max": 3600},
+        {"label": "ElRMS",       "points": "RM:acc{ant}:RM_ELRMS_ARCSEC_D",          "format": "{:.1f}", "display_min": 0,      "display_max": 100}
+      ]
+    }
+  ]
+}

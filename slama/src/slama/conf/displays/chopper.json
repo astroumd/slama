@@ -1,0 +1,36 @@
+{
+  "name": "Chopper",
+  "description": "Chopper mirror position, home check, and status per antenna",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Chopper Position (mm / arcsec) — relative to far position",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Pos (X,Y,Z,Tilt) rel far",  "points": "RM:acc{ant}:RM_CHOPPER_POS_MM_V4_F"},
+        {"label": "Pos (X,Y,Z,Tilt) rel home", "points": "RM:acc{ant}:RM_CHOPPER_FAR_POS_MM_V4_F"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Chopper Home Check and Status",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Home chk (X,Y,Z)",  "points": "RM:acc{ant}:RM_CHOPPER_HOME_CHECK_RESULTS_V3_S"},
+        {"label": "HomeChk time",       "points": "RM:acc{ant}:RM_CHOPPER_HOME_CHECK_TIME_L",    "display_min": 0, "display_max": 2000000000},
+        {"label": "PMAC reset time",    "points": "RM:acc{ant}:RM_CHOPPER_PMAC_RESET_TIME_L",   "display_min": 0, "display_max": 2000000000},
+        {"label": "Status bits",        "points": "RM:acc{ant}:RM_CHOPPER_STATUS_BITS_V16_B"},
+        {"label": "Monitor timestamp",  "points": "RM:acc{ant}:RM_CHOPPER_MONITOR_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
+      ]
+    }
+  ]
+}
