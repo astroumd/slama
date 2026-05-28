@@ -1,0 +1,48 @@
+{
+  "name": "LO Motor Page",
+  "description": "Local oscillator motor positions and PLL status per antenna",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Receiver A (Low Band)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Active Low Rx",     "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "Slave1 PLL#",       "points": "RM:acc{ant}:RM_SLAVE1_PLL_NO_S",                    "display_min": 0,   "display_max": 100},
+        {"label": "LO Board EPROM/RAM","points": "RM:acc{ant}:RM_LO_BOARD_EPROM_VERSION_V8_S"},
+        {"label": "LO Chain [9 vals]", "points": "RM:acc{ant}:RM_MOTORIZED_LO_CHAIN_V8_V9_L"},
+        {"label": "PLL Plate Temp (F)","points": "RM:acc{ant}:RM_GUNN_LO_PLATE_TEMPERATURE_F",        "format": "{:.1f}", "display_min": -40,  "display_max": 300},
+        {"label": "PLL Supply (V)",    "points": "RM:acc{ant}:RM_PLL_POWER_SUPPLY_F",                  "format": "{:.2f}", "display_min": -30,  "display_max": 30},
+        {"label": "Logic Supply (V)",  "points": "RM:acc{ant}:RM_LOGIC_POWER_SUPPLY_F",                "format": "{:.2f}", "display_min": -30,  "display_max": 30},
+        {"label": "PLL Filt Thresh",   "points": "RM:acc{ant}:RM_GUNN1_PLL_FILTER_RATIO_THRESHOLD_S", "display_min": 1,   "display_max": 999},
+        {"label": "PLL Rectr Thresh",  "points": "RM:acc{ant}:RM_GUNN1_PLL_RECENTER_THRESHOLD_F",     "format": "{:.3f}", "display_min": 0,    "display_max": 1},
+        {"label": "Gunn1 Lock",        "points": "RM:acc{ant}:RM_GUNN1_LOCKED_S"},
+        {"label": "PLL Timestamp",     "points": "RM:acc{ant}:RM_PHASE_LOCK_TIMESTAMP_L",              "display_min": 0,   "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Receiver B (High Band)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Active High Rx",    "points": "RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10"},
+        {"label": "Slave2 PLL#",       "points": "RM:acc{ant}:RM_SLAVE2_PLL_NO_S",                    "display_min": 0,   "display_max": 100},
+        {"label": "PLL2 Supply (V)",   "points": "RM:acc{ant}:RM_PLL2_POWER_SUPPLY_F",                 "format": "{:.2f}", "display_min": -30,  "display_max": 30},
+        {"label": "Logic2 Supply (V)", "points": "RM:acc{ant}:RM_LOGIC2_POWER_SUPPLY_F",               "format": "{:.2f}", "display_min": -30,  "display_max": 30},
+        {"label": "PLL2 Filt Thresh",  "points": "RM:acc{ant}:RM_GUNN2_PLL_FILTER_RATIO_THRESHOLD_S", "display_min": 1,   "display_max": 999},
+        {"label": "PLL2 Rectr Thresh", "points": "RM:acc{ant}:RM_GUNN2_PLL_RECENTER_THRESHOLD_F",     "format": "{:.3f}", "display_min": 0,    "display_max": 1},
+        {"label": "Gunn2 Lock",        "points": "RM:acc{ant}:RM_GUNN2_LOCKED_S"},
+        {"label": "Cal Wheel",         "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Hangar / Array Status",
+  "description": "Per-antenna drive and dewar status; project info from DSM (placeholders)",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Current Project (DSM — placeholders)",
+      "cells": [
+        {"label": "Project ID (DSM)",          "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
+        {"label": "Description (DSM)",         "point": "dsm:placeholder:DSM_AS_PROJECT_DESCRIPTION_C256"},
+        {"label": "PI (DSM)",                  "point": "dsm:placeholder:DSM_AS_PROJECT_PI_C30"},
+        {"label": "Observer (DSM)",            "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Hangar Light (DSM)",        "point": "dsm:placeholder:DSM_HANGAR_LIGHT_L"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Antenna Position and Drive State",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Pad ID",             "points": "RM:acc{ant}:RM_PAD_ID_B",             "display_min": 1,  "display_max": 30},
+        {"label": "Az (deg)",           "points": "RM:acc{ant}:RM_ACTUAL_AZ_DEG_F",      "format": "{:.2f}", "display_min": -360,  "display_max": 360},
+        {"label": "El (deg)",           "points": "RM:acc{ant}:RM_ACTUAL_EL_DEG_F",      "format": "{:.2f}", "display_min": -5,    "display_max": 90},
+        {"label": "Drive Status",       "points": "RM:acc{ant}:RM_ANTENNA_DRIVE_STATUS_B"},
+        {"label": "Fault State",        "points": "RM:acc{ant}:RM_SERVO_FAULT_STATE_B"},
+        {"label": "SCB Fault Word",     "points": "RM:acc{ant}:RM_SCB_FAULTWORD_L"},
+        {"label": "Servo Timestamp",    "points": "RM:acc{ant}:RM_SERVO_TIMESTAMP_L",    "display_min": 0,  "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Dewar Temperature (array, K)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Dewar Temps [16] (K)", "points": "RM:acc{ant}:RM_DEWAR_TEMPS_V16_F"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Observation Context (from lowest available antenna)",
+      "cells": [
+        {"label": "Source",       "point": "RM:acc1:RM_SOURCE_C34"},
+        {"label": "RA (hr)",      "point": "RM:acc1:RM_RA_CAT_HOURS_D",  "format": "{:.4f}", "display_min": 0,  "display_max": 24},
+        {"label": "Dec (deg)",    "point": "RM:acc1:RM_DEC_CAT_DEG_D",   "format": "{:.4f}", "display_min": -90, "display_max": 90},
+        {"label": "Epoch",        "point": "RM:acc1:RM_EPOCH_F",         "format": "{:.1f}", "display_min": 1900, "display_max": 2100},
+        {"label": "LST (hr)",     "point": "RM:acc1:RM_LST_HOURS_F",     "format": "{:.4f}", "display_min": 0,  "display_max": 24},
+        {"label": "Sun Az (deg)", "point": "RM:acc1:RM_SUN_AZ_DEG_F",   "format": "{:.1f}", "display_min": 0,  "display_max": 360},
+        {"label": "Sun El (deg)", "point": "RM:acc1:RM_SUN_EL_DEG_F",   "format": "{:.1f}", "display_min": -90, "display_max": 90}
+      ]
+    }
+  ]
+}

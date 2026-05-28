@@ -1,0 +1,42 @@
+{
+  "name": "Tilt",
+  "description": "Antenna structural tilt sensor readings and temperature compensation per antenna",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Tilt Measurements (arcsec)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "F/A Tilt Upper (asec)", "points": "RM:acc{ant}:RM_AFT_FORWARD_TILT_UPPER_ARCSEC_D",    "format": "{:+.1f}", "display_min": -360000, "display_max": 360000},
+        {"label": "L/R Tilt Upper (asec)", "points": "RM:acc{ant}:RM_LEFT_RIGHT_TILT_UPPER_ARCSEC_D",    "format": "{:+.1f}", "display_min": -360000, "display_max": 360000},
+        {"label": "F/A Tilt Lower (asec)", "points": "RM:acc{ant}:RM_AFT_FOREWARD_TILT_LOWER_ARCSEC_D",  "format": "{:+.1f}", "display_min": -360000, "display_max": 360000},
+        {"label": "L/R Tilt Lower (asec)", "points": "RM:acc{ant}:RM_LEFT_RIGHT_TILT_LOWER_ARCSEC_D",    "format": "{:+.1f}", "display_min": -360000, "display_max": 360000},
+        {"label": "Tilt Az Off (asec)",    "points": "RM:acc{ant}:RM_TILT_AZOFF_ARCSEC_D",              "format": "{:+.1f}", "display_min": -3600,   "display_max": 3600},
+        {"label": "Tilt El Off (asec)",    "points": "RM:acc{ant}:RM_TILT_ELOFF_ARCSEC_D",              "format": "{:+.1f}", "display_min": -3600,   "display_max": 3600},
+        {"label": "Tilt Volts [V0-V3]",   "points": "RM:acc{ant}:RM_TILT_VOLTS_V4_F"},
+        {"label": "Correction Flag",       "points": "RM:acc{ant}:RM_TILT_CORRECTION_FLAG_L"},
+        {"label": "Tilt Timestamp",        "points": "RM:acc{ant}:RM_TILT_TIMESTAMP_L",                  "display_min": 0, "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Tilt Sensor Temperatures (F)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Lo Xelev Temp (F)", "points": "RM:acc{ant}:RM_TILT1_LO_XELEV_TEMPERATURE_F", "format": "{:+.1f}", "display_min": -1500, "display_max": 1500},
+        {"label": "Lo Pelev Temp (F)", "points": "RM:acc{ant}:RM_TILT2_LO_PELEV_TEMPERATURE_F", "format": "{:+.1f}", "display_min": -1500, "display_max": 1500},
+        {"label": "Hi Xelev Temp (F)", "points": "RM:acc{ant}:RM_TILT3_HI_XELEV_TEMPERATURE_F", "format": "{:+.1f}", "display_min": -1500, "display_max": 1500},
+        {"label": "Hi Pelev Temp (F)", "points": "RM:acc{ant}:RM_TILT4_HI_PELEV_TEMPERATURE_F", "format": "{:+.1f}", "display_min": -1500, "display_max": 1500}
+      ]
+    }
+  ]
+}
