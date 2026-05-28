@@ -1,0 +1,69 @@
+{
+  "name": "Optics",
+  "description": "Wire grid, combiner mirror, and hotload status per antenna",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Wire Grid",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Position",        "points": "RM:acc{ant}:RM_WIRE_GRID_POSITION_L",          "display_min": 0, "display_max": 150000},
+        {"label": "Nominal Pos",     "points": "RM:acc{ant}:RM_WIRE_GRID_NOMINAL_POSITION_L",  "display_min": 0, "display_max": 150000},
+        {"label": "Encoder",         "points": "RM:acc{ant}:RM_WIRE_GRID_ENCODER_POSITION_L",  "display_min": 0, "display_max": 150000},
+        {"label": "Band Location",   "points": "RM:acc{ant}:RM_WIRE_GRID_RECEIVER_LOCATION_L", "display_min": 0, "display_max": 20}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Combiner Mirror",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Position",        "points": "RM:acc{ant}:RM_COMBINER_MIRROR_POSITION_L",          "display_min": 0, "display_max": 1000000},
+        {"label": "Nominal Pos",     "points": "RM:acc{ant}:RM_COMBINER_MIRROR_NOMINAL_POSITION_L",  "display_min": 0, "display_max": 1000000},
+        {"label": "Encoder",         "points": "RM:acc{ant}:RM_COMBINER_MIRROR_ENCODER_POSITION_L",  "display_min": 0, "display_max": 1000000},
+        {"label": "Band Location",   "points": "RM:acc{ant}:RM_COMBINER_MIRROR_RECEIVER_LOCATION_L", "display_min": 0, "display_max": 20},
+        {"label": "Motorized",       "points": "RM:acc{ant}:RM_COMBINER_MIRROR_MOTORIZED_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Hotload / Vane Temperatures",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Hot Load Temp (F)",   "points": "RM:acc{ant}:RM_HEATEDLOAD_TEMPERATURE_F",   "format": "{:.1f}", "display_min": -50,  "display_max": 500},
+        {"label": "Amb Load Temp (F)",   "points": "RM:acc{ant}:RM_UNHEATEDLOAD_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50,  "display_max": 200},
+        {"label": "Servo Temp (F)",      "points": "RM:acc{ant}:RM_HEATEDLOAD_SERVO_TEMP_F",    "format": "{:.1f}", "display_min": -50,  "display_max": 500},
+        {"label": "Cmd Voltage",         "points": "RM:acc{ant}:RM_HEATEDLOAD_CMDVOLTAGE_F",    "format": "{:.2f}", "display_min": -100, "display_max": 100}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Calibration Wheel / Load Status",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Cal Wheel (0=Sky,1=Amb,2=Hot,3=WP)", "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"},
+        {"label": "Cal Wheel Encoder",                   "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_POSITION_L"},
+        {"label": "Waveplate Status",                    "points": "RM:acc{ant}:RM_WAVEPLATE_STATUS_S"},
+        {"label": "Hot Load Status",                     "points": "RM:acc{ant}:RM_HEATEDLOAD_STATUS_S"},
+        {"label": "Amb Load Status",                     "points": "RM:acc{ant}:RM_UNHEATEDLOAD_STATUS_S"}
+      ]
+    }
+  ]
+}

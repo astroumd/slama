@@ -291,7 +291,8 @@ class DataBridge:
             cell_id=self._make_cell_id(canonical_name),
         )
 
-    def fetch_cell(self, canonical_name: str, fmt: str = None) -> CellData:
+    def fetch_cell(self, canonical_name: str, fmt: str = None,
+                   display_min: float = None, display_max: float = None) -> CellData:
         """Fetch a single monitor point value from SMAX.
 
         Pulls the current value, records it in the history buffer (if
@@ -305,13 +306,20 @@ class DataBridge:
         fmt : str or None, optional
             Python format string for the display value. If None, floats
             default to 4 decimal places.
+        display_min : float or None, optional
+            If set, numeric values strictly below this are shown as
+            no-data (``---``) rather than formatted.
+        display_max : float or None, optional
+            If set, numeric values strictly above this are shown as
+            no-data (``---``) rather than formatted.
 
         Returns
         -------
         CellData
             Cell with the current value, validity CSS class, and
             numeric flag. Returns a no-data cell if SMAX is
-            unreachable or the key is missing.
+            unreachable, the key is missing, or the value falls
+            outside ``[display_min, display_max]``.
         """
         client = self._get_client()
         if client is None:
@@ -328,6 +336,12 @@ class DataBridge:
         except Exception:
             logger.debug("Failed to fetch %s", canonical_name, exc_info=True)
             return self._nodata_cell(canonical_name)
+
+        # Suppress physically implausible values before formatting or history
+        if isinstance(raw_value, Number) and not isinstance(raw_value, bool):
+            if (display_min is not None and raw_value < display_min) or \
+               (display_max is not None and raw_value > display_max):
+                return self._nodata_cell(canonical_name)
 
         self._record_history(canonical_name, raw_value)
 
@@ -363,12 +377,16 @@ class DataBridge:
             if isinstance(block, TableBlock):
                 for row in block.rows:
                     fmt = row.get("format")
+                    dmin = row.get("display_min")
+                    dmax = row.get("display_max")
                     for point in row["points"]:
-                        cells[point] = self.fetch_cell(point, fmt)
+                        cells[point] = self.fetch_cell(point, fmt, dmin, dmax)
             elif isinstance(block, (GridBlock, CellsBlock)):
                 for cell_def in block.cells:
                     fmt = cell_def.get("format")
+                    dmin = cell_def.get("display_min")
+                    dmax = cell_def.get("display_max")
                     cells[cell_def["point"]] = self.fetch_cell(
-                        cell_def["point"], fmt
+                        cell_def["point"], fmt, dmin, dmax
                     )
         return cells

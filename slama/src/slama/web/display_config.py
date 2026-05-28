@@ -21,7 +21,10 @@ class TableBlock:
         Header labels for each column (e.g., ``["Ant 1", ..., "Ant 8"]``).
     rows : list of dict
         Each dict has keys ``"label"`` (str), ``"points"`` (list of str
-        canonical names), and optionally ``"format"`` (str or None).
+        canonical names), optionally ``"format"`` (str or None), and
+        optionally ``"display_min"`` / ``"display_max"`` (float or None).
+        Values outside ``[display_min, display_max]`` are shown as
+        no-data rather than formatted.
     block_type : str
         Always ``"table"``.
     """
@@ -173,6 +176,8 @@ def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock:
                 "label": row_def["label"],
                 "points": expanded,
                 "format": row_def.get("format"),
+                "display_min": row_def.get("display_min"),
+                "display_max": row_def.get("display_max"),
             })
         return TableBlock(
             title=raw.get("title", f"Table {index}"),
