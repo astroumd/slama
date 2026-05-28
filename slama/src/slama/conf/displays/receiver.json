@@ -1,0 +1,50 @@
+{
+  "name": "Receiver Monitor",
+  "description": "Receiver IF/LO chain: lock, bias voltages, IF power, SIS, Tsys — DSM placeholders",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Low Receiver (RxA) — DSM placeholders",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Active Low Rx",         "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "LO Lock (DSM)",         "points": "dsm:placeholder:DSM_ANT{ant}_LO_LOCK"},
+        {"label": "LO Freq MHz (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_LO_FREQ_MHZ"},
+        {"label": "Gunn V (DSM)",          "points": "dsm:placeholder:DSM_ANT{ant}_GUNN_VOLTAGE"},
+        {"label": "Stress V (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_STRESS_VOLTAGE"},
+        {"label": "IF Power (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_IF_POWER"},
+        {"label": "Nz Power (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_NZ_POWER"},
+        {"label": "PLL Ratio (DSM)",       "points": "dsm:placeholder:DSM_ANT{ant}_PLL_RATIO"},
+        {"label": "Atten (DSM)",           "points": "dsm:placeholder:DSM_ANT{ant}_ATTEN"},
+        {"label": "SIS V (DSM)",           "points": "dsm:placeholder:DSM_ANT{ant}_SIS_VOLTAGE"},
+        {"label": "SIS I (DSM)",           "points": "dsm:placeholder:DSM_ANT{ant}_SIS_CURRENT"},
+        {"label": "ContDet (DSM)",         "points": "dsm:placeholder:DSM_ANT{ant}_CONT_DET"},
+        {"label": "Tsys (K)",              "points": "RM:acc{ant}:RM_TSYS_D",  "format": "{:.1f}", "display_min": 0, "display_max": 10000}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "High Receiver (RxB) — DSM placeholders",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Active High Rx",        "points": "RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10"},
+        {"label": "LO Lock (DSM)",         "points": "dsm:placeholder:DSM_ANT{ant}_LO2_LOCK"},
+        {"label": "LO Freq MHz (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_LO2_FREQ_MHZ"},
+        {"label": "Gunn V (DSM)",          "points": "dsm:placeholder:DSM_ANT{ant}_GUNN2_VOLTAGE"},
+        {"label": "IF Power (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_IF2_POWER"},
+        {"label": "SIS V (DSM)",           "points": "dsm:placeholder:DSM_ANT{ant}_SIS2_VOLTAGE"},
+        {"label": "SIS I (DSM)",           "points": "dsm:placeholder:DSM_ANT{ant}_SIS2_CURRENT"},
+        {"label": "ContDet (DSM)",         "points": "dsm:placeholder:DSM_ANT{ant}_CONT2_DET"}
+      ]
+    }
+  ]
+}

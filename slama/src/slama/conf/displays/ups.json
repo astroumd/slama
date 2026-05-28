@@ -1,0 +1,44 @@
+{
+  "name": "UPS Power",
+  "description": "Uninterruptible power supply: AC/battery voltage, current, load, temperature — DSM placeholders",
+  "update_interval": 30,
+  "layout": [
+    {
+      "type": "table",
+      "title": "UPS AC Input / Output (DSM — placeholders)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "AC Input (V) (DSM)",    "points": "dsm:placeholder:DSM_ANT{ant}_UPS_AC_INPUT_V"},
+        {"label": "Frequency (Hz) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_FREQ_HZ"},
+        {"label": "AC Output (V) (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_UPS_AC_OUTPUT_V"},
+        {"label": "Current (A) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_CURRENT_A"},
+        {"label": "Power (W) (DSM)",       "points": "dsm:placeholder:DSM_ANT{ant}_UPS_POWER_W"},
+        {"label": "App Power (VA) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_APPOWER_VA"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "UPS Battery and Thermal (DSM — placeholders)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Battery (V) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_BATT_V"},
+        {"label": "Batt I (A) (DSM)",      "points": "dsm:placeholder:DSM_ANT{ant}_UPS_BATT_I"},
+        {"label": "Load % (DSM)",          "points": "dsm:placeholder:DSM_ANT{ant}_UPS_LOAD_PCT"},
+        {"label": "Run time (min) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_RUNTIME"},
+        {"label": "Ambient (C) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_TEMP_AMB"},
+        {"label": "HeatSink (C) (DSM)",    "points": "dsm:placeholder:DSM_ANT{ant}_UPS_TEMP_HSINK"},
+        {"label": "OverLoads (DSM)",       "points": "dsm:placeholder:DSM_ANT{ant}_UPS_OVERLOADS"},
+        {"label": "Power outs (DSM)",      "points": "dsm:placeholder:DSM_ANT{ant}_UPS_POWER_OUTS"},
+        {"label": "Active alarms (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_UPS_ALARMS"}
+      ]
+    }
+  ]
+}

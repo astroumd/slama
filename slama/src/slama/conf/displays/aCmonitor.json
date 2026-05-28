@@ -1,0 +1,20 @@
+{
+  "name": "AC/PACU Monitor",
+  "description": "Correlator AC unit: temperature, smoke detectors, fans, compressors — DSM placeholders",
+  "update_interval": 30,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "AC/PACU Status (DSM — placeholders)",
+      "cells": [
+        {"label": "Temp (C) (DSM)",          "point": "dsm:placeholder:DSM_AC_TEMP_C"},
+        {"label": "Smoke detected (DSM)",    "point": "dsm:placeholder:DSM_AC_SMOKE"},
+        {"label": "Fan status (DSM)",        "point": "dsm:placeholder:DSM_AC_FAN_STATUS"},
+        {"label": "Compressor 1 (DSM)",      "point": "dsm:placeholder:DSM_AC_COMPRESSOR1"},
+        {"label": "Compressor 2 (DSM)",      "point": "dsm:placeholder:DSM_AC_COMPRESSOR2"},
+        {"label": "Humidity % (DSM)",        "point": "dsm:placeholder:DSM_AC_HUMIDITY"},
+        {"label": "PACU status (DSM)",       "point": "dsm:placeholder:DSM_PACU_STATUS"}
+      ]
+    }
+  ]
+}

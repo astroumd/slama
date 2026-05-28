@@ -1,0 +1,33 @@
+{
+  "name": "Project",
+  "description": "Current observing project metadata — all DSM, all placeholders",
+  "update_interval": 30,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Project Information (DSM — placeholders)",
+      "cells": [
+        {"label": "Project ID (DSM)",       "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
+        {"label": "Description (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_DESCRIPTION_C256"},
+        {"label": "P.I. (DSM)",             "point": "dsm:placeholder:DSM_AS_PROJECT_PI_C30"},
+        {"label": "Observers (DSM)",        "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Operating from (DSM)",   "point": "dsm:placeholder:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
+        {"label": "Comment (DSM)",          "point": "dsm:placeholder:DSM_AS_PROJECT_COMMENT"},
+        {"label": "Antennas (DSM)",         "point": "dsm:placeholder:DSM_AS_PROJECT_ANTENNAS"},
+        {"label": "Obs script (DSM)",       "point": "dsm:placeholder:DSM_AS_PROJECT_SCRIPT"},
+        {"label": "Script PID (DSM)",       "point": "dsm:placeholder:DSM_AS_PROJECT_SCRIPT_PID"},
+        {"label": "MIR file (DSM)",         "point": "dsm:placeholder:DSM_AS_PROJECT_MIR_FILE"},
+        {"label": "Start time UTC (DSM)",   "point": "dsm:placeholder:DSM_AS_PROJECT_START_TIME"},
+        {"label": "Active time (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_ACTIVE_TIME"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Current Time (RM — live)",
+      "cells": [
+        {"label": "LST (hr)",  "point": "RM:acc1:RM_LST_HOURS_F", "format": "{:.4f}", "display_min": 0, "display_max": 24},
+        {"label": "UTC (hr)",  "point": "RM:acc1:RM_UTC_HR_D",    "format": "{:.4f}", "display_min": 0, "display_max": 24}
+      ]
+    }
+  ]
+}

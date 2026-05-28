@@ -1,0 +1,35 @@
+{
+  "name": "Seeing (Phase Monitor)",
+  "description": "12 GHz phase monitor: baseline phases, RMS, optical links, vault voltages — DSM placeholders",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "cells",
+      "title": "Phase Monitor Baselines (DSM — placeholders)",
+      "cells": [
+        {"label": "Baseline 1 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL1_RAW_PHASE"},
+        {"label": "Baseline 2 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL2_RAW_PHASE"},
+        {"label": "Baseline 3 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL3_RAW_PHASE"},
+        {"label": "Baseline 4 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL4_RAW_PHASE"},
+        {"label": "Baseline 1 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL1_ATMOS"},
+        {"label": "Baseline 2 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL2_ATMOS"},
+        {"label": "Baseline 1 RMS 1s (deg) (DSM)",     "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_1S"},
+        {"label": "Baseline 1 RMS 16s (deg) (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_16S"},
+        {"label": "Baseline 1 RMS 512s (deg) (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_512S"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Vault Voltages (DSM — placeholders)",
+      "cells": [
+        {"label": "+5V (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_VAULT_5V"},
+        {"label": "+12V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_12V"},
+        {"label": "+25V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_25V"},
+        {"label": "-15V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_M15V"},
+        {"label": "+15Va (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VA"},
+        {"label": "+15Vb (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VB"},
+        {"label": "SynthLock (DSM)", "point": "dsm:placeholder:DSM_PHASEMON_SYNTH_LOCK"}
+      ]
+    }
+  ]
+}
