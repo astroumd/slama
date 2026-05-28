@@ -7,16 +7,16 @@
       "type": "cells",
       "title": "Current Observation",
       "cells": [
-        {"label": "Project ID",  "point": "telescope:project:1:id"},
-        {"label": "Source",  "point": "RM:acc1:RM_SOURCE_C34"},
-        {"label": "RA (hr)", "point": "RM:acc1:RM_RA_CAT_HOURS_D"},
-        {"label": "DEC (deg)", "point": "RM:acc1:RM_DEC_CAT_DEG_D"},
-        {"label": "Vel (km/s)", "point": "RM:acc1:RM_SVEL_KMPS_D"},
-        {"label": "LO Freq (GHz)", "point": "RM:acc1:RM_LOW_RX_LO_FREQUENCY_D"},
-        {"label": "Integ. Time (s)", "point": "correlator:swarm:integration_time"},
-        {"label": "Integ. Progress (s)", "point": "correlator:swarm:progress"},
-        {"label": "LST (hr)", "point": "RM:acc1:RM_LST_HOURS_F"},
-        {"label": "UTC (hr)", "point": "RM:acc1:RM_UTC_HR_D"}
+        {"label": "Project ID",          "point": "telescope:project:1:id"},
+        {"label": "Source",              "point": "RM:acc1:RM_SOURCE_C34"},
+        {"label": "RA (hr)",             "point": "RM:acc1:RM_RA_CAT_HOURS_D",        "format": "{:.4f}", "display_min": 0,    "display_max": 24},
+        {"label": "DEC (deg)",           "point": "RM:acc1:RM_DEC_CAT_DEG_D",         "format": "{:.4f}", "display_min": -90,  "display_max": 90},
+        {"label": "Vel (km/s)",          "point": "RM:acc1:RM_SVEL_KMPS_D",           "format": "{:.3f}", "display_min": -1e6, "display_max": 1e6},
+        {"label": "LO Freq (GHz)",       "point": "RM:acc1:RM_LOW_RX_LO_FREQUENCY_D", "format": "{:.4f}", "display_min": 0,    "display_max": 1000},
+        {"label": "Integ. Time (s)",     "point": "correlator:swarm:integration_time", "format": "{:.1f}", "display_min": 0,    "display_max": 3600},
+        {"label": "Integ. Progress (s)", "point": "correlator:swarm:progress",         "format": "{:.1f}", "display_min": 0,    "display_max": 3600},
+        {"label": "LST (hr)",            "point": "RM:acc1:RM_LST_HOURS_F",            "format": "{:.4f}", "display_min": 0,    "display_max": 24},
+        {"label": "UTC (hr)",            "point": "RM:acc1:RM_UTC_HR_D",               "format": "{:.4f}", "display_min": 0,    "display_max": 24}
       ]
     },
     {
@@ -28,13 +28,13 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "El (deg)",       "points": "RM:acc{ant}:RM_TRACK_EL_F"},
-        {"label": "Az (deg)",       "points": "RM:acc{ant}:RM_TRACK_AZ_F"},
-        {"label": "El Err (arcsec)","points": "RM:acc{ant}:RM_EL_TRACKING_ERROR_F"},
-        {"label": "Az Err (arcsec)","points": "RM:acc{ant}:RM_AZ_TRACKING_ERROR_F"},
-        {"label": "Tsys (K)",       "points": "RM:acc{ant}:RM_TSYS_D"},
-        {"label": "LowRx",          "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
-        {"label": "Gunn1 Lock",     "points": "RM:acc{ant}:RM_GUNN1_LOCKED_S"}
+        {"label": "El (deg)",        "points": "RM:acc{ant}:RM_TRACK_EL_F",          "format": "{:.2f}", "display_min": -5,    "display_max": 90},
+        {"label": "Az (deg)",        "points": "RM:acc{ant}:RM_TRACK_AZ_F",          "format": "{:.2f}", "display_min": -360,  "display_max": 360},
+        {"label": "El Err (arcsec)", "points": "RM:acc{ant}:RM_EL_TRACKING_ERROR_F", "format": "{:.2f}", "display_min": -3600, "display_max": 3600},
+        {"label": "Az Err (arcsec)", "points": "RM:acc{ant}:RM_AZ_TRACKING_ERROR_F", "format": "{:.2f}", "display_min": -3600, "display_max": 3600},
+        {"label": "Tsys (K)",        "points": "RM:acc{ant}:RM_TSYS_D",              "format": "{:.1f}", "display_min": 0,     "display_max": 10000},
+        {"label": "LowRx",           "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "Gunn1 Lock",      "points": "RM:acc{ant}:RM_GUNN1_LOCKED_S"}
       ]
     },
     {
@@ -42,11 +42,11 @@
       "title": "Weather",
       "columns": 3,
       "cells": [
-        {"label": "T(amb) (C)",      "point": "RM:acc1:RM_WEATHER_TEMP_F"},
-        {"label": "RH%",             "point": "RM:acc1:RM_WEATHER_HUMIDITY_F"},
-        {"label": "V(wind) (km/s)",  "point": "RM:acc1:RM_WEATHER_WINDSPEED_F"},
-        {"label": "Wind Dir (deg)",  "point": "RM:acc1:RM_WEATHER_WINDDIR_F"},
-        {"label": "P(atm) (mbar)",   "point": "RM:acc1:RM_WEATHER_MBAR_F"}
+        {"label": "T(amb) (F)",      "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
+        {"label": "RH%",             "point": "RM:acc1:RM_WEATHER_HUMIDITY_F",  "format": "{:.1f}", "display_min": 0,    "display_max": 100},
+        {"label": "V(wind) (mph)",   "point": "RM:acc1:RM_WEATHER_WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
+        {"label": "Wind Dir (deg)",  "point": "RM:acc1:RM_WEATHER_WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360},
+        {"label": "P(atm) (mbar)",   "point": "RM:acc1:RM_WEATHER_MBAR_F",     "format": "{:.1f}", "display_min": 400,  "display_max": 900}
       ]
     }
   ]
