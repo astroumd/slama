@@ -2121,13 +2121,21 @@
         "description": "Integration time",
         "size": "1",
         "smax_type": "float",
-        "unit": "s"
+        "unit": "s",
+        "warn_low": 0.0,
+        "warn_high": 9000,
+        "err_low": -1.0,
+        "err_high": 10000
       },
       "progress": {
         "description": "Current integration time accumulated",
         "size": "1",
         "smax_type": "float",
-        "unit": "s"
+        "unit": "s",
+        "warn_low": 0.0,
+        "warn_high": 9000,
+        "err_low": -1.0,
+        "err_high": 10000
       },
       "segment": {
         "1": {
@@ -3340,6 +3348,147 @@
     },
     "ukirt": {
       "description": "Weather data from UKIRT"
+    }
+  },
+  "RM": {
+    "description": "Reflective Memory variables per antenna computer",
+    "__each__": {
+      "over": "acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8",
+      "template": {
+        "RM_ACTIVE_LOW_RECEIVER_C10": {
+          "description": "Receiver selection for low-band Rx",
+          "size": "1",
+          "smax_type": "string",
+          "valid_strings": ["A1", "B1", "C", "E", "A2", "B2", "D", "F"]
+        },
+        "RM_AZ_TRACKING_ERROR_F": {
+          "description": "Azimuth Error",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "arcsec",
+          "warn_low": -1.0,
+          "warn_high": 1.0,
+          "err_low": -5.0,
+          "err_high": 5.0
+        },
+        "RM_DEC_CAT_DEG_D": {
+          "description": "Source Declination",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "hr"
+        },
+        "RM_EL_TRACKING_ERROR_F": {
+          "description": "Elevation Tracking Error",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "arcsec",
+          "warn_low": -1.0,
+          "warn_high": 1.0,
+          "err_low": -5.0,
+          "err_high": 5.0
+        },
+        "RM_GUNN1_LOCKED_S": {
+          "description": "Gunn1 Locked",
+          "size": "1",
+          "smax_type": "int",
+          "err_low": 0,
+          "err_high": 2
+        },
+        "RM_LOW_RX_LO_FREQUENCY_D": {
+          "description": "Low RX Local Oscillator Frequency",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "GHz"
+        },
+        "RM_LST_HOURS_F": {
+          "description": "Local Sidereal Time",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "hr"
+        },
+        "RM_RA_CAT_HOURS_D": {
+          "description": "Source Right Ascension",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "hr"
+        },
+        "RM_SOURCE_C34": {
+          "description": "Observing target",
+          "size": "1",
+          "smax_type": "string"
+        },
+        "RM_SVEL_KMPS_D": {
+          "description": "Source Velocity",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "km/s"
+        },
+        "RM_TRACK_AZ_F": {
+          "description": "Tracking Azimuth",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "degree",
+          "warn_low": -70.0,
+          "warn_high": 175.0,
+          "err_low": -90.0,
+          "err_high": 180.0
+        },
+        "RM_TRACK_EL_F": {
+          "description": "Tracking Elevation",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "degree",
+          "warn_low": 15.0,
+          "warn_high": 88.0,
+          "err_low": -1.0,
+          "err_high": 90
+        },
+        "RM_TSYS_D": {
+          "description": "System Temperature",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "K",
+          "warn_low": 50.0,
+          "warn_high": 500.0,
+          "err_low": 25.0,
+          "err_high": 1500.0
+        },
+        "RM_UTC_HR_D": {
+          "description": "Coordinated Universal Time",
+          "size": "1",
+          "smax_type": "float64",
+          "unit": "hr"
+        },
+        "RM_WEATHER_HUMIDITY_F": {
+          "description": "Relative Humidity",
+          "size": "1",
+          "smax_type": "float"
+        },
+        "RM_WEATHER_MBAR_F": {
+          "description": "Atmospheric Pressure",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "mbar"
+        },
+        "RM_WEATHER_TEMP_F": {
+          "description": "Ambient Temperature",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "Celsius"
+        },
+        "RM_WEATHER_WINDDIR_F": {
+          "description": "Wind Direction",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "deg"
+        },
+        "RM_WEATHER_WINDSPEED_F": {
+          "description": "Wind Speed",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "km/s"
+        }
+      }
     }
   }
 }

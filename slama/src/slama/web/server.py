@@ -38,7 +38,7 @@ _TEMPLATE_DIR = _WEB_DIR / "templates"
 _STATIC_DIR = _WEB_DIR / "static"
 _CONF_DIR = _WEB_DIR.parent / "conf"
 _DISPLAYS_DIR = _CONF_DIR / "displays"
-_MPDEFS_PATH = _CONF_DIR / "mpdefs.json"
+_SMAX_JSON_PATH = _CONF_DIR / "smax.json"
 
 # Hawaii Standard Time (UTC-10, no daylight saving)
 _HST = timezone(timedelta(hours=-10))
@@ -57,7 +57,7 @@ app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 bridge = DataBridge(
     host="localhost",
     port=6380,
-    mpdefs_path=_MPDEFS_PATH,
+    smax_path=_SMAX_JSON_PATH,
 )
 
 

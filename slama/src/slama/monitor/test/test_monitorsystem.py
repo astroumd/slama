@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, call
 from slama.monitor.monitorpoint import MonitorPoint
-from slama.monitor.monitorsystem import MonitorSystem, MonitorSubsystem
+from slama.monitor.monitorsystem import MonitorSystem, MonitorSubsystem, _parse_index_set
 
 # Path to the small fixture JSON bundled with this test directory
 FIXTURE = Path(__file__).parent / "fixture_smax.json"
@@ -42,8 +42,8 @@ class TestConstruction:
         assert isinstance(ms.get_node("root").data, MonitorSubsystem)
 
     def test_correct_monitor_point_count(self, ms):
-        # fixture has 4 leaf monitor points
-        assert len(ms.all_monitor_points()) == 4
+        # fixture: 4 from subsystem_a/b + 3 nodes × 2 vars from rm_test = 10
+        assert len(ms.all_monitor_points()) == 10
 
     def test_branch_nodes_are_subsystems(self, ms):
         branch_nodes = [
@@ -85,12 +85,12 @@ class TestCanonicalNames:
 
     def test_all_canonical_names(self, ms):
         names = {mp.canonical_name for mp in ms.all_monitor_points()}
-        assert names == {
+        assert {
             "subsystem_a:sensor1",
             "subsystem_a:sensor2",
             "subsystem_a:nested:deep_value",
             "subsystem_b:flag",
-        }
+        }.issubset(names)
 
 
 # ---------------------------------------------------------------------------
@@ -155,14 +155,15 @@ class TestReadAll:
         client = MagicMock()
         client.smax_pull.return_value = 1.0
         ms.read_all(client)
-        expected_calls = [
+        expected_subset = [
             call("subsystem_a", "sensor1"),
             call("subsystem_a", "sensor2"),
             call("subsystem_a:nested", "deep_value"),
             call("subsystem_b", "flag"),
         ]
         actual_calls = client.smax_pull.call_args_list
-        assert sorted(actual_calls, key=str) == sorted(expected_calls, key=str)
+        for expected in expected_subset:
+            assert expected in actual_calls
 
     def test_read_all_updates_mp_values(self, ms):
         client = MagicMock()
@@ -203,6 +204,111 @@ class TestDisplay:
         ms.details()
         out = capsys.readouterr().out
         assert len(out) > 0
+
+
+# ---------------------------------------------------------------------------
+# Smoke test against full smax.json
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# _parse_index_set — string (non-numeric) indices
+# ---------------------------------------------------------------------------
+
+class TestParseIndexSetStringIndices:
+    def test_comma_separated_strings(self):
+        assert _parse_index_set("acc1,acc2,acc3") == ["acc1", "acc2", "acc3"]
+
+    def test_single_string_token(self):
+        assert _parse_index_set("node1") == ["node1"]
+
+    def test_mixed_string_tokens(self):
+        assert _parse_index_set("H,V") == ["H", "V"]
+
+    def test_numeric_range_still_works(self):
+        assert _parse_index_set("1-3") == ["1", "2", "3"]
+
+    def test_duplicate_string_token_raises(self):
+        with pytest.raises(ValueError, match="duplicate"):
+            _parse_index_set("acc1,acc2,acc1")
+
+
+# ---------------------------------------------------------------------------
+# __each__ with string indices (rm_test section in fixture)
+# ---------------------------------------------------------------------------
+
+class TestEachStringIndices:
+    def test_correct_leaf_count(self, ms):
+        # fixture rm_test has 3 string indices × 2 leaf vars = 6 new leaves
+        # plus 4 from subsystem_a/b = 10 total
+        assert len(ms.all_monitor_points()) == 10
+
+    def test_canonical_names_use_string_indices(self, ms):
+        names = {mp.canonical_name for mp in ms.all_monitor_points()}
+        assert "rm_test:node1:temperature" in names
+        assert "rm_test:node2:temperature" in names
+        assert "rm_test:node3:temperature" in names
+
+    def test_thresholds_loaded_from_template(self, ms):
+        mp = ms.get_monitor_point("rm_test:node1:temperature")
+        assert mp.warn_low == 5.0
+        assert mp.warn_high == 40.0
+        assert mp.err_low == 0.0
+        assert mp.err_high == 50.0
+
+    def test_thresholds_identical_across_all_indices(self, ms):
+        # Template thresholds should be the same for every expanded node
+        for idx in ("node1", "node2", "node3"):
+            mp = ms.get_monitor_point(f"rm_test:{idx}:temperature")
+            assert mp.warn_low == 5.0
+            assert mp.err_high == 50.0
+
+    def test_valid_strings_loaded_from_template(self, ms):
+        mp = ms.get_monitor_point("rm_test:node1:status")
+        assert mp._valid_strings == ["ok", "degraded"]
+
+
+# ---------------------------------------------------------------------------
+# RM section in full smax.json
+# ---------------------------------------------------------------------------
+
+class TestRMSection:
+    def test_rm_leaf_count(self):
+        ms = MonitorSystem(SMAX_JSON)
+        rm_leaves = [n for n in ms.leaves() if n.identifier.startswith("RM:")]
+        assert len(rm_leaves) == 8 * 19  # 8 acc nodes × 19 variables
+
+    def test_rm_canonical_name_format(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_TRACK_EL_F")
+        assert mp.canonical_name == "RM:acc1:RM_TRACK_EL_F"
+        assert mp.table == "RM:acc1"
+        assert mp.key == "RM_TRACK_EL_F"
+
+    def test_rm_track_el_thresholds(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_TRACK_EL_F")
+        assert mp.warn_low == 15.0
+        assert mp.warn_high == 88.0
+        assert mp.err_low == -1.0
+        assert mp.err_high == 90
+
+    def test_rm_thresholds_same_across_all_accs(self):
+        ms = MonitorSystem(SMAX_JSON)
+        for n in range(1, 9):
+            mp = ms.get_monitor_point(f"RM:acc{n}:RM_TRACK_EL_F")
+            assert mp.warn_low == 15.0
+            assert mp.err_high == 90
+
+    def test_rm_active_low_receiver_valid_strings(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_ACTIVE_LOW_RECEIVER_C10")
+        assert mp._valid_strings == ["A1", "B1", "C", "E", "A2", "B2", "D", "F"]
+
+    def test_rm_no_thresholds_on_unvalidated_var(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_SOURCE_C34")
+        assert mp.warn_low is None
+        assert mp.err_high is None
 
 
 # ---------------------------------------------------------------------------
