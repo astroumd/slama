@@ -3353,7 +3353,7 @@
   "RM": {
     "description": "Reflective Memory variables per antenna computer",
     "__each__": {
-      "over": "acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8",
+      "over": "acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8","acc9",
       "template": {
         "RM_ACTIVE_LOW_RECEIVER_C10": {
           "description": "Receiver selection for low-band Rx",
