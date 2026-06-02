@@ -49,5 +49,22 @@
         }
       }
     }
+  },
+  "board_test": {
+    "__each__": {
+      "over": "01-03,11-12",
+      "prefix": "board-",
+      "template": {
+        "load": {
+          "description": "Board load average",
+          "size": "1",
+          "smax_type": "float",
+          "warn_low": 0.0,
+          "warn_high": 2.0,
+          "err_low": -1.0,
+          "err_high": 5.0
+        }
+      }
+    }
   }
 }

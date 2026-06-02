@@ -11,15 +11,25 @@ def _parse_index_set(spec: str) -> list[str]:
     """
     Parse an index-set specification string into an ordered list of string keys.
 
-    The spec is a comma-separated list of tokens. Each token is either a single
-    value or a numeric range ``lo-hi`` (inclusive). If both endpoints of a range
-    parse as integers, the range is expanded inclusively. Otherwise the token is
-    treated as a literal string. Order is preserved; duplicate values are an error.
+    The spec is a comma-separated list of tokens. Each token is either:
+
+    - A single literal value (e.g. ``"acc1"``), or
+    - A numeric range ``lo-hi`` (inclusive, e.g. ``"1-8"``).
+
+    If ``lo`` has a leading zero (e.g. ``"01-08"``), the generated values are
+    zero-padded to the same width (e.g. ``["01","02",...,"08"]``).
+
+    Multiple range segments may appear in the same spec, separated by commas
+    (e.g. ``"01-08,11-18,21-28"``).
+
+    Order is preserved; duplicate values are an error.
 
     Examples:
-        "1-8"        -> ["1","2","3","4","5","6","7","8"]
-        "1-3,5,7-9"  -> ["1","2","3","5","7","8","9"]
-        "H,V"        -> ["H","V"]
+        "1-8"              -> ["1","2","3","4","5","6","7","8"]
+        "1-3,5,7-9"        -> ["1","2","3","5","7","8","9"]
+        "01-08,11-18"      -> ["01","02",...,"08","11","12",...,"18"]
+        "H,V"              -> ["H","V"]
+        "acc1,acc2,acc3"   -> ["acc1","acc2","acc3"]
     """
     if not isinstance(spec, str) or not spec.strip():
         raise ValueError(f"index set spec must be a non-empty string, got {spec!r}")
@@ -40,7 +50,12 @@ def _parse_index_set(spec: str) -> list[str]:
                 )
             if hi < lo:
                 raise ValueError(f"reversed range in token {token!r} of spec {spec!r}")
-            values = [str(i) for i in range(lo, hi + 1)]
+            # Zero-padding: if lo_s has a leading zero, pad all values to that width
+            if lo_s != str(lo):
+                width = len(lo_s)
+                values = [f"{i:0{width}d}" for i in range(lo, hi + 1)]
+            else:
+                values = [str(i) for i in range(lo, hi + 1)]
         else:
             values = [token]
         for v in values:
@@ -99,11 +114,13 @@ class MonitorSystem(treelib.Tree):
                     raise ValueError(
                         f"__each__ template at {smax_path or '<root>'} must be a dict"
                     )
+                prefix = value.get("prefix", "")
                 for idx in _parse_index_set(value["over"]):
-                    idx_path = f"{smax_path}:{idx}" if smax_path else idx
-                    self.create_node(tag=idx, identifier=idx_path,
+                    node_key = f"{prefix}{idx}"
+                    idx_path = f"{smax_path}:{node_key}" if smax_path else node_key
+                    self.create_node(tag=node_key, identifier=idx_path,
                                      parent=parent_id,
-                                     data=MonitorSubsystem(idx, template))
+                                     data=MonitorSubsystem(node_key, template))
                     self._build_tree(idx_path, template, idx_path)
                 continue
 

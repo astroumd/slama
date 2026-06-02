@@ -3490,5 +3490,224 @@
         }
       }
     }
+  },
+  "DSM": {
+    "description": "Digital Signal Manager - SWARM correlator board data",
+    "__each__": {
+      "over": "01-08,11-18,21-28,31-38,41-48,51-58",
+      "prefix": "roach2-",
+      "template": {
+        "SMAINIT_REPORT_X": {
+          "PRG_NAMES_V24_C24": {
+            "description": "Program names (24 entries)",
+            "size": "24",
+            "smax_type": "string"
+          },
+          "PRG_STATUS_V24_V6_L": {
+            "description": "Program status array (24x6)",
+            "size": "144",
+            "smax_type": "int"
+          }
+        },
+        "SWARM_FIXED_OFFSETS_X": {
+          "DELAY_V2_D": {
+            "description": "Fixed delay offsets per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "ns"
+          },
+          "PHASE_V2_D": {
+            "description": "Fixed phase offsets per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "deg"
+          }
+        },
+        "SWARM_FSTOP_STATS_X": {
+          "FSTOP_AVG_RATE_V2_F": {
+            "description": "Average fringe-stop rate per sideband",
+            "size": "2",
+            "smax_type": "float",
+            "unit": "turns/s"
+          },
+          "FSTOP_DELAY_V2_D": {
+            "description": "Fringe-stop delay per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "ns"
+          },
+          "FSTOP_ERR_CNT_L": {
+            "description": "Fringe-stop error count",
+            "size": "1",
+            "smax_type": "int"
+          },
+          "FSTOP_HA_D": {
+            "description": "Hour angle at fringe-stop epoch",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "deg"
+          },
+          "FSTOP_LST_D": {
+            "description": "LST at fringe-stop epoch",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "hours"
+          },
+          "FSTOP_PHASE_V2_D": {
+            "description": "Fringe-stop phase per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "turns"
+          },
+          "FSTOP_UT_D": {
+            "description": "UT at fringe-stop epoch",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "hours"
+          }
+        },
+        "SWARM_LOADING_FACTOR_V2_F": {
+          "description": "Sampler loading factor per sideband",
+          "size": "2",
+          "smax_type": "float"
+        },
+        "SWARM_SAMPLER_CALIBRATIONS_X": {
+          "ACTUAL_GAINS_V2_V4_F": {
+            "description": "Actual sampler gains (2 sidebands x 4 inputs)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "ACTUAL_INL_V2_V4_V17_F": {
+            "description": "Actual sampler INL corrections (2x4x17)",
+            "size": "136",
+            "smax_type": "float"
+          },
+          "ACTUAL_OFFSETS_V2_V4_F": {
+            "description": "Actual sampler DC offsets (2x4)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "ACTUAL_PHASES_V2_V4_F": {
+            "description": "Actual sampler phase offsets (2x4)",
+            "size": "8",
+            "smax_type": "float",
+            "unit": "deg"
+          },
+          "DELTA_AVAMP_V2_F": {
+            "description": "Change in average amplitude per sideband",
+            "size": "2",
+            "smax_type": "float"
+          },
+          "DELTA_AVZ_V2_F": {
+            "description": "Change in average zero level per sideband",
+            "size": "2",
+            "smax_type": "float"
+          },
+          "DELTA_GAINS_V2_V4_F": {
+            "description": "Gain calibration delta (2x4)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "DELTA_INL_V2_V4_V17_F": {
+            "description": "INL calibration delta (2x4x17)",
+            "size": "136",
+            "smax_type": "float"
+          },
+          "DELTA_OFFSETS_V2_V4_F": {
+            "description": "Offset calibration delta (2x4)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "DELTA_OVL_CNT_V2_V4_L": {
+            "description": "Overflow count delta (2x4)",
+            "size": "8",
+            "smax_type": "int"
+          },
+          "DELTA_PHASES_V2_V4_F": {
+            "description": "Phase calibration delta (2x4)",
+            "size": "8",
+            "smax_type": "float",
+            "unit": "deg"
+          },
+          "SAVED_GAINS_V2_V4_F": {
+            "description": "Saved sampler gains (2x4)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "SAVED_INL_V2_V4_V17_F": {
+            "description": "Saved INL corrections (2x4x17)",
+            "size": "136",
+            "smax_type": "float"
+          },
+          "SAVED_OFFSETS_V2_V4_F": {
+            "description": "Saved DC offsets (2x4)",
+            "size": "8",
+            "smax_type": "float"
+          },
+          "SAVED_PHASES_V2_V4_F": {
+            "description": "Saved phase offsets (2x4)",
+            "size": "8",
+            "smax_type": "float",
+            "unit": "deg"
+          }
+        },
+        "SWARM_SAMPLER_HIST_V2_V256_L": {
+          "description": "Sampler histogram (2 sidebands x 256 bins)",
+          "size": "512",
+          "smax_type": "int"
+        },
+        "SWARM_SCAN_X": {
+          "LENGTH_L": {
+            "description": "Scan length",
+            "size": "1",
+            "smax_type": "int",
+            "unit": "s"
+          },
+          "PROGRESS_L": {
+            "description": "Scan progress",
+            "size": "1",
+            "smax_type": "int",
+            "unit": "s"
+          }
+        },
+        "SWARM_SOURCE_GEOM_X": {
+          "GEOM_DELAY_A_V2_D": {
+            "description": "Geometric delay term A per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "ns"
+          },
+          "GEOM_DELAY_B_V2_D": {
+            "description": "Geometric delay term B per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "ns/s"
+          },
+          "GEOM_DELAY_C_V2_D": {
+            "description": "Geometric delay term C per sideband",
+            "size": "2",
+            "smax_type": "float64",
+            "unit": "ns/s^2"
+          },
+          "SOURCE_NAME_C24": {
+            "description": "Source name",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "SOURCE_RA_D": {
+            "description": "Source right ascension",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "deg"
+          },
+          "UT1MUTC_D": {
+            "description": "UT1-UTC correction",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "s"
+          }
+        }
+      }
+    }
   }
 }
