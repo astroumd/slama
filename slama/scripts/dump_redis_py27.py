@@ -3,6 +3,13 @@ import redis
 import argparse
 
 
+def _decode(b):
+    """Decode bytes to str, replacing invalid UTF-8 bytes with '?'."""
+    if isinstance(b, bytes):
+        return b.decode('utf-8', errors='replace')
+    return str(b)
+
+
 def filter_leaves(paths):
     """Return only paths that are true leaves (not a prefix of any other path).
 
@@ -54,7 +61,7 @@ if __name__ == '__main__':
         # Collect all (path, value_str) pairs first, then filter to true leaves.
         flat = {}  # path -> display value string
         for k, v in sorted(dump.items()):
-            top = '%s' % k.decode()
+            top = _decode(k)
             if args.strip:
                 start = top.find('<')
                 if start != -1:
@@ -63,11 +70,11 @@ if __name__ == '__main__':
 
             if type(v) == dict:
                 for kk, vv in sorted(v.items()):
-                    middle = '%s' % kk.decode()
+                    middle = _decode(kk)
                     path = '%s:%s' % (top, middle) if top.strip() else middle
-                    flat[path] = vv.decode() if isinstance(vv, bytes) else str(vv)
+                    flat[path] = _decode(vv)
             else:
-                flat[top] = v.decode() if isinstance(v, bytes) else str(v)
+                flat[top] = _decode(v)
 
         for path in filter_leaves(list(flat.keys())):
             if args.values:
@@ -77,7 +84,7 @@ if __name__ == '__main__':
 
     else:
         for k, v in sorted(dump.items()):
-            top = '%s' % k.decode()
+            top = _decode(k)
             if args.strip:
                 start = top.find('<')
                 if start != -1:
@@ -86,7 +93,7 @@ if __name__ == '__main__':
             print(top)
             if type(v) == dict:
                 for kk, vv in sorted(v.items()):
-                    print('\t%s' % kk.decode())
+                    print('\t%s' % _decode(kk))
                     if type(vv) == dict:
                         for kkk, vvv in sorted(v.items()):
-                            print('\t\t%s' % kkk.decode())
+                            print('\t\t%s' % _decode(kkk))

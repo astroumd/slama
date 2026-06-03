@@ -3,6 +3,13 @@ import redis
 import argparse
 
 
+def _decode(b):
+    """Decode bytes to str, replacing invalid UTF-8 bytes with '?'."""
+    if isinstance(b, bytes):
+        return b.decode('utf-8', errors='replace')
+    return str(b)
+
+
 def filter_leaves(paths):
     """Return only paths that are true leaves (not a prefix of any other path).
 
@@ -64,7 +71,7 @@ if __name__ == "__main__":
         # Collect all (path, value_str) pairs first, then filter to true leaves.
         flat = {}  # path -> display value string
         for k, v in sorted(dump.items()):
-            top = k.decode()
+            top = _decode(k)
             if args.strip:
                 start = top.find('<')
                 if start != -1:
@@ -73,11 +80,11 @@ if __name__ == "__main__":
 
             if isinstance(v, dict):
                 for kk, vv in sorted(v.items()):
-                    middle = kk.decode()
+                    middle = _decode(kk)
                     path = f"{top}:{middle}" if top.strip() else middle
-                    flat[path] = vv.decode() if isinstance(vv, bytes) else str(vv)
+                    flat[path] = _decode(vv)
             else:
-                flat[top] = v.decode() if isinstance(v, bytes) else str(v)
+                flat[top] = _decode(v)
 
         for path in filter_leaves(list(flat.keys())):
             if args.values:
@@ -87,7 +94,7 @@ if __name__ == "__main__":
 
     else:
         for k, v in dict(sorted(dump.items())).items():
-            top = f'{k.decode()}'
+            top = _decode(k)
             if args.strip:
                 start = top.find('<')
                 if start != -1:
@@ -96,7 +103,7 @@ if __name__ == "__main__":
             print(top)
             if type(v) == dict:
                 for kk, vv in dict(sorted(v.items())).items():
-                    print(f'\t{kk.decode()}')
+                    print(f'\t{_decode(kk)}')
                     if type(vv) == dict:
                         for kkk, vvv in dict(sorted(v.items())).items():
-                            print(f'\t\t{kkk.decode()}')
+                            print(f'\t\t{_decode(kkk)}')
