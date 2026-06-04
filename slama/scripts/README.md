@@ -28,7 +28,7 @@ uv run scripts/dump_redis.py --flat --values
 uv run scripts/dump_redis.py --flat --strip
 ```
 
-The `--flat` output is what feeds `compare_monitor_points.py`.  Without it,
+The `--flat --strip` output is what feeds `compare_monitor_points.py`.  Without it,
 intermediate branch paths (e.g. `antenna:1:if:1:scanspec`) appear alongside
 their children; `--flat` filters those out so only true leaf variables remain.
 
