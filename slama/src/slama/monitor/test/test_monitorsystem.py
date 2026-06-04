@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, call
 from slama.monitor.monitorpoint import MonitorPoint
-from slama.monitor.monitorsystem import MonitorSystem, MonitorSubsystem
+from slama.monitor.monitorsystem import MonitorSystem, MonitorSubsystem, _parse_index_set
 
 # Path to the small fixture JSON bundled with this test directory
 FIXTURE = Path(__file__).parent / "fixture_smax.json"
@@ -42,8 +42,8 @@ class TestConstruction:
         assert isinstance(ms.get_node("root").data, MonitorSubsystem)
 
     def test_correct_monitor_point_count(self, ms):
-        # fixture has 4 leaf monitor points
-        assert len(ms.all_monitor_points()) == 4
+        # fixture: 4 from subsystem_a/b + 3×2 rm_test + 5×1 board_test = 15
+        assert len(ms.all_monitor_points()) == 15
 
     def test_branch_nodes_are_subsystems(self, ms):
         branch_nodes = [
@@ -85,12 +85,12 @@ class TestCanonicalNames:
 
     def test_all_canonical_names(self, ms):
         names = {mp.canonical_name for mp in ms.all_monitor_points()}
-        assert names == {
+        assert {
             "subsystem_a:sensor1",
             "subsystem_a:sensor2",
             "subsystem_a:nested:deep_value",
             "subsystem_b:flag",
-        }
+        }.issubset(names)
 
 
 # ---------------------------------------------------------------------------
@@ -155,14 +155,15 @@ class TestReadAll:
         client = MagicMock()
         client.smax_pull.return_value = 1.0
         ms.read_all(client)
-        expected_calls = [
+        expected_subset = [
             call("subsystem_a", "sensor1"),
             call("subsystem_a", "sensor2"),
             call("subsystem_a:nested", "deep_value"),
             call("subsystem_b", "flag"),
         ]
         actual_calls = client.smax_pull.call_args_list
-        assert sorted(actual_calls, key=str) == sorted(expected_calls, key=str)
+        for expected in expected_subset:
+            assert expected in actual_calls
 
     def test_read_all_updates_mp_values(self, ms):
         client = MagicMock()
@@ -203,6 +204,202 @@ class TestDisplay:
         ms.details()
         out = capsys.readouterr().out
         assert len(out) > 0
+
+
+# ---------------------------------------------------------------------------
+# Smoke test against full smax.json
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# _parse_index_set — string (non-numeric) indices
+# ---------------------------------------------------------------------------
+
+class TestParseIndexSetStringIndices:
+    def test_comma_separated_strings(self):
+        assert _parse_index_set("acc1,acc2,acc3") == ["acc1", "acc2", "acc3"]
+
+    def test_single_string_token(self):
+        assert _parse_index_set("node1") == ["node1"]
+
+    def test_mixed_string_tokens(self):
+        assert _parse_index_set("H,V") == ["H", "V"]
+
+    def test_numeric_range_still_works(self):
+        assert _parse_index_set("1-3") == ["1", "2", "3"]
+
+    def test_duplicate_string_token_raises(self):
+        with pytest.raises(ValueError, match="duplicate"):
+            _parse_index_set("acc1,acc2,acc1")
+
+
+# ---------------------------------------------------------------------------
+# __each__ with string indices (rm_test section in fixture)
+# ---------------------------------------------------------------------------
+
+class TestEachStringIndices:
+    def test_correct_leaf_count(self, ms):
+        # fixture has subsystem_a/b (4) + rm_test 3×2 (6) + board_test 5×1 (5) = 15
+        assert len(ms.all_monitor_points()) == 15
+
+    def test_canonical_names_use_string_indices(self, ms):
+        names = {mp.canonical_name for mp in ms.all_monitor_points()}
+        assert "rm_test:node1:temperature" in names
+        assert "rm_test:node2:temperature" in names
+        assert "rm_test:node3:temperature" in names
+
+    def test_thresholds_loaded_from_template(self, ms):
+        mp = ms.get_monitor_point("rm_test:node1:temperature")
+        assert mp.warn_low == 5.0
+        assert mp.warn_high == 40.0
+        assert mp.err_low == 0.0
+        assert mp.err_high == 50.0
+
+    def test_thresholds_identical_across_all_indices(self, ms):
+        # Template thresholds should be the same for every expanded node
+        for idx in ("node1", "node2", "node3"):
+            mp = ms.get_monitor_point(f"rm_test:{idx}:temperature")
+            assert mp.warn_low == 5.0
+            assert mp.err_high == 50.0
+
+    def test_valid_strings_loaded_from_template(self, ms):
+        mp = ms.get_monitor_point("rm_test:node1:status")
+        assert mp._valid_strings == ["ok", "degraded"]
+
+
+# ---------------------------------------------------------------------------
+# Zero-padded range parsing
+# ---------------------------------------------------------------------------
+
+class TestParseIndexSetZeroPadded:
+    def test_zero_padded_range(self):
+        assert _parse_index_set("01-03") == ["01", "02", "03"]
+
+    def test_zero_padded_range_two_digits(self):
+        assert _parse_index_set("08-11") == ["08", "09", "10", "11"]
+
+    def test_multi_segment_zero_padded(self):
+        assert _parse_index_set("01-02,11-12") == ["01", "02", "11", "12"]
+
+    def test_multi_segment_mixed_literal_and_range(self):
+        assert _parse_index_set("01-02,special") == ["01", "02", "special"]
+
+    def test_unpadded_range_unchanged(self):
+        assert _parse_index_set("1-3") == ["1", "2", "3"]
+
+    def test_duplicate_across_segments_raises(self):
+        with pytest.raises(ValueError, match="duplicate"):
+            _parse_index_set("01-03,02-04")
+
+
+# ---------------------------------------------------------------------------
+# __each__ with prefix and zero-padded range (board_test section in fixture)
+# ---------------------------------------------------------------------------
+
+class TestEachPrefixAndZeroPadded:
+    def test_prefix_canonical_names(self, ms):
+        names = {mp.canonical_name for mp in ms.all_monitor_points()}
+        assert "board_test:board-01:load" in names
+        assert "board_test:board-11:load" in names
+        assert "board_test:board-12:load" in names
+
+    def test_no_unprefixed_nodes(self, ms):
+        names = {mp.canonical_name for mp in ms.all_monitor_points()}
+        assert "board_test:01:load" not in names
+
+    def test_correct_leaf_count_for_board_test(self, ms):
+        boards = [mp for mp in ms.all_monitor_points()
+                  if mp.canonical_name.startswith("board_test:")]
+        # 01-03 = 3 nodes, 11-12 = 2 nodes → 5 × 1 leaf each = 5
+        assert len(boards) == 5
+
+    def test_thresholds_loaded_via_prefix_node(self, ms):
+        mp = ms.get_monitor_point("board_test:board-02:load")
+        assert mp.warn_high == 2.0
+        assert mp.err_high == 5.0
+
+
+# ---------------------------------------------------------------------------
+# RM section in full smax.json
+# ---------------------------------------------------------------------------
+
+class TestRMSection:
+    def test_rm_leaf_count(self):
+        ms = MonitorSystem(SMAX_JSON)
+        rm_leaves = [n for n in ms.leaves() if n.identifier.startswith("RM:")]
+        assert len(rm_leaves) == 8 * 19  # 8 acc nodes × 19 variables
+
+    def test_rm_canonical_name_format(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_TRACK_EL_F")
+        assert mp.canonical_name == "RM:acc1:RM_TRACK_EL_F"
+        assert mp.table == "RM:acc1"
+        assert mp.key == "RM_TRACK_EL_F"
+
+    def test_rm_track_el_thresholds(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_TRACK_EL_F")
+        assert mp.warn_low == 15.0
+        assert mp.warn_high == 88.0
+        assert mp.err_low == -1.0
+        assert mp.err_high == 90
+
+    def test_rm_thresholds_same_across_all_accs(self):
+        ms = MonitorSystem(SMAX_JSON)
+        for n in range(1, 9):
+            mp = ms.get_monitor_point(f"RM:acc{n}:RM_TRACK_EL_F")
+            assert mp.warn_low == 15.0
+            assert mp.err_high == 90
+
+    def test_rm_active_low_receiver_valid_strings(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_ACTIVE_LOW_RECEIVER_C10")
+        assert mp._valid_strings == ["A1", "B1", "C", "E", "A2", "B2", "D", "F"]
+
+    def test_rm_no_thresholds_on_unvalidated_var(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("RM:acc1:RM_SOURCE_C34")
+        assert mp.warn_low is None
+        assert mp.err_high is None
+
+
+# ---------------------------------------------------------------------------
+# DSM / roach2 section in full smax.json
+# ---------------------------------------------------------------------------
+
+class TestDSMSection:
+    def test_dsm_roach2_leaf_count(self):
+        ms = MonitorSystem(SMAX_JSON)
+        dsm_leaves = [mp for mp in ms.all_monitor_points()
+                      if mp.canonical_name.startswith("DSM:")]
+        # 48 boards × 36 leaf variables = 1728
+        assert len(dsm_leaves) == 48 * 36
+
+    def test_roach2_canonical_name_format(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("DSM:roach2-01:SWARM_LOADING_FACTOR_V2_F")
+        assert mp.canonical_name == "DSM:roach2-01:SWARM_LOADING_FACTOR_V2_F"
+        assert mp.table == "DSM:roach2-01"
+        assert mp.key == "SWARM_LOADING_FACTOR_V2_F"
+
+    def test_roach2_nested_struct_reachable(self):
+        ms = MonitorSystem(SMAX_JSON)
+        mp = ms.get_monitor_point("DSM:roach2-01:SWARM_SCAN_X:PROGRESS_L")
+        assert mp.table == "DSM:roach2-01:SWARM_SCAN_X"
+        assert mp.key == "PROGRESS_L"
+
+    def test_roach2_zero_padded_nodes_present(self):
+        ms = MonitorSystem(SMAX_JSON)
+        # Check first and last board in each group
+        for board in ("roach2-01", "roach2-08", "roach2-11", "roach2-48",
+                      "roach2-51", "roach2-58"):
+            mp = ms.get_monitor_point(f"DSM:{board}:SWARM_LOADING_FACTOR_V2_F")
+            assert mp is not None
+
+    def test_roach2_no_unpadded_nodes(self):
+        ms = MonitorSystem(SMAX_JSON)
+        # Ensure e.g. "DSM:roach2-1:..." was NOT created (must be "roach2-01")
+        with pytest.raises(Exception):
+            ms.get_monitor_point("DSM:roach2-1:SWARM_LOADING_FACTOR_V2_F")
 
 
 # ---------------------------------------------------------------------------

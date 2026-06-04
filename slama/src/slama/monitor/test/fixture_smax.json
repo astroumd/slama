@@ -26,5 +26,45 @@
       "size": "1",
       "smax_type": "bool"
     }
+  },
+  "rm_test": {
+    "__each__": {
+      "over": "node1,node2,node3",
+      "template": {
+        "temperature": {
+          "description": "Node temperature",
+          "size": "1",
+          "smax_type": "float",
+          "unit": "C",
+          "warn_low": 5.0,
+          "warn_high": 40.0,
+          "err_low": 0.0,
+          "err_high": 50.0
+        },
+        "status": {
+          "description": "Node status string",
+          "size": "1",
+          "smax_type": "string",
+          "valid_strings": ["ok", "degraded"]
+        }
+      }
+    }
+  },
+  "board_test": {
+    "__each__": {
+      "over": "01-03,11-12",
+      "prefix": "board-",
+      "template": {
+        "load": {
+          "description": "Board load average",
+          "size": "1",
+          "smax_type": "float",
+          "warn_low": 0.0,
+          "warn_high": 2.0,
+          "err_low": -1.0,
+          "err_high": 5.0
+        }
+      }
+    }
   }
 }

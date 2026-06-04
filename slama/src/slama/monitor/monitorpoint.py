@@ -5,9 +5,6 @@ from astropy.time import Time
 import numpy as np
 from smax import SmaxRedisClient
 from smax.smax_data_types import SmaxVarBase, _SMAX_TYPE_MAP
-from pathlib import Path
-import json
-from collections import UserList
 from enum import IntEnum, auto
 from numbers import Number
 
@@ -59,7 +56,6 @@ class MonitorPoint(SmaxVarBase):
         valid_strings: list = None,
         **kwargs
     ):
-        # Accept "units" (plural, as used in mpdefs.json) as alias for "unit"
         if unit is None and units is not None:
             unit = units
         if smax_type is not None:
@@ -196,49 +192,6 @@ class MonitorPoint(SmaxVarBase):
 
     def isGood(self) -> bool:
         return self.validity == Validity.VALID_GOOD
-
-
-class MonitorPointList(UserList):
-    def __init__(self, mpjsonlist):
-        mplist = []
-        for m in mpjsonlist:
-            mplist.append(MonitorPoint(**m))
-        UserList.__init__(self, mplist)
-
-    @classmethod
-    def from_file(self, path: Path):
-        mplist = json.load(open(path, "r"))
-        return MonitorPointList(mplist["monitorpoints"])
-
-
-class MonitorListUpdater:
-    def __init__(
-        self, mplist: MonitorPointList, client: SmaxRedisClient, lazy=False, updatenow=True
-    ):
-        self._mplist = mplist
-        # valkey server
-        self._client = client
-        self._lazy = lazy
-        if updatenow:
-            self.update()
-
-    @property
-    def mplist(self):
-        return self._mplist
-
-    def __getitem__(self, index):
-        return self._mplist[index]
-
-    def __len__(self):
-        return len(self._mplist)
-
-    def update(self) -> None:
-        """read from self.client and write data to mp"""
-        # @todo use lazy pull -- Not Implemented in Python
-
-        for mp in self.mplist:
-            result = self._client.smax_pull(mp.table, mp.key)
-            mp.update(result)
 
 
 class MonitorPointUpdater:

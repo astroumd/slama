@@ -2,8 +2,6 @@ __all__ = ["monitorpoint", "monitorsystem"]
 from slama.monitor.monitorpoint import (
     MonitorPoint,
     Validity,
-    MonitorPointList,
-    MonitorListUpdater,
     MonitorPointUpdater,
     MonitorPointWriter,
 )

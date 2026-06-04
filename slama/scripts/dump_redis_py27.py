@@ -13,29 +13,19 @@ def _decode(b):
 def filter_leaves(paths):
     """Return only paths that are true leaves (not a prefix of any other path).
 
-    A path P is a branch if any other path Q starts with P + ':'. This function
-    builds the set of all such branch prefixes in O(n * d) time (where d is the
-    maximum path depth) and returns the paths that are not in that set.
-
-    Parameters
-    ----------
-    paths : list of str
-        Colon-separated path strings (e.g. ``["a:b", "a:b:c"]``).
-
-    Returns
-    -------
-    list of str
-        Subset of *paths* containing only true leaves, in original order.
+    A path P is a branch if any other path Q starts with P + ':'. Builds the
+    set of all proper prefixes in O(n * d) time (d = max depth) and returns
+    the paths that are not in that set.
     """
     branches = set()
     for p in paths:
-        parts = p.split(":")
+        parts = p.split(':')
         for i in range(1, len(parts)):
-            branches.add(":".join(parts[:i]))
+            branches.add(':'.join(parts[:i]))
     return [p for p in paths if p not in branches]
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     progname = "SMA monitor system simulator"
 
     parser = argparse.ArgumentParser(prog=progname, description="Dump the full keys and, optionally, values of the SMA database")
@@ -78,22 +68,22 @@ if __name__ == "__main__":
                     stop = top.find('>')
                     top = top[stop+2:]  # remove '>:'
 
-            if isinstance(v, dict):
+            if type(v) == dict:
                 for kk, vv in sorted(v.items()):
                     middle = _decode(kk)
-                    path = f"{top}:{middle}" if top.strip() else middle
+                    path = '%s:%s' % (top, middle) if top.strip() else middle
                     flat[path] = _decode(vv)
             else:
                 flat[top] = _decode(v)
 
         for path in filter_leaves(list(flat.keys())):
             if args.values:
-                print(f"{path}={flat[path]}")
+                print('%s=%s' % (path, flat[path]))
             else:
                 print(path)
 
     else:
-        for k, v in dict(sorted(dump.items())).items():
+        for k, v in sorted(dump.items()):
             top = _decode(k)
             if args.strip:
                 start = top.find('<')
@@ -102,8 +92,8 @@ if __name__ == "__main__":
                     top = top[stop+2:]  # remove '>:'
             print(top)
             if type(v) == dict:
-                for kk, vv in dict(sorted(v.items())).items():
-                    print(f'\t{_decode(kk)}')
+                for kk, vv in sorted(v.items()):
+                    print('\t%s' % _decode(kk))
                     if type(vv) == dict:
-                        for kkk, vvv in dict(sorted(v.items())).items():
-                            print(f'\t\t{_decode(kkk)}')
+                        for kkk, vvv in sorted(v.items()):
+                            print('\t\t%s' % _decode(kkk))

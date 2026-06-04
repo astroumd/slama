@@ -24,7 +24,7 @@ Replace the desktop-only PyQt6 monitor display with a web-based system that:
 | Live updates    | HTMX + WebSocket extension| Declarative live DOM updates with minimal JavaScript |
 | Styling         | Plain CSS                 | Dark observatory theme, monospace fonts, validity colors |
 | Data source     | SMAX (Redis/Valkey:6380)  | Existing SMA monitor backend via `SmaxRedisClient`  |
-| Thresholds      | `mpdefs.json`             | Validity limits (warn/error high/low) per monitor point |
+| Thresholds      | `smax.json` (via `MonitorSystem`) | Validity limits (warn/error high/low) inline with each monitor point definition |
 
 The stack was chosen to keep everything in Python. The team has limited
 JavaScript experience, so the frontend uses HTMX for live updates (HTML over
@@ -78,9 +78,9 @@ vanilla JavaScript for the settings controls.
    This runs in a thread pool (`asyncio.to_thread`) to avoid blocking the
    async event loop. A 5-second timeout prevents the page from hanging if
    SMAX is down — cells render as "---" with `cell-nodata` styling.
-5. For each value, `DataBridge` looks up thresholds from `mpdefs.json` and
-   computes a CSS class: `cell-good`, `cell-warning`, `cell-error`,
-   `cell-nodata`, or `cell-unchecked`.
+5. For each value, `DataBridge` looks up thresholds loaded from `smax.json`
+   at startup (via `MonitorSystem`) and computes a CSS class: `cell-good`,
+   `cell-warning`, `cell-error`, `cell-nodata`, or `cell-unchecked`.
 6. Jinja2 renders the full HTML page with all layout blocks (tables, grids,
    cells) and sends it to the browser.
 
@@ -134,10 +134,9 @@ src/slama/
 │   └── static/
 │       └── style.css          # Dark theme, validity colors, controls styling
 ├── conf/
-│   ├── mpdefs.json            # Monitor point definitions with thresholds
-│   ├── smax.json              # Full hierarchical SMAX schema (authoritative)
+│   ├── smax.json              # Full hierarchical SMAX schema with inline validity thresholds (authoritative)
 │   └── displays/
-│       └── tracking.json      # Antenna tracking display configuration
+│       └── tracking.json      # Antenna tracking display configuration (one of many)
 └── fakeobs.py                 # Simulator (writes test data to SMAX)
 ```
 
@@ -186,12 +185,13 @@ blocks rendered top-to-bottom.
 Fetches monitor point values from SMAX and computes validity states for CSS
 color coding.
 
-**Design decision:** The `DataBridge` does not use `MonitorPoint` objects
-from the monitor module. This avoids a dependency on the `smax_type` field
-(which `mpdefs.json` does not provide) and keeps the web module lightweight.
-Instead, it loads thresholds from `mpdefs.json` directly and implements its
-own validity logic, mirroring the threshold checks in
-`MonitorPoint._numeric_validity()`.
+**Design decision:** `DataBridge` loads thresholds from `smax.json` at
+startup via `MonitorSystem`. Only monitor points with at least one non-`None`
+threshold field are stored in `_thresholds`, keeping the dict sparse.
+`DataBridge` implements its own CSS validity logic (mirroring
+`MonitorPoint._numeric_validity()`) rather than using `MonitorPoint` objects
+directly, to keep the web module lightweight and decoupled from the SMAX
+type system.
 
 **Key behaviors:**
 
@@ -203,8 +203,8 @@ own validity logic, mirroring the threshold checks in
   still renders.
 - **Validity mapping:**
   - Numeric values are checked against `err_high`, `err_low`, `warn_high`,
-    `warn_low` thresholds from `mpdefs.json`.
-  - String values are checked against `valid_strings` lists.
+    `warn_low` thresholds loaded from `smax.json`.
+  - String values are checked against `valid_strings` lists (also from `smax.json`).
   - Booleans and values without thresholds get `cell-unchecked`.
 - **Value formatting** — Floats display with 4 decimal places by default.
   A `format` field in the display config can override this per-row.
@@ -349,26 +349,37 @@ server discovers it automatically — no code changes required.
 
 ## Related Changes to Existing Code
 
+### `conf/smax.json`
+
+- Added a top-level `RM` section for Reflective Memory variables. Uses
+  `__each__` over `acc1,acc2,...,acc8` (comma-separated string indices,
+  since the SMAX database addresses these as `RM:acc1:VAR` not `RM:1:VAR`).
+  152 leaf nodes total (8 antenna computers × 19 variables).
+- Validity thresholds (`warn_low`, `warn_high`, `err_low`, `err_high`) and
+  `valid_strings` are now inline fields on leaf node dicts throughout the
+  file. `MonitorSystem._build_tree` passes all leaf fields via `**value` to
+  `MonitorPoint`, so new fields are loaded automatically.
+- `mpdefs.json` has been deleted. `smax.json` is now the single source of
+  truth for both the SMAX database schema and validity thresholds.
+
 ### `MonitorPoint` (`monitor/monitorpoint.py`)
 
 - `smax_type` parameter made optional (defaults to `None`). When `None`,
-  the `SmaxVarBase` parent class initialization is skipped. This allows
-  `MonitorPointList.from_file()` to load `mpdefs.json`, which does not
-  include `smax_type`.
-- Added `units` parameter as an alias for `unit`. `mpdefs.json` uses the
-  plural form `"units"`, which was previously silently captured by `**kwargs`
-  and discarded.
+  the `SmaxVarBase` parent class initialization is skipped.
+- Added `units` parameter as an alias for `unit` for compatibility with
+  JSON that uses the plural form.
+- Removed `MonitorPointList` and `MonitorListUpdater` — these were prototype
+  classes that loaded the now-retired `mpdefs.json` flat list format.
 
 ### `monitor/__init__.py`
 
-- Added exports for `MonitorPointUpdater` and `MonitorPointWriter`.
+- Exports `MonitorPointUpdater` and `MonitorPointWriter`.
+- `MonitorPointList` and `MonitorListUpdater` removed.
 
 ### `fakeobs.py`
 
 - Rewritten to use the monitor point API (`MonitorPointWriter` for writes,
   `MonitorPointUpdater` for reads) instead of raw `SmaxRedisClient` calls.
-- Path to `mpdefs.json` uses `Path(__file__).parent / "conf" / "mpdefs.json"`
-  for robustness.
 - Added `if __name__ == "__main__"` block.
 
 ## Running the Server
@@ -432,7 +443,7 @@ showing recent history, with threshold bands overlaid. Non-numeric cells
   Only records numeric values (skips strings and booleans).
 - `get_history(canonical_name)` — Returns `{canonical_name, times, values,
   thresholds}` where thresholds are the `warn_low/high`, `err_low/high`
-  limits from `mpdefs.json`.
+  limits loaded from `smax.json`.
 - Ring buffer size: `maxlen=1800` entries (~1 hour at 2-second intervals,
   ~216 KB per canonical name).
 - History starts accumulating when the server starts. There is no persistent

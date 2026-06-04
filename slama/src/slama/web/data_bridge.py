@@ -1,10 +1,9 @@
 """Bridge between SMAX backend and web display.
 
 Fetches monitor point values from SMAX and computes validity states
-for CSS color coding, using threshold definitions from mpdefs.json.
+for CSS color coding, using threshold definitions from smax.json.
 """
 
-import json
 import logging
 import time
 from collections import deque
@@ -56,7 +55,7 @@ class DataBridge:
     """Fetches SMAX data and computes validity for web display cells."""
 
     def __init__(self, host: str = "localhost", port: int = 6380,
-                 mpdefs_path: Path = None):
+                 smax_path: Path = None):
         """Initialize the DataBridge.
 
         Parameters
@@ -65,18 +64,18 @@ class DataBridge:
             SMAX/Redis server hostname. Default is ``"localhost"``.
         port : int, optional
             SMAX/Redis server port. Default is ``6380``.
-        mpdefs_path : Path or None, optional
-            Path to ``mpdefs.json`` for loading validity thresholds.
-            If None, no thresholds are loaded and all numeric values
-            receive ``cell-good``.
+        smax_path : Path or None, optional
+            Path to ``smax.json`` for loading validity thresholds from the
+            MonitorSystem hierarchy. If None, no thresholds are loaded and
+            all numeric values receive ``cell-good``.
         """
         self._host = host
         self._port = port
         self._client = None  # lazy connection
         self._thresholds: dict[str, dict] = {}
         self._history: dict[str, deque] = {}  # canonical_name → deque of (timestamp, value)
-        if mpdefs_path is not None:
-            self._load_thresholds(mpdefs_path)
+        if smax_path is not None:
+            self._load_thresholds(smax_path)
 
     def _get_client(self) -> SmaxRedisClient | None:
         """Lazy connection to SMAX — only connects when first needed.
@@ -95,17 +94,29 @@ class DataBridge:
         return self._client
 
     def _load_thresholds(self, path: Path) -> None:
-        """Load threshold definitions from mpdefs.json, keyed by canonical_name.
+        """Load threshold definitions from smax.json via MonitorSystem.
+
+        Only monitor points that have at least one non-None threshold field
+        (``warn_low``, ``warn_high``, ``err_low``, ``err_high``, or
+        ``valid_strings``) are stored in ``_thresholds``.
 
         Parameters
         ----------
         path : Path
-            Path to the ``mpdefs.json`` file.
+            Path to ``smax.json``.
         """
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        for mp in data["monitorpoints"]:
-            self._thresholds[mp["canonical_name"]] = mp
+        from slama.monitor.monitorsystem import MonitorSystem
+        ms = MonitorSystem(path)
+        for mp in ms.all_monitor_points():
+            entry = {}
+            for field in ("warn_low", "warn_high", "err_low", "err_high"):
+                val = getattr(mp, field)
+                if val is not None:
+                    entry[field] = val
+            if mp._valid_strings is not None:
+                entry["valid_strings"] = mp._valid_strings
+            if entry:
+                self._thresholds[mp.canonical_name] = entry
 
     @staticmethod
     def _make_cell_id(canonical_name: str) -> str:
