@@ -22,13 +22,25 @@ from pathlib import Path
 
 
 def parse_range(range_str: str) -> list[str]:
-    """Parse a range string like '1-8' or '1,3,5' into a list of string indices."""
+    """Parse a range string into a list of string indices.
+
+    Each comma-separated token is either a literal string or a ``lo-hi``
+    numeric range (inclusive).  If ``lo`` has a leading zero the generated
+    values are zero-padded to the same width (e.g. ``"01-08"`` →
+    ``["01","02",...,"08"]``).
+    """
     indices = []
     for part in range_str.split(","):
         part = part.strip()
         if "-" in part:
-            start, end = part.split("-", 1)
-            indices.extend(str(i) for i in range(int(start), int(end) + 1))
+            lo_s, hi_s = part.split("-", 1)
+            lo, hi = int(lo_s), int(hi_s)
+            # Preserve zero-padding if lo_s has a leading zero
+            if lo_s != str(lo):
+                width = len(lo_s)
+                indices.extend(f"{i:0{width}d}" for i in range(lo, hi + 1))
+            else:
+                indices.extend(str(i) for i in range(lo, hi + 1))
         else:
             indices.append(part)
     return indices
@@ -55,8 +67,10 @@ def expand_smax(obj, prefix: str = "") -> set[str]:
     if "__each__" in obj:
         each = obj["__each__"]
         template = each["template"]
+        node_prefix = each.get("prefix", "")
         for idx in parse_range(each["over"]):
-            sub_prefix = f"{prefix}:{idx}" if prefix else idx
+            node_key = f"{node_prefix}{idx}"
+            sub_prefix = f"{prefix}:{node_key}" if prefix else node_key
             names |= expand_smax(template, sub_prefix)
         # Also process any sibling keys outside __each__ at this level
         for key, value in obj.items():
