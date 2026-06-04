@@ -214,6 +214,47 @@ class TestBuildSubtreeLeaves:
         assert result["VEC_F"]["size"] == "8"
 
 
+class TestBuildSubtreeErrors:
+    def test_failed_leaf_omitted_from_output(self):
+        def bad_query(table, key):
+            raise RuntimeError("not found")
+        errors = []
+        result = build_subtree("SYS", ["TEMP_F"], bad_query, errors)
+        assert "TEMP_F" not in result
+
+    def test_failed_leaf_appended_to_errors(self):
+        def bad_query(table, key):
+            raise RuntimeError("not found")
+        errors = []
+        build_subtree("SYS", ["TEMP_F"], bad_query, errors)
+        assert errors == ["SYS:TEMP_F"]
+
+    def test_successful_leaf_not_in_errors(self):
+        query = mock_query_factory({"SYS:TEMP_F": MockSmaxVar("float32", 1)})
+        errors = []
+        build_subtree("SYS", ["TEMP_F"], query, errors)
+        assert errors == []
+
+    def test_partial_failure_keeps_successful_leaves(self):
+        def selective_query(table, key):
+            if key == "BAD_F":
+                raise RuntimeError("missing")
+            return MockSmaxVar("float32", 1)
+        errors = []
+        result = build_subtree("SYS", ["GOOD_F", "BAD_F"], selective_query, errors)
+        assert "GOOD_F" in result
+        assert "BAD_F" not in result
+        assert errors == ["SYS:BAD_F"]
+
+    def test_no_error_field_in_output(self):
+        def bad_query(table, key):
+            raise RuntimeError("not found")
+        errors = []
+        result = build_subtree("SYS", ["TEMP_F", "PRESS_F"], bad_query, errors)
+        for val in result.values():
+            assert "_error" not in val
+
+
 class TestBuildSubtreeEachGroup:
     def test_generates_each_block(self):
         # acc1 and acc2 both have FOO_F

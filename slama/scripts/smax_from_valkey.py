@@ -210,12 +210,14 @@ def indices_to_over_spec(indices: list[str]) -> str:
 # Tree builder
 # ---------------------------------------------------------------------------
 
-def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable) -> dict:
+def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable,
+                  errors: list | None = None) -> dict:
     """Recursively build a smax.json-style subtree dict.
 
     Queries ``query_fn(table, key)`` for each true leaf.  Detects ``__each__``
     groups among the first path segment and generates appropriate ``__each__``
-    blocks.
+    blocks.  Leaves whose query fails are silently omitted from the output;
+    their full canonical names are appended to ``errors`` if provided.
 
     Parameters
     ----------
@@ -226,12 +228,17 @@ def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable) -> dict
     query_fn : callable
         ``query_fn(table, key)`` returns a ``SmaxVarBase``-like object with
         ``.type``, ``.dim``, ``.description``, and ``.unit`` attributes.
+    errors : list or None, optional
+        Mutable list to which failed canonical names are appended.  If None,
+        failures are silently discarded.
 
     Returns
     -------
     dict
-        JSON-serialisable dict for this subtree.
+        JSON-serialisable dict for this subtree (failed leaves omitted).
     """
+    if errors is None:
+        errors = []
     result: dict = {}
 
     # Separate direct leaves (no further ':') from deeper paths
@@ -245,12 +252,13 @@ def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable) -> dict
             child, rest = path.split(":", 1)
             by_child[child].append(rest)
 
-    # Query and record each direct leaf
+    # Query and record each direct leaf; skip failures
     for leaf in sorted(direct_leaves):
         full = f"{prefix}:{leaf}" if prefix else leaf
         table, key = full.rsplit(":", 1)
-        entry = _query_leaf(table, key, query_fn)
-        result[leaf] = entry
+        entry = _query_leaf(table, key, query_fn, errors)
+        if entry is not None:
+            result[leaf] = entry
 
     if not by_child:
         return result
@@ -262,14 +270,10 @@ def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable) -> dict
         # Use the first (alphabetically smallest) member as the representative
         rep_key = min(group.keys, key=lambda k: (len(k), k))
         rep_prefix = f"{prefix}:{rep_key}" if prefix else rep_key
-        template = build_subtree(rep_prefix, by_child[rep_key], query_fn)
+        template = build_subtree(rep_prefix, by_child[rep_key], query_fn, errors)
 
         over = indices_to_over_spec(group.indices)
-        each_block: dict = {"over": over, "template": template}
-        if group.prefix:
-            each_block["prefix"] = group.prefix
-        # Insert 'prefix' before 'template' for readability
-        ordered = {"over": each_block["over"]}
+        ordered: dict = {"over": over}
         if group.prefix:
             ordered["prefix"] = group.prefix
         ordered["template"] = template
@@ -278,13 +282,18 @@ def build_subtree(prefix: str, rel_paths: list[str], query_fn: Callable) -> dict
     # Recurse into singletons
     for key in sorted(singletons):
         child_prefix = f"{prefix}:{key}" if prefix else key
-        result[key] = build_subtree(child_prefix, by_child[key], query_fn)
+        result[key] = build_subtree(child_prefix, by_child[key], query_fn, errors)
 
     return result
 
 
-def _query_leaf(table: str, key: str, query_fn: Callable) -> dict:
-    """Call ``query_fn`` and build the leaf entry dict."""
+def _query_leaf(table: str, key: str, query_fn: Callable,
+                errors: list) -> dict | None:
+    """Call ``query_fn`` and build the leaf entry dict.
+
+    Returns ``None`` on failure and appends the canonical name to ``errors``.
+    """
+    full_path = f"{table}:{key}"
     try:
         var = query_fn(table, key)
         entry: dict = {
@@ -298,15 +307,17 @@ def _query_leaf(table: str, key: str, query_fn: Callable) -> dict:
         if unit is not None:
             entry["unit"] = unit
         return entry
-    except Exception as exc:
-        return {"size": "?", "smax_type": "?", "_error": str(exc)}
+    except Exception:
+        errors.append(full_path)
+        return None
 
 
 # ---------------------------------------------------------------------------
 # Top-level entry point
 # ---------------------------------------------------------------------------
 
-def generate_smax_json(input_path: Path, query_fn: Callable) -> dict:
+def generate_smax_json(input_path: Path,
+                       query_fn: Callable) -> tuple[dict, list[str]]:
     """Read the input file and generate a smax.json-style dict of missing entries.
 
     Parameters
@@ -318,8 +329,9 @@ def generate_smax_json(input_path: Path, query_fn: Callable) -> dict:
 
     Returns
     -------
-    dict
-        Top-level JSON dict keyed by namespace (e.g. ``"DSM"``, ``"RM"``).
+    tuple of (dict, list of str)
+        The JSON-serialisable output dict keyed by namespace, and a list of
+        canonical names whose database query failed.
     """
     lines = input_path.read_text().splitlines()
     paths = filter_input(lines)
@@ -331,11 +343,12 @@ def generate_smax_json(input_path: Path, query_fn: Callable) -> dict:
         ns, rest = path.split(":", 1)
         by_ns[ns].append(rest)
 
+    errors: list[str] = []
     output: dict = {}
     for ns in sorted(by_ns):
-        output[ns] = build_subtree(ns, by_ns[ns], query_fn)
+        output[ns] = build_subtree(ns, by_ns[ns], query_fn, errors)
 
-    return output
+    return output, errors
 
 
 # ---------------------------------------------------------------------------
@@ -354,6 +367,8 @@ if __name__ == "__main__":
                         help="Output JSON file path, or '-' for stdout (default)")
     parser.add_argument("--host", default="localhost", help="SMAX host (default: localhost)")
     parser.add_argument("--port", type=int, default=6380, help="SMAX port (default: 6380)")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="List names of variables that could not be fetched")
     args = parser.parse_args()
 
     from smax import SmaxRedisClient
@@ -362,7 +377,7 @@ if __name__ == "__main__":
     def _smax_query(table, key):
         return client.smax_pull(table, key)
 
-    result = generate_smax_json(Path(args.input), _smax_query)
+    result, errors = generate_smax_json(Path(args.input), _smax_query)
 
     json_str = json.dumps(result, indent=2)
     if args.output == "-":
@@ -370,3 +385,10 @@ if __name__ == "__main__":
     else:
         Path(args.output).write_text(json_str)
         print(f"Written to {args.output}", file=sys.stderr)
+
+    if errors:
+        print(f"{len(errors)} variable(s) could not be fetched from Valkey and were omitted.",
+              file=sys.stderr)
+        if args.verbose:
+            for name in sorted(errors):
+                print(f"  {name}", file=sys.stderr)
