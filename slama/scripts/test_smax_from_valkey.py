@@ -13,6 +13,7 @@ from smax_from_valkey import (
     indices_to_over_spec,
     dim_to_size,
     build_subtree,
+    deep_merge,
     EachGroup,
 )
 
@@ -296,3 +297,58 @@ class TestBuildSubtreeEachGroup:
         template = result["__each__"]["template"]
         assert "UPS_DATA_X" in template
         assert "ACTIVE_ALARMS_L" in template["UPS_DATA_X"]
+
+
+# ---------------------------------------------------------------------------
+# deep_merge
+# ---------------------------------------------------------------------------
+
+class TestDeepMerge:
+    def test_overlay_key_added_when_absent_from_base(self):
+        result = deep_merge({"a": 1}, {"b": 2})
+        assert result["b"] == 2
+
+    def test_base_key_preserved_when_absent_from_overlay(self):
+        result = deep_merge({"a": 1}, {"b": 2})
+        assert result["a"] == 1
+
+    def test_base_wins_on_scalar_conflict(self):
+        result = deep_merge({"a": "base"}, {"a": "overlay"})
+        assert result["a"] == "base"
+
+    def test_dicts_merged_recursively(self):
+        base    = {"DSM": {"roach2-01": {"LOADING_F": {"size": "1", "description": "Loading"}}}}
+        overlay = {"DSM": {"roach2-02": {"LOADING_F": {"size": "1"}}}}
+        result = deep_merge(base, overlay)
+        assert "roach2-01" in result["DSM"]
+        assert "roach2-02" in result["DSM"]
+
+    def test_base_wins_on_nested_conflict(self):
+        base    = {"DSM": {"TEMP_F": {"size": "1", "description": "validated desc"}}}
+        overlay = {"DSM": {"TEMP_F": {"size": "1", "description": "generated desc"}}}
+        result = deep_merge(base, overlay)
+        assert result["DSM"]["TEMP_F"]["description"] == "validated desc"
+
+    def test_overlay_adds_new_namespace(self):
+        base    = {"RM": {"acc1": {"EL_F": {"size": "1"}}}}
+        overlay = {"NEW": {"node": {"VAR_F": {"size": "4"}}}}
+        result = deep_merge(base, overlay)
+        assert "RM" in result
+        assert "NEW" in result
+
+    def test_inputs_not_mutated(self):
+        base    = {"a": {"x": 1}}
+        overlay = {"a": {"y": 2}, "b": 3}
+        deep_merge(base, overlay)
+        assert "y" not in base["a"]
+        assert "b" not in base
+
+    def test_empty_overlay_returns_base_copy(self):
+        base = {"a": 1, "b": {"c": 2}}
+        result = deep_merge(base, {})
+        assert result == base
+
+    def test_empty_base_returns_overlay_copy(self):
+        overlay = {"a": 1, "b": {"c": 2}}
+        result = deep_merge({}, overlay)
+        assert result == overlay

@@ -352,11 +352,50 @@ def generate_smax_json(input_path: Path,
 
 
 # ---------------------------------------------------------------------------
+# Merge helper
+# ---------------------------------------------------------------------------
+
+def deep_merge(base: dict, overlay: dict) -> dict:
+    """Recursively merge *overlay* into *base*, with *base* taking precedence.
+
+    For each key in *overlay*:
+
+    - If the key is absent from *base*, it is added.
+    - If both values are dicts, the function recurses.
+    - Otherwise the *base* value is kept (base wins on conflicts).
+
+    Neither input dict is mutated; a new dict is returned.
+
+    Parameters
+    ----------
+    base : dict
+        The authoritative dict (e.g. smax.json).  Its values are preserved.
+    overlay : dict
+        The dict whose keys are added where missing from *base*.
+
+    Returns
+    -------
+    dict
+        Merged result with all keys from both inputs.
+    """
+    result = dict(base)
+    for key, ov_val in overlay.items():
+        if key not in result:
+            result[key] = ov_val
+        elif isinstance(result[key], dict) and isinstance(ov_val, dict):
+            result[key] = deep_merge(result[key], ov_val)
+        # else: base wins — keep result[key] unchanged
+    return result
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     _REPO_ROOT = Path(__file__).resolve().parent.parent
+
+    _DEFAULT_SMAX_JSON = _REPO_ROOT / "src" / "slama" / "conf" / "smax.json"
 
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -365,6 +404,11 @@ if __name__ == "__main__":
                         help="Input file of missing SMAX paths (default: valkeynotsmax.txt)")
     parser.add_argument("--output", "-o", default="-",
                         help="Output JSON file path, or '-' for stdout (default)")
+    parser.add_argument("--merge", "-m", metavar="SMAX_JSON", nargs="?",
+                        const=str(_DEFAULT_SMAX_JSON),
+                        help="Merge generated entries into SMAX_JSON (default: conf/smax.json) "
+                             "and write the combined result to --output. "
+                             "smax.json values take precedence on conflicts.")
     parser.add_argument("--host", default="localhost", help="SMAX host (default: localhost)")
     parser.add_argument("--port", type=int, default=6380, help="SMAX port (default: 6380)")
     parser.add_argument("--verbose", "-v", action="store_true",
@@ -378,6 +422,15 @@ if __name__ == "__main__":
         return client.smax_pull(table, key)
 
     result, errors = generate_smax_json(Path(args.input), _smax_query)
+
+    if args.merge:
+        merge_path = Path(args.merge)
+        if not merge_path.exists():
+            print(f"Error: merge file not found: {merge_path}", file=sys.stderr)
+            sys.exit(1)
+        base = json.loads(merge_path.read_text())
+        result = deep_merge(base, result)
+        print(f"Merged with {merge_path}", file=sys.stderr)
 
     json_str = json.dumps(result, indent=2)
     if args.output == "-":
