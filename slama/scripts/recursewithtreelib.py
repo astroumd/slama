@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from treelib import Tree
-from monitorpoint import MonitorPoint
+from slama.monitor.monitorpoint import MonitorPoint
 
 # using treelib to instantiate a monitor system
 
@@ -130,7 +130,7 @@ class MonitorSystem(Tree):
 # -------------------------------------------------------
 if __name__ == "__main__":
     # Example JSON file
-    json_data = read_json_file("../conf/smax.json")
+    json_data = read_json_file("../src/slama/conf/smax.json")
 
     system = MonitorSystem(json_data)
 
