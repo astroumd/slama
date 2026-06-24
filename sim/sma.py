@@ -298,12 +298,17 @@ def _compute_sun_times(state: State) -> None:
     if len(words) < 12:
         return
 
+    if words[3] == 'elevation':
+        offset = 4
+    else:
+        offset = 0
+
     def _hm(s: str):
         parts = s.rstrip(',').split(':')
         return int(parts[0]), int(parts[1])
 
-    rise_h, rise_m = _hm(words[5])
-    set_h,  set_m  = _hm(words[11])
+    rise_h, rise_m = _hm(words[5+offset])
+    set_h,  set_m  = _hm(words[11+offset])
 
     if set_h > 23:
         set_h -= 24
