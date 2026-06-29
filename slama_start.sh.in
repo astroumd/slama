@@ -4,6 +4,8 @@
 export  SLAMA=@SLAMA@
 
 export PATH=$SLAMA/bin:$PATH
+export SMAX_SERVER=localhost
+export SMAX_PORT=6380
 
 # do python first. this is important if a venv is used  (new)
 if [ -e $SLAMA/anaconda3/python_start.sh ]; then
