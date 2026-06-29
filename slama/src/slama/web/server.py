@@ -4,13 +4,19 @@ Usage:
     cd src/slama
     uvicorn slama.web.server:app --reload --port 8000
 
-Or:
-    python -m slama.web.server
+Or with CLI options (sets SMAX_HOST / SMAX_PORT before uvicorn starts):
+    python -m slama.web.server [--smax-host HOST] [--smax-port PORT]
+                               [--web-port PORT] [--reload]
+
+Environment variables (used when launching via plain uvicorn):
+    SMAX_HOST   SMAX/Redis server hostname (default: localhost)
+    SMAX_PORT   SMAX/Redis server port     (default: 6380)
 """
 
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -53,10 +59,12 @@ jinja_env = Environment(
 app = FastAPI(title="SMA Monitor Display")
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
-# DataBridge uses lazy SMAX connection — no blocking at import/startup time
+# DataBridge uses lazy SMAX connection — no blocking at import/startup time.
+# Host/port are read from environment variables so they can be set by the
+# __main__ CLI parser before uvicorn imports this module's app object.
 bridge = DataBridge(
-    host="localhost",
-    port=6380,
+    host=os.environ.get("SMAX_HOST", "localhost"),
+    port=int(os.environ.get("SMAX_PORT", "6380")),
     smax_path=_SMAX_JSON_PATH,
 )
 
@@ -320,11 +328,48 @@ def _render_block(block, index: int, cells: dict,
 # ------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import argparse
     import uvicorn
+
+    parser = argparse.ArgumentParser(
+        description="SMA Monitor web server",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--smax-host",
+        default=os.environ.get("SMAX_HOST", "localhost"),
+        metavar="HOST",
+        help="SMAX/Redis server hostname",
+    )
+    parser.add_argument(
+        "--smax-port",
+        type=int,
+        default=int(os.environ.get("SMAX_PORT", "6380")),
+        metavar="PORT",
+        help="SMAX/Redis server port",
+    )
+    parser.add_argument(
+        "--web-port",
+        type=int,
+        default=8000,
+        metavar="PORT",
+        help="Web server port to listen on",
+    )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Enable uvicorn auto-reload (development mode)",
+    )
+    args = parser.parse_args()
+
+    # Set env vars so the module-level DataBridge picks them up on import
+    os.environ["SMAX_HOST"] = args.smax_host
+    os.environ["SMAX_PORT"] = str(args.smax_port)
+
     uvicorn.run(
         "slama.web.server:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=args.web_port,
+        reload=args.reload,
         log_level="info",
     )
