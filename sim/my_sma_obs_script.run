@@ -1,0 +1,1757 @@
+Checking antenna status ... 
+initializing.....
+simulateMode = 1
+Running on machine = oddjob
+Not running on hal9000, entering simulation mode.
+1
+The last pointing time is 1734789600
+Sunrise is -215 and sunset is 140
+Sunset is now 240
+Script: my_sma_obs_script.pl.
+nants = 0
+pants = ,
+radio
+	12/21/2024 04:00:00 --> 12/21/2024 04:00:00  ---- radio
+integrate -t 15
+	12/21/2024 04:00:00 --> 12/21/2024 04:00:00  ---- integrate -t 15
+project -r -p 'Ramprasad Rao' -d '2024B-S045'
+	12/21/2024 04:00:00 --> 12/21/2024 04:00:00  ---- project -r -p 'Ramprasad Rao' -d '2024B-S045'
+----- initialization done, starting script -----
+----- initial flux and bandpass calibration -----
+
+#######################
+# FLUX Calibration    #
+#######################
+
+Checking elevation of Flux Cal Neptune...
+LST [hr]=  23.68
+lookup time: 21 Dec 2024 4:0
+The lookup time is: 21 Dec 2024 4:0
+Neptune is at 67.6499 degrees elevation
+
+---- Observing flux2. ----
+
+radecoff -r 0 -d 0
+	12/21/2024 04:00:00 --> 12/21/2024 04:00:00  ---- radecoff -r 0 -d 0
+LST [hr]=  23.68
+lookup time: 21 Dec 2024 4:0
+The lookup time is: 21 Dec 2024 4:0
+Neptune is at 67.6499 degrees elevation
+observe -s Neptune -t flux
+	12/21/2024 04:00:00 --> 12/21/2024 04:00:10  ---- observe -s Neptune -t flux
+tsys
+writing 0 10 0 0 to the file
+integrate -s 10 -t 15 -w
+	12/21/2024 04:00:10 --> 12/21/2024 04:02:40  ---- integrate -s 10 -t 15 -w
+Finished 10/20 on Neptune.
+LST [hr]=  23.73
+lookup time: 21 Dec 2024 4:2
+The lookup time is: 21 Dec 2024 4:2
+Neptune is at 67.7134 degrees elevation
+observe -s Neptune -t flux
+	12/21/2024 04:02:40 --> 12/21/2024 04:02:50  ---- observe -s Neptune -t flux
+writing 0 20 0 0 to the file
+integrate -s 10 -t 15 -w
+	12/21/2024 04:02:50 --> 12/21/2024 04:05:20  ---- integrate -s 10 -t 15 -w
+Finished 20/20 on Neptune.
+
+#######################
+# FLUX Calibration    #
+#######################
+
+Checking elevation of Flux Cal Uranus...
+LST [hr]=  23.77
+lookup time: 21 Dec 2024 4:5
+The lookup time is: 21 Dec 2024 4:5
+Uranus is at 37.6790 degrees elevation
+
+---- Observing flux0. ----
+
+radecoff -r 0 -d 0
+	12/21/2024 04:05:20 --> 12/21/2024 04:05:20  ---- radecoff -r 0 -d 0
+LST [hr]=  23.77
+lookup time: 21 Dec 2024 4:5
+The lookup time is: 21 Dec 2024 4:5
+Uranus is at 37.6790 degrees elevation
+observe -s Uranus -t flux
+	12/21/2024 04:05:20 --> 12/21/2024 04:05:30  ---- observe -s Uranus -t flux
+tsys
+writing 1 10 0 0 to the file
+integrate -s 10 -t 15 -w
+	12/21/2024 04:05:30 --> 12/21/2024 04:08:00  ---- integrate -s 10 -t 15 -w
+Finished 10/20 on Uranus.
+LST [hr]=  23.82
+lookup time: 21 Dec 2024 4:8
+The lookup time is: 21 Dec 2024 4:8
+Uranus is at 38.3789 degrees elevation
+observe -s Uranus -t flux
+	12/21/2024 04:08:00 --> 12/21/2024 04:08:10  ---- observe -s Uranus -t flux
+writing 1 20 0 0 to the file
+integrate -s 10 -t 15 -w
+	12/21/2024 04:08:10 --> 12/21/2024 04:10:40  ---- integrate -s 10 -t 15 -w
+Finished 20/20 on Uranus.
+----- main science target observe loop -----
+
+#############
+# Main Loop #
+#############
+
+Loop No.= 1
+LST [hr]=  23.86
+
+###########################
+# Initial Elevation Check #
+###########################
+
+Checking the elevation of the targets!
+The lookup time is: 21 Dec 2024 4:10
+L1551_MC is at 23.4807 degrees elevation
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+0530+135 is at 8.3814 degrees elevation
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+3c120 is at 19.3266 degrees elevation
+
+---- Observing Gain Calibrator (Loop = 1) ----
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+0530+135 is at 8.3814 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available calibrator.. ----
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+0530+135 is at 8.3814 degrees elevation
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+3c120 is at 19.3266 degrees elevation
+writing 2 0 0 1 to the file
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 04:10:40 --> 12/21/2024 04:10:50  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 04:10:50 --> 12/21/2024 04:12:20  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 4:10
+The lookup time is: 21 Dec 2024 4:10
+3c120 is at 19.3266 degrees elevation
+LST [hr]=  23.89
+
+---- Atempting to point on 3c84 ----
+
+lookup time: 21 Dec 2024 4:12
+The lookup time is: 21 Dec 2024 4:12
+3c84 is at 40.7121 degrees elevation
+The source is high enough at 40.712077
+Stuffing the offsets due to it being day and the option not being set.
+Stuffing the offsets due to it being the start of a new science loop.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=  23.96
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 04:16:20 --> 12/21/2024 04:16:30  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 04:16:30 --> 12/21/2024 04:18:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=  23.98
+
+---- Observing Gain Calibrator (Loop = 1) ----
+lookup time: 21 Dec 2024 4:18
+The lookup time is: 21 Dec 2024 4:18
+3c120 is at 21.2125 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+LST [hr]=  23.98
+
+---- Observing Target Source (Loop = 1) ----
+
+The lookup time is: 21 Dec 2024 4:18
+L1551_MC is at 25.3283 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 04:18:00 --> 12/21/2024 04:18:10  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 1 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 04:18:10 --> 12/21/2024 04:33:10  ---- integrate -s 60 -t 15 -w
+Loop No.= 2
+LST [hr]=   0.24
+
+---- Observing Gain Calibrator (Loop = 2) ----
+lookup time: 21 Dec 2024 4:33
+The lookup time is: 21 Dec 2024 4:33
+0530+135 is at 13.7132 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available calibrator.. ----
+lookup time: 21 Dec 2024 4:33
+The lookup time is: 21 Dec 2024 4:33
+0530+135 is at 13.7132 degrees elevation
+lookup time: 21 Dec 2024 4:33
+The lookup time is: 21 Dec 2024 4:33
+3c120 is at 24.7464 degrees elevation
+writing 2 0 0 2 to the file
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 04:33:10 --> 12/21/2024 04:33:20  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 04:33:20 --> 12/21/2024 04:34:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   0.26
+LST [hr]=   0.26
+
+---- Observing Gain Calibrator (Loop = 2) ----
+lookup time: 21 Dec 2024 4:34
+The lookup time is: 21 Dec 2024 4:34
+3c120 is at 24.9819 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+LST [hr]=   0.26
+
+---- Observing Target Source (Loop = 2) ----
+
+The lookup time is: 21 Dec 2024 4:34
+L1551_MC is at 29.0331 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 04:34:50 --> 12/21/2024 04:35:00  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 2 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 04:35:00 --> 12/21/2024 04:50:00  ---- integrate -s 60 -t 15 -w
+Loop No.= 3
+LST [hr]=   0.52
+
+---- Observing Gain Calibrator (Loop = 3) ----
+lookup time: 21 Dec 2024 4:50
+The lookup time is: 21 Dec 2024 4:50
+0530+135 is at 17.6722 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 04:50:00 --> 12/21/2024 04:50:10  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 3 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 04:50:10 --> 12/21/2024 04:51:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   0.55
+LST [hr]=   0.55
+
+---- Observing Gain Calibrator (Loop = 3) ----
+lookup time: 21 Dec 2024 4:51
+The lookup time is: 21 Dec 2024 4:51
+3c120 is at 28.9807 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 04:51:40 --> 12/21/2024 04:51:50  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 3 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 04:51:50 --> 12/21/2024 04:53:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   0.57
+LST [hr]=   0.57
+
+---- Observing Target Source (Loop = 3) ----
+
+The lookup time is: 21 Dec 2024 4:53
+L1551_MC is at 33.4477 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 04:53:20 --> 12/21/2024 04:53:30  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 3 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 04:53:30 --> 12/21/2024 05:08:30  ---- integrate -s 60 -t 15 -w
+Loop No.= 4
+LST [hr]=   0.83
+
+---- Observing Gain Calibrator (Loop = 4) ----
+lookup time: 21 Dec 2024 5:8
+The lookup time is: 21 Dec 2024 5:8
+0530+135 is at 21.8781 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 05:08:30 --> 12/21/2024 05:08:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 4 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:08:40 --> 12/21/2024 05:10:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   0.86
+LST [hr]=   0.86
+
+---- Observing Gain Calibrator (Loop = 4) ----
+lookup time: 21 Dec 2024 5:10
+The lookup time is: 21 Dec 2024 5:10
+3c120 is at 33.4381 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 05:10:10 --> 12/21/2024 05:10:20  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 4 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:10:20 --> 12/21/2024 05:11:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   0.88
+LST [hr]=   0.88
+
+---- Observing Target Source (Loop = 4) ----
+
+The lookup time is: 21 Dec 2024 5:11
+L1551_MC is at 37.6432 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 05:11:50 --> 12/21/2024 05:12:00  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 4 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 05:12:00 --> 12/21/2024 05:27:00  ---- integrate -s 60 -t 15 -w
+Loop No.= 5
+LST [hr]=   1.14
+
+---- Observing Gain Calibrator (Loop = 5) ----
+lookup time: 21 Dec 2024 5:27
+The lookup time is: 21 Dec 2024 5:27
+0530+135 is at 26.3307 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 05:27:00 --> 12/21/2024 05:27:10  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 5 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:27:10 --> 12/21/2024 05:28:40  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 5:27
+The lookup time is: 21 Dec 2024 5:27
+0530+135 is at 26.3307 degrees elevation
+LST [hr]=   1.16
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 5:28
+The lookup time is: 21 Dec 2024 5:28
+0530+135 is at 26.5654 degrees elevation
+The source is high enough at 26.565381
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   1.23
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 05:32:40 --> 12/21/2024 05:32:50  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 05:32:50 --> 12/21/2024 05:34:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.26
+
+---- Observing Gain Calibrator (Loop = 5) ----
+lookup time: 21 Dec 2024 5:34
+The lookup time is: 21 Dec 2024 5:34
+3c120 is at 39.0415 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 05:34:20 --> 12/21/2024 05:34:30  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 5 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:34:30 --> 12/21/2024 05:36:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.29
+LST [hr]=   1.29
+
+---- Observing Target Source (Loop = 5) ----
+
+The lookup time is: 21 Dec 2024 5:36
+L1551_MC is at 43.4886 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 05:36:00 --> 12/21/2024 05:36:10  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 5 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 05:36:10 --> 12/21/2024 05:51:10  ---- integrate -s 60 -t 15 -w
+Loop No.= 6
+LST [hr]=   1.54
+
+---- Observing Gain Calibrator (Loop = 6) ----
+lookup time: 21 Dec 2024 5:51
+The lookup time is: 21 Dec 2024 5:51
+0530+135 is at 31.9703 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 05:51:10 --> 12/21/2024 05:51:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 6 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:51:20 --> 12/21/2024 05:52:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.57
+LST [hr]=   1.57
+
+---- Observing Gain Calibrator (Loop = 6) ----
+lookup time: 21 Dec 2024 5:52
+The lookup time is: 21 Dec 2024 5:52
+3c120 is at 43.2153 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 05:52:50 --> 12/21/2024 05:53:00  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 6 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 05:53:00 --> 12/21/2024 05:54:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.60
+LST [hr]=   1.60
+
+---- Observing Target Source (Loop = 6) ----
+
+The lookup time is: 21 Dec 2024 5:54
+L1551_MC is at 47.7086 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 05:54:30 --> 12/21/2024 05:54:40  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 6 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 05:54:40 --> 12/21/2024 06:09:40  ---- integrate -s 60 -t 15 -w
+Loop No.= 7
+LST [hr]=   1.85
+
+---- Observing Gain Calibrator (Loop = 7) ----
+lookup time: 21 Dec 2024 6:9
+The lookup time is: 21 Dec 2024 6:9
+0530+135 is at 36.2083 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 06:09:40 --> 12/21/2024 06:09:50  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 7 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:09:50 --> 12/21/2024 06:11:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.88
+LST [hr]=   1.88
+
+---- Observing Gain Calibrator (Loop = 7) ----
+lookup time: 21 Dec 2024 6:11
+The lookup time is: 21 Dec 2024 6:11
+3c120 is at 47.5826 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 06:11:20 --> 12/21/2024 06:11:30  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 7 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:11:30 --> 12/21/2024 06:13:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   1.91
+LST [hr]=   1.91
+
+---- Observing Target Source (Loop = 7) ----
+
+The lookup time is: 21 Dec 2024 6:13
+L1551_MC is at 52.1714 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 06:13:00 --> 12/21/2024 06:13:10  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 7 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 06:13:10 --> 12/21/2024 06:28:10  ---- integrate -s 60 -t 15 -w
+Loop No.= 8
+LST [hr]=   2.16
+
+---- Observing Gain Calibrator (Loop = 8) ----
+lookup time: 21 Dec 2024 6:28
+The lookup time is: 21 Dec 2024 6:28
+0530+135 is at 40.6866 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 06:28:10 --> 12/21/2024 06:28:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 8 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:28:20 --> 12/21/2024 06:29:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.19
+LST [hr]=   2.19
+
+---- Observing Gain Calibrator (Loop = 8) ----
+lookup time: 21 Dec 2024 6:29
+The lookup time is: 21 Dec 2024 6:29
+3c120 is at 51.6698 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 06:29:50 --> 12/21/2024 06:30:00  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 8 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:30:00 --> 12/21/2024 06:31:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.21
+LST [hr]=   2.21
+
+---- Observing Target Source (Loop = 8) ----
+
+The lookup time is: 21 Dec 2024 6:31
+L1551_MC is at 56.4060 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 06:31:30 --> 12/21/2024 06:31:40  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 8 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 06:31:40 --> 12/21/2024 06:46:40  ---- integrate -s 60 -t 15 -w
+Loop No.= 9
+LST [hr]=   2.47
+
+---- Observing Gain Calibrator (Loop = 9) ----
+lookup time: 21 Dec 2024 6:46
+The lookup time is: 21 Dec 2024 6:46
+0530+135 is at 44.9313 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 06:46:40 --> 12/21/2024 06:46:50  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 9 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:46:50 --> 12/21/2024 06:48:20  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 6:46
+The lookup time is: 21 Dec 2024 6:46
+0530+135 is at 44.9313 degrees elevation
+LST [hr]=   2.50
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 6:48
+The lookup time is: 21 Dec 2024 6:48
+0530+135 is at 45.4029 degrees elevation
+The source is high enough at 45.402946
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   2.56
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 06:52:20 --> 12/21/2024 06:52:30  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 06:52:30 --> 12/21/2024 06:54:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.59
+
+---- Observing Gain Calibrator (Loop = 9) ----
+lookup time: 21 Dec 2024 6:54
+The lookup time is: 21 Dec 2024 6:54
+3c120 is at 57.2267 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 06:54:00 --> 12/21/2024 06:54:10  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 9 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 06:54:10 --> 12/21/2024 06:55:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.62
+LST [hr]=   2.62
+
+---- Observing Target Source (Loop = 9) ----
+
+The lookup time is: 21 Dec 2024 6:55
+L1551_MC is at 62.0598 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 06:55:40 --> 12/21/2024 06:55:50  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 9 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 06:55:50 --> 12/21/2024 07:10:50  ---- integrate -s 60 -t 15 -w
+Loop No.= 10
+LST [hr]=   2.87
+
+---- Observing Gain Calibrator (Loop = 10) ----
+lookup time: 21 Dec 2024 7:10
+The lookup time is: 21 Dec 2024 7:10
+0530+135 is at 50.5888 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 07:10:50 --> 12/21/2024 07:11:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 10 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:11:00 --> 12/21/2024 07:12:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.90
+LST [hr]=   2.90
+
+---- Observing Gain Calibrator (Loop = 10) ----
+lookup time: 21 Dec 2024 7:12
+The lookup time is: 21 Dec 2024 7:12
+3c120 is at 61.0987 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 07:12:30 --> 12/21/2024 07:12:40  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 10 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:12:40 --> 12/21/2024 07:14:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   2.93
+LST [hr]=   2.93
+
+---- Observing Target Source (Loop = 10) ----
+
+The lookup time is: 21 Dec 2024 7:14
+L1551_MC is at 66.5396 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 07:14:10 --> 12/21/2024 07:14:20  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 10 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 07:14:20 --> 12/21/2024 07:29:20  ---- integrate -s 60 -t 15 -w
+Loop No.= 11
+LST [hr]=   3.18
+
+---- Observing Gain Calibrator (Loop = 11) ----
+lookup time: 21 Dec 2024 7:29
+The lookup time is: 21 Dec 2024 7:29
+0530+135 is at 55.0603 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 07:29:20 --> 12/21/2024 07:29:30  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 11 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:29:30 --> 12/21/2024 07:31:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.21
+LST [hr]=   3.21
+
+---- Observing Gain Calibrator (Loop = 11) ----
+lookup time: 21 Dec 2024 7:31
+The lookup time is: 21 Dec 2024 7:31
+3c120 is at 65.0037 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 07:31:00 --> 12/21/2024 07:31:10  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 11 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:31:10 --> 12/21/2024 07:32:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.24
+LST [hr]=   3.24
+
+---- Observing Target Source (Loop = 11) ----
+
+The lookup time is: 21 Dec 2024 7:32
+L1551_MC is at 70.7843 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 07:32:40 --> 12/21/2024 07:32:50  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 11 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 07:32:50 --> 12/21/2024 07:47:50  ---- integrate -s 60 -t 15 -w
+Loop No.= 12
+LST [hr]=   3.49
+
+---- Observing Gain Calibrator (Loop = 12) ----
+lookup time: 21 Dec 2024 7:47
+The lookup time is: 21 Dec 2024 7:47
+0530+135 is at 59.2839 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 07:47:50 --> 12/21/2024 07:48:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 12 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:48:00 --> 12/21/2024 07:49:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.52
+LST [hr]=   3.52
+
+---- Observing Gain Calibrator (Loop = 12) ----
+lookup time: 21 Dec 2024 7:49
+The lookup time is: 21 Dec 2024 7:49
+3c120 is at 68.4386 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 07:49:30 --> 12/21/2024 07:49:40  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 12 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 07:49:40 --> 12/21/2024 07:51:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.55
+LST [hr]=   3.55
+
+---- Observing Target Source (Loop = 12) ----
+
+The lookup time is: 21 Dec 2024 7:51
+L1551_MC is at 75.2611 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 07:51:10 --> 12/21/2024 07:51:20  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 12 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 07:51:20 --> 12/21/2024 08:06:20  ---- integrate -s 60 -t 15 -w
+Loop No.= 13
+LST [hr]=   3.80
+
+---- Observing Gain Calibrator (Loop = 13) ----
+lookup time: 21 Dec 2024 8:6
+The lookup time is: 21 Dec 2024 8:6
+0530+135 is at 63.7185 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 08:06:20 --> 12/21/2024 08:06:30  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 13 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 08:06:30 --> 12/21/2024 08:08:00  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 8:6
+The lookup time is: 21 Dec 2024 8:6
+0530+135 is at 63.7185 degrees elevation
+LST [hr]=   3.83
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 8:8
+The lookup time is: 21 Dec 2024 8:8
+0530+135 is at 64.1832 degrees elevation
+The source is high enough at 64.183234
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   3.89
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 08:12:00 --> 12/21/2024 08:12:10  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 08:12:10 --> 12/21/2024 08:13:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.92
+
+---- Observing Gain Calibrator (Loop = 13) ----
+lookup time: 21 Dec 2024 8:13
+The lookup time is: 21 Dec 2024 8:13
+3c120 is at 72.3505 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 08:13:40 --> 12/21/2024 08:13:50  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 13 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 08:13:50 --> 12/21/2024 08:15:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   3.95
+LST [hr]=   3.95
+
+---- Observing Target Source (Loop = 13) ----
+
+The lookup time is: 21 Dec 2024 8:15
+L1551_MC is at 80.8927 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 08:15:20 --> 12/21/2024 08:15:30  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 13 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 08:15:30 --> 12/21/2024 08:30:30  ---- integrate -s 60 -t 15 -w
+Loop No.= 14
+LST [hr]=   4.20
+
+---- Observing Gain Calibrator (Loop = 14) ----
+lookup time: 21 Dec 2024 8:30
+The lookup time is: 21 Dec 2024 8:30
+0530+135 is at 69.2558 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 08:30:30 --> 12/21/2024 08:30:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 14 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 08:30:40 --> 12/21/2024 08:32:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   4.23
+LST [hr]=   4.23
+
+---- Observing Gain Calibrator (Loop = 14) ----
+lookup time: 21 Dec 2024 8:32
+The lookup time is: 21 Dec 2024 8:32
+3c120 is at 74.5527 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 08:32:10 --> 12/21/2024 08:32:20  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 14 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 08:32:20 --> 12/21/2024 08:33:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   4.26
+LST [hr]=   4.26
+
+---- Observing Target Source (Loop = 14) ----
+
+The lookup time is: 21 Dec 2024 8:33
+L1551_MC is at 85.0406 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:33
+L1551_MC is at 85.0406 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.26
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:33
+The lookup time is: 21 Dec 2024 8:33
+3c84 is at 65.6577 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:33:50 --> 12/21/2024 08:34:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:34:00 --> 12/21/2024 08:36:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:33
+L1551_MC is at 85.0406 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.30
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:36
+The lookup time is: 21 Dec 2024 8:36
+3c84 is at 65.3665 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:36:30 --> 12/21/2024 08:36:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:36:40 --> 12/21/2024 08:39:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:36
+L1551_MC is at 85.7098 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.35
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:39
+The lookup time is: 21 Dec 2024 8:39
+3c84 is at 65.0625 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:39:10 --> 12/21/2024 08:39:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:39:20 --> 12/21/2024 08:41:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:39
+L1551_MC is at 86.3632 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.39
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:41
+The lookup time is: 21 Dec 2024 8:41
+3c84 is at 64.8530 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:41:50 --> 12/21/2024 08:42:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:42:00 --> 12/21/2024 08:44:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:41
+L1551_MC is at 86.7852 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.44
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:44
+The lookup time is: 21 Dec 2024 8:44
+3c84 is at 64.5287 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:44:30 --> 12/21/2024 08:44:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:44:40 --> 12/21/2024 08:47:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:44
+L1551_MC is at 87.3847 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.48
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:47
+The lookup time is: 21 Dec 2024 8:47
+3c84 is at 64.1928 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:47:10 --> 12/21/2024 08:47:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:47:20 --> 12/21/2024 08:49:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:47
+L1551_MC is at 87.9131 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.53
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:49
+The lookup time is: 21 Dec 2024 8:49
+3c84 is at 63.9627 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:49:50 --> 12/21/2024 08:50:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:50:00 --> 12/21/2024 08:52:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:49
+L1551_MC is at 88.1944 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.57
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:52
+The lookup time is: 21 Dec 2024 8:52
+3c84 is at 63.6086 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:52:30 --> 12/21/2024 08:52:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:52:40 --> 12/21/2024 08:55:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:52
+L1551_MC is at 88.4316 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.62
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:55
+The lookup time is: 21 Dec 2024 8:55
+3c84 is at 63.2442 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:55:10 --> 12/21/2024 08:55:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:55:20 --> 12/21/2024 08:57:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:55
+L1551_MC is at 88.3659 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.66
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 8:57
+The lookup time is: 21 Dec 2024 8:57
+3c84 is at 62.9957 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 08:57:50 --> 12/21/2024 08:58:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 08:58:00 --> 12/21/2024 09:00:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 8:57
+L1551_MC is at 88.1637 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.70
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:0
+The lookup time is: 21 Dec 2024 9:0
+3c84 is at 62.6149 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:00:30 --> 12/21/2024 09:00:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:00:40 --> 12/21/2024 09:03:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:0
+L1551_MC is at 87.7051 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.75
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:3
+The lookup time is: 21 Dec 2024 9:3
+3c84 is at 62.2250 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:03:10 --> 12/21/2024 09:03:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:03:20 --> 12/21/2024 09:05:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:3
+L1551_MC is at 87.1414 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.79
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:5
+The lookup time is: 21 Dec 2024 9:5
+3c84 is at 61.9601 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:05:50 --> 12/21/2024 09:06:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:06:00 --> 12/21/2024 09:08:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:5
+L1551_MC is at 86.7335 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.84
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:8
+The lookup time is: 21 Dec 2024 9:8
+3c84 is at 61.5556 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:08:30 --> 12/21/2024 09:08:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:08:40 --> 12/21/2024 09:11:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:8
+L1551_MC is at 86.0937 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.88
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:11
+The lookup time is: 21 Dec 2024 9:11
+3c84 is at 61.1430 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:11:10 --> 12/21/2024 09:11:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:11:20 --> 12/21/2024 09:13:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:11
+L1551_MC is at 85.4329 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.93
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:13
+The lookup time is: 21 Dec 2024 9:13
+3c84 is at 60.8635 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:13:50 --> 12/21/2024 09:14:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:14:00 --> 12/21/2024 09:16:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:13
+L1551_MC is at 84.9847 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   4.97
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:16
+The lookup time is: 21 Dec 2024 9:16
+3c84 is at 60.4381 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:16:30 --> 12/21/2024 09:16:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:16:40 --> 12/21/2024 09:19:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:16
+L1551_MC is at 84.3047 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   5.02
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:19
+The lookup time is: 21 Dec 2024 9:19
+3c84 is at 60.0054 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:19:10 --> 12/21/2024 09:19:20  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:19:20 --> 12/21/2024 09:21:50  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:19
+L1551_MC is at 83.6180 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   5.06
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:21
+The lookup time is: 21 Dec 2024 9:21
+3c84 is at 59.7131 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:21:50 --> 12/21/2024 09:22:00  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:22:00 --> 12/21/2024 09:24:30  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:21
+L1551_MC is at 83.1575 degrees elevation
+---- None of the Targets are available.  Trying transcal. ----
+LST [hr]=   5.11
+---- Searching for an available transit calibrator... ----
+lookup time: 21 Dec 2024 9:24
+The lookup time is: 21 Dec 2024 9:24
+3c84 is at 59.2691 degrees elevation
+---- Observing transit calibrator ----
+observe -s 3c84 -R 0 -D 0
+	12/21/2024 09:24:30 --> 12/21/2024 09:24:40  ---- observe -s 3c84 -R 0 -D 0
+tsys
+integrate -s 10 -t 15 -w
+	12/21/2024 09:24:40 --> 12/21/2024 09:27:10  ---- integrate -s 10 -t 15 -w
+---- Source elevation limit. ----
+---- Searching for an available target... ----
+The lookup time is: 21 Dec 2024 9:24
+L1551_MC is at 82.4636 degrees elevation
+Loop No.= 15
+LST [hr]=   5.15
+
+---- Observing Gain Calibrator (Loop = 15) ----
+lookup time: 21 Dec 2024 9:27
+The lookup time is: 21 Dec 2024 9:27
+0530+135 is at 81.2481 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 09:27:10 --> 12/21/2024 09:27:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 15 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 09:27:20 --> 12/21/2024 09:28:50  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 9:27
+The lookup time is: 21 Dec 2024 9:27
+0530+135 is at 81.2481 degrees elevation
+LST [hr]=   5.18
+
+---- Atempting to point on 0607-085 ----
+
+lookup time: 21 Dec 2024 9:28
+The lookup time is: 21 Dec 2024 9:28
+0607-085 is at 57.8295 degrees elevation
+The source is high enough at 57.829515
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   5.24
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 09:32:50 --> 12/21/2024 09:33:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 09:33:00 --> 12/21/2024 09:34:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   5.27
+
+---- Observing Gain Calibrator (Loop = 15) ----
+lookup time: 21 Dec 2024 9:34
+The lookup time is: 21 Dec 2024 9:34
+3c120 is at 72.6953 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 09:34:30 --> 12/21/2024 09:34:40  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 15 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 09:34:40 --> 12/21/2024 09:36:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   5.30
+LST [hr]=   5.30
+
+---- Observing Target Source (Loop = 15) ----
+
+The lookup time is: 21 Dec 2024 9:36
+L1551_MC is at 79.6657 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 09:36:10 --> 12/21/2024 09:36:20  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 15 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 09:36:20 --> 12/21/2024 09:51:20  ---- integrate -s 60 -t 15 -w
+Loop No.= 16
+LST [hr]=   5.55
+
+---- Observing Gain Calibrator (Loop = 16) ----
+lookup time: 21 Dec 2024 9:51
+The lookup time is: 21 Dec 2024 9:51
+0530+135 is at 83.7180 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available calibrator.. ----
+lookup time: 21 Dec 2024 9:51
+The lookup time is: 21 Dec 2024 9:51
+0530+135 is at 83.7180 degrees elevation
+lookup time: 21 Dec 2024 9:51
+The lookup time is: 21 Dec 2024 9:51
+3c120 is at 70.1007 degrees elevation
+writing 2 0 0 16 to the file
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 09:51:20 --> 12/21/2024 09:51:30  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 09:51:30 --> 12/21/2024 09:53:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   5.58
+LST [hr]=   5.58
+
+---- Observing Gain Calibrator (Loop = 16) ----
+lookup time: 21 Dec 2024 9:53
+The lookup time is: 21 Dec 2024 9:53
+3c120 is at 69.7615 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+LST [hr]=   5.58
+
+---- Observing Target Source (Loop = 16) ----
+
+The lookup time is: 21 Dec 2024 9:53
+L1551_MC is at 75.6734 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 09:53:00 --> 12/21/2024 09:53:10  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 16 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 09:53:10 --> 12/21/2024 10:08:10  ---- integrate -s 60 -t 15 -w
+Loop No.= 17
+LST [hr]=   5.84
+
+---- Observing Gain Calibrator (Loop = 17) ----
+lookup time: 21 Dec 2024 10:8
+The lookup time is: 21 Dec 2024 10:8
+0530+135 is at 82.6995 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 10:08:10 --> 12/21/2024 10:08:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 17 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:08:20 --> 12/21/2024 10:09:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   5.86
+LST [hr]=   5.86
+
+---- Observing Gain Calibrator (Loop = 17) ----
+lookup time: 21 Dec 2024 10:9
+The lookup time is: 21 Dec 2024 10:9
+3c120 is at 66.8569 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 10:09:50 --> 12/21/2024 10:10:00  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 17 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:10:00 --> 12/21/2024 10:11:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   5.89
+LST [hr]=   5.89
+
+---- Observing Target Source (Loop = 17) ----
+
+The lookup time is: 21 Dec 2024 10:11
+L1551_MC is at 71.4330 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 10:11:30 --> 12/21/2024 10:11:40  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 17 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 10:11:40 --> 12/21/2024 10:26:40  ---- integrate -s 60 -t 15 -w
+Loop No.= 18
+LST [hr]=   6.14
+
+---- Observing Gain Calibrator (Loop = 18) ----
+lookup time: 21 Dec 2024 10:26
+The lookup time is: 21 Dec 2024 10:26
+0530+135 is at 79.7914 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 10:26:40 --> 12/21/2024 10:26:50  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 18 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:26:50 --> 12/21/2024 10:28:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.17
+LST [hr]=   6.17
+
+---- Observing Gain Calibrator (Loop = 18) ----
+lookup time: 21 Dec 2024 10:28
+The lookup time is: 21 Dec 2024 10:28
+3c120 is at 63.0801 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 10:28:20 --> 12/21/2024 10:28:30  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 18 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:28:30 --> 12/21/2024 10:30:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.20
+LST [hr]=   6.20
+
+---- Observing Target Source (Loop = 18) ----
+
+The lookup time is: 21 Dec 2024 10:30
+L1551_MC is at 66.9527 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 10:30:00 --> 12/21/2024 10:30:10  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 18 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 10:30:10 --> 12/21/2024 10:45:10  ---- integrate -s 60 -t 15 -w
+Loop No.= 19
+LST [hr]=   6.45
+
+---- Observing Gain Calibrator (Loop = 19) ----
+lookup time: 21 Dec 2024 10:45
+The lookup time is: 21 Dec 2024 10:45
+0530+135 is at 75.9143 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 10:45:10 --> 12/21/2024 10:45:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 19 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:45:20 --> 12/21/2024 10:46:50  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 10:45
+The lookup time is: 21 Dec 2024 10:45
+0530+135 is at 75.9143 degrees elevation
+LST [hr]=   6.48
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 10:46
+The lookup time is: 21 Dec 2024 10:46
+0530+135 is at 75.6991 degrees elevation
+The source isn't high enough at 75.699138
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   6.55
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 10:50:50 --> 12/21/2024 10:51:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 10:51:00 --> 12/21/2024 10:52:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.58
+
+---- Observing Gain Calibrator (Loop = 19) ----
+lookup time: 21 Dec 2024 10:52
+The lookup time is: 21 Dec 2024 10:52
+3c120 is at 57.9902 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 10:52:30 --> 12/21/2024 10:52:40  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 19 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 10:52:40 --> 12/21/2024 10:54:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.60
+LST [hr]=   6.60
+
+---- Observing Target Source (Loop = 19) ----
+
+The lookup time is: 21 Dec 2024 10:54
+L1551_MC is at 61.2942 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 10:54:10 --> 12/21/2024 10:54:20  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 19 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 10:54:20 --> 12/21/2024 11:09:20  ---- integrate -s 60 -t 15 -w
+Loop No.= 20
+LST [hr]=   6.86
+
+---- Observing Gain Calibrator (Loop = 20) ----
+lookup time: 21 Dec 2024 11:9
+The lookup time is: 21 Dec 2024 11:9
+0530+135 is at 70.5919 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 11:09:20 --> 12/21/2024 11:09:30  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 20 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:09:30 --> 12/21/2024 11:11:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.89
+LST [hr]=   6.89
+
+---- Observing Gain Calibrator (Loop = 20) ----
+lookup time: 21 Dec 2024 11:11
+The lookup time is: 21 Dec 2024 11:11
+3c120 is at 53.8012 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 11:11:00 --> 12/21/2024 11:11:10  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 20 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:11:10 --> 12/21/2024 11:12:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   6.91
+LST [hr]=   6.91
+
+---- Observing Target Source (Loop = 20) ----
+
+The lookup time is: 21 Dec 2024 11:12
+L1551_MC is at 57.0538 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 11:12:40 --> 12/21/2024 11:12:50  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 20 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 11:12:50 --> 12/21/2024 11:27:50  ---- integrate -s 60 -t 15 -w
+Loop No.= 21
+LST [hr]=   7.17
+
+---- Observing Gain Calibrator (Loop = 21) ----
+lookup time: 21 Dec 2024 11:27
+The lookup time is: 21 Dec 2024 11:27
+0530+135 is at 66.4690 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 11:27:50 --> 12/21/2024 11:28:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 21 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:28:00 --> 12/21/2024 11:29:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.19
+LST [hr]=   7.19
+
+---- Observing Gain Calibrator (Loop = 21) ----
+lookup time: 21 Dec 2024 11:29
+The lookup time is: 21 Dec 2024 11:29
+3c120 is at 49.7473 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 11:29:30 --> 12/21/2024 11:29:40  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 21 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:29:40 --> 12/21/2024 11:31:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.22
+LST [hr]=   7.22
+
+---- Observing Target Source (Loop = 21) ----
+
+The lookup time is: 21 Dec 2024 11:31
+L1551_MC is at 52.5832 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 11:31:10 --> 12/21/2024 11:31:20  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 21 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 11:31:20 --> 12/21/2024 11:46:20  ---- integrate -s 60 -t 15 -w
+Loop No.= 22
+LST [hr]=   7.48
+
+---- Observing Gain Calibrator (Loop = 22) ----
+lookup time: 21 Dec 2024 11:46
+The lookup time is: 21 Dec 2024 11:46
+0530+135 is at 62.0579 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 11:46:20 --> 12/21/2024 11:46:30  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 22 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:46:30 --> 12/21/2024 11:48:00  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.50
+LST [hr]=   7.50
+
+---- Observing Gain Calibrator (Loop = 22) ----
+lookup time: 21 Dec 2024 11:48
+The lookup time is: 21 Dec 2024 11:48
+3c120 is at 45.4051 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 11:48:00 --> 12/21/2024 11:48:10  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 22 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 11:48:10 --> 12/21/2024 11:49:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.53
+LST [hr]=   7.53
+
+---- Observing Target Source (Loop = 22) ----
+
+The lookup time is: 21 Dec 2024 11:49
+L1551_MC is at 48.3544 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 11:49:40 --> 12/21/2024 11:49:50  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 22 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 11:49:50 --> 12/21/2024 12:04:50  ---- integrate -s 60 -t 15 -w
+Loop No.= 23
+LST [hr]=   7.79
+
+---- Observing Gain Calibrator (Loop = 23) ----
+lookup time: 21 Dec 2024 12:4
+The lookup time is: 21 Dec 2024 12:4
+0530+135 is at 57.8472 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 12:04:50 --> 12/21/2024 12:05:00  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 23 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:05:00 --> 12/21/2024 12:06:30  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 12:4
+The lookup time is: 21 Dec 2024 12:4
+0530+135 is at 57.8472 degrees elevation
+LST [hr]=   7.81
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 12:6
+The lookup time is: 21 Dec 2024 12:6
+0530+135 is at 57.3781 degrees elevation
+The source is high enough at 57.378063
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   7.88
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 12:10:30 --> 12/21/2024 12:10:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 12:10:40 --> 12/21/2024 12:12:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.91
+
+---- Observing Gain Calibrator (Loop = 23) ----
+lookup time: 21 Dec 2024 12:12
+The lookup time is: 21 Dec 2024 12:12
+3c120 is at 39.8558 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 12:12:10 --> 12/21/2024 12:12:20  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 23 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:12:20 --> 12/21/2024 12:13:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   7.94
+LST [hr]=   7.94
+
+---- Observing Target Source (Loop = 23) ----
+
+The lookup time is: 21 Dec 2024 12:13
+L1551_MC is at 42.7280 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 12:13:50 --> 12/21/2024 12:14:00  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 23 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 12:14:00 --> 12/21/2024 12:29:00  ---- integrate -s 60 -t 15 -w
+Loop No.= 24
+LST [hr]=   8.19
+
+---- Observing Gain Calibrator (Loop = 24) ----
+lookup time: 21 Dec 2024 12:29
+The lookup time is: 21 Dec 2024 12:29
+0530+135 is at 51.9711 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 12:29:00 --> 12/21/2024 12:29:10  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 24 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:29:10 --> 12/21/2024 12:30:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.22
+LST [hr]=   8.22
+
+---- Observing Gain Calibrator (Loop = 24) ----
+lookup time: 21 Dec 2024 12:30
+The lookup time is: 21 Dec 2024 12:30
+3c120 is at 35.6608 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 12:30:40 --> 12/21/2024 12:30:50  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 24 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:30:50 --> 12/21/2024 12:32:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.24
+LST [hr]=   8.24
+
+---- Observing Target Source (Loop = 24) ----
+
+The lookup time is: 21 Dec 2024 12:32
+L1551_MC is at 38.2855 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 12:32:20 --> 12/21/2024 12:32:30  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 24 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 12:32:30 --> 12/21/2024 12:47:30  ---- integrate -s 60 -t 15 -w
+Loop No.= 25
+LST [hr]=   8.50
+
+---- Observing Gain Calibrator (Loop = 25) ----
+lookup time: 21 Dec 2024 12:47
+The lookup time is: 21 Dec 2024 12:47
+0530+135 is at 47.7299 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 12:47:30 --> 12/21/2024 12:47:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 25 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:47:40 --> 12/21/2024 12:49:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.53
+LST [hr]=   8.53
+
+---- Observing Gain Calibrator (Loop = 25) ----
+lookup time: 21 Dec 2024 12:49
+The lookup time is: 21 Dec 2024 12:49
+3c120 is at 31.2117 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 12:49:10 --> 12/21/2024 12:49:20  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 25 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 12:49:20 --> 12/21/2024 12:50:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.55
+LST [hr]=   8.55
+
+---- Observing Target Source (Loop = 25) ----
+
+The lookup time is: 21 Dec 2024 12:50
+L1551_MC is at 34.0882 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 12:50:50 --> 12/21/2024 12:51:00  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 25 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 12:51:00 --> 12/21/2024 13:06:00  ---- integrate -s 60 -t 15 -w
+Loop No.= 26
+LST [hr]=   8.81
+
+---- Observing Gain Calibrator (Loop = 26) ----
+lookup time: 21 Dec 2024 13:6
+The lookup time is: 21 Dec 2024 13:6
+0530+135 is at 43.2497 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 13:06:00 --> 12/21/2024 13:06:10  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 26 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 13:06:10 --> 12/21/2024 13:07:40  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.84
+LST [hr]=   8.84
+
+---- Observing Gain Calibrator (Loop = 26) ----
+lookup time: 21 Dec 2024 13:7
+The lookup time is: 21 Dec 2024 13:7
+3c120 is at 26.9827 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 13:07:40 --> 12/21/2024 13:07:50  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 26 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 13:07:50 --> 12/21/2024 13:09:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   8.86
+LST [hr]=   8.86
+
+---- Observing Target Source (Loop = 26) ----
+
+The lookup time is: 21 Dec 2024 13:9
+L1551_MC is at 29.6714 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 13:09:20 --> 12/21/2024 13:09:30  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 26 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 13:09:30 --> 12/21/2024 13:24:30  ---- integrate -s 60 -t 15 -w
+Loop No.= 27
+LST [hr]=   9.12
+
+---- Observing Gain Calibrator (Loop = 27) ----
+lookup time: 21 Dec 2024 13:24
+The lookup time is: 21 Dec 2024 13:24
+0530+135 is at 39.0054 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 13:24:30 --> 12/21/2024 13:24:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 27 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 13:24:40 --> 12/21/2024 13:26:10  ---- integrate -s 6 -t 15 -w
+lookup time: 21 Dec 2024 13:24
+The lookup time is: 21 Dec 2024 13:24
+0530+135 is at 39.0054 degrees elevation
+LST [hr]=   9.14
+
+---- Atempting to point on 0530+135 ----
+
+lookup time: 21 Dec 2024 13:26
+The lookup time is: 21 Dec 2024 13:26
+0530+135 is at 38.5339 degrees elevation
+The source is high enough at 38.533943
+Stuffing the offsets due to it being day and the option not being set.
+integrate -t 5
+tsys
+The ipoint options are: -i 10 -r 2 -8 -c 2.5 -w -n -Q -s  
+integrate -t 15
+Finished a pointing during the day
+LST [hr]=   9.21
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 13:30:10 --> 12/21/2024 13:30:20  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+integrate -s 6 -t 15 -w
+	12/21/2024 13:30:20 --> 12/21/2024 13:31:50  ---- integrate -s 6 -t 15 -w
+LST [hr]=   9.24
+
+---- Observing Gain Calibrator (Loop = 27) ----
+lookup time: 21 Dec 2024 13:31
+The lookup time is: 21 Dec 2024 13:31
+3c120 is at 21.3308 degrees elevation
+observe -s 3c120 -t gain -R 0 -D 0
+	12/21/2024 13:31:50 --> 12/21/2024 13:32:00  ---- observe -s 3c120 -t gain -R 0 -D 0
+tsys
+writing 2 1 0 27 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 13:32:00 --> 12/21/2024 13:33:30  ---- integrate -s 6 -t 15 -w
+LST [hr]=   9.27
+LST [hr]=   9.27
+
+---- Observing Target Source (Loop = 27) ----
+
+The lookup time is: 21 Dec 2024 13:33
+L1551_MC is at 24.1157 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 13:33:30 --> 12/21/2024 13:33:40  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 27 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 13:33:40 --> 12/21/2024 13:48:40  ---- integrate -s 60 -t 15 -w
+Loop No.= 28
+LST [hr]=   9.52
+
+---- Observing Gain Calibrator (Loop = 28) ----
+lookup time: 21 Dec 2024 13:48
+The lookup time is: 21 Dec 2024 13:48
+0530+135 is at 33.3515 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 13:48:40 --> 12/21/2024 13:48:50  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 28 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 13:48:50 --> 12/21/2024 13:50:20  ---- integrate -s 6 -t 15 -w
+LST [hr]=   9.55
+LST [hr]=   9.55
+
+---- Observing Gain Calibrator (Loop = 28) ----
+lookup time: 21 Dec 2024 13:50
+The lookup time is: 21 Dec 2024 13:50
+3c120 is at 16.8510 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available calibrator.. ----
+lookup time: 21 Dec 2024 13:50
+The lookup time is: 21 Dec 2024 13:50
+0530+135 is at 32.8807 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+LST [hr]=   9.55
+
+---- Observing Target Source (Loop = 28) ----
+
+The lookup time is: 21 Dec 2024 13:50
+L1551_MC is at 20.1987 degrees elevation
+observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+	12/21/2024 13:50:20 --> 12/21/2024 13:50:30  ---- observe -s L1551_MC -r 04:31:11.0 -d 18:12:52.5 -e 2000 -v 0 -R 0 -D 0
+tsys
+writing 2 2 0 28 to the file
+integrate -s 60 -t 15 -w
+	12/21/2024 13:50:30 --> 12/21/2024 14:05:30  ---- integrate -s 60 -t 15 -w
+Loop No.= 29
+LST [hr]=   9.80
+
+---- Observing Gain Calibrator (Loop = 29) ----
+lookup time: 21 Dec 2024 14:5
+The lookup time is: 21 Dec 2024 14:5
+0530+135 is at 29.3529 degrees elevation
+observe -s 0530+135 -t gain -R 0 -D 0
+	12/21/2024 14:05:30 --> 12/21/2024 14:05:40  ---- observe -s 0530+135 -t gain -R 0 -D 0
+tsys
+writing 2 0 0 29 to the file
+integrate -s 6 -t 15 -w
+	12/21/2024 14:05:40 --> 12/21/2024 14:07:10  ---- integrate -s 6 -t 15 -w
+LST [hr]=   9.83
+LST [hr]=   9.83
+
+---- Observing Gain Calibrator (Loop = 29) ----
+lookup time: 21 Dec 2024 14:7
+The lookup time is: 21 Dec 2024 14:7
+3c120 is at 12.8421 degrees elevation
+---- Source elevation limit. ----
+---- Searching for an available calibrator.. ----
+lookup time: 21 Dec 2024 14:7
+The lookup time is: 21 Dec 2024 14:7
+0530+135 is at 28.8829 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+LST [hr]=   9.83
+
+---- Observing Target Source (Loop = 29) ----
+
+The lookup time is: 21 Dec 2024 14:7
+L1551_MC is at 16.2991 degrees elevation
+Checking the elevation of the targets!
+The lookup time is: 21 Dec 2024 14:7
+L1551_MC is at 16.2991 degrees elevation
+All target sources too low.
+
+##########################
+# Final Gain Calibration #
+##########################
+
+lookup time: 21 Dec 2024 14:7
+The lookup time is: 21 Dec 2024 14:7
+0530+135 is at 28.8829 degrees elevation
+The current calibrator was just observed, skipping to the next source.
+lookup time: 21 Dec 2024 14:7
+The lookup time is: 21 Dec 2024 14:7
+3c120 is at 12.8421 degrees elevation
+##########################
+# End of Observing Loop  #
+##########################
+----- final flux and bandpass calibration -----
+----- Congratulations!  This is the end of the script.  -----

@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""
+Stub 'lookup' binary for simulate-mode testing.
+
+Real usage on SMA machines:
+  lookup -s <source>                       -> "az el sun_dist"
+  lookup -s <source> -t "DD Mon YYYY H:MM" -> "az el sun_dist"
+  lookup -s sun -w                         -> multi-line with rise/set times
+
+This stub returns plausible fixed values so scripts run end-to-end.
+Source elevations can be overridden via LOOKUP_EL environment variable.
+"""
+
+import os
+import sys
+
+# Default elevation returned for every source (degrees).
+DEFAULT_EL  = float(os.environ.get("LOOKUP_EL",  "45.0"))
+DEFAULT_AZ  = float(os.environ.get("LOOKUP_AZ",  "180.0"))
+SUN_DIST    = float(os.environ.get("LOOKUP_SUN_DIST", "90.0"))
+
+# ---------------------------------------------------------------------------
+# Parse arguments
+# ---------------------------------------------------------------------------
+
+args   = sys.argv[1:]
+source = ""
+wide   = False   # -w flag (sunrise/sunset info)
+
+i = 0
+while i < len(args):
+    if args[i] == "-s" and i + 1 < len(args):
+        source = args[i + 1]
+        i += 2
+    elif args[i] == "-t" and i + 1 < len(args):
+        i += 2          # time arg accepted but ignored in stub
+    elif args[i] == "-w":
+        wide = True
+        i += 1
+    else:
+        i += 1
+
+if not source:
+    sys.stderr.write("lookup stub: no -s <source> given\n")
+    sys.exit(1)
+
+# ---------------------------------------------------------------------------
+# Sun with -w: return a line like the real lookup does so sma.py can parse
+# rise/transit/set times.
+#   words[5]  = rise  time  (with trailing comma)
+#   words[11] = set   time
+# ---------------------------------------------------------------------------
+
+if source.lower() == "sun" and wide:
+    print(f"{DEFAULT_AZ:.6f} {DEFAULT_EL:.6f} {SUN_DIST:.6f}")
+    print("rising at 06:00, transiting at 12:00, setting at 18:00 UTC")
+    sys.exit(0)
+
+# ---------------------------------------------------------------------------
+# Any other source: return  az  el  sun_distance
+# ---------------------------------------------------------------------------
+
+print(f"{DEFAULT_AZ:.6f} {DEFAULT_EL:.6f} {SUN_DIST:.6f}")
