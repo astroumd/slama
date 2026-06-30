@@ -8,6 +8,7 @@ def smacallback(data):
 
 _host = os.environ.get("SMAX_HOST", "localhost")
 _port = int(os.environ.get("SMAX_PORT", 6380))
+print(f"Creating SmaxRedisClient with {_host=} {_port=}")
 smax_client = SmaxRedisClient(_host, redis_port=_port)
 value = float(np.random.rand(1)[0])
 table = "weather:forecast:gfs"
