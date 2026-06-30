@@ -1,31 +1,8 @@
 {
-  "name": "Misc DSM (deice, genset, network, c1DC)",
-  "description": "Deicing, network, C1DC (live RM, from deicemon.c/networkPage.c/c1DC.c); generator, YIG, SMA init (DSM placeholders)",
+  "name": "Misc DSM (genset, network, c1DC)",
+  "description": "Network, C1DC (live RM, from networkPage.c/c1DC.c); generator, YIG, SMA init (DSM placeholders)",
   "update_interval": 30,
   "layout": [
-    {
-      "type": "table",
-      "title": "Deicing System (from deicemon.c)",
-      "columns": {
-        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
-        "var": "ant",
-        "values": [1, 2, 3, 4, 5, 6, 7, 8]
-      },
-      "rows": [
-        {"label": "Power cmd [5]",      "points": "RM:acc{ant}:RM_DEICE_POWER_CMD_V5_S"},
-        {"label": "Current [3] (A)",    "points": "RM:acc{ant}:RM_DEICE_CURRENT_V3_F"},
-        {"label": "Status bits",        "points": "RM:acc{ant}:RM_DEICE_STATUS_BITS_L"},
-        {"label": "Phase",              "points": "RM:acc{ant}:RM_DEICE_PHASE_L"},
-        {"label": "Chopper temp (C)",   "points": "RM:acc{ant}:RM_CHOPPER_TEMPERATURE_F", "format": "{:.1f}", "display_min": -100, "display_max": 300}
-      ]
-    },
-    {
-      "type": "cells",
-      "title": "Deicing — Antenna 5 Structural Temps (DSM — placeholder)",
-      "cells": [
-        {"label": "Ant5 structural temps (DSM)", "point": "dsm:placeholder:DSM_ANTENNA5_TEMPS_X"}
-      ]
-    },
     {
       "type": "cells",
       "title": "Generator Set (DSM — placeholders)",
