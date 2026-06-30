@@ -34,7 +34,8 @@
         {"label": "Stow Request",       "points": "RM:acc{ant}:RM_SCB_STOW_REQUEST_B"},
         {"label": "Az Accel (deg/s2)",  "points": "RM:acc{ant}:RM_AZ_AMAX_F",               "format": "{:.3f}", "display_min": 0, "display_max": 10},
         {"label": "Pad ID",             "points": "RM:acc{ant}:RM_PAD_ID_B",                 "display_min": 1,   "display_max": 30},
-        {"label": "Pad ID fake",        "points": "RM:acc{ant}:RM_PAD_ID_IS_FAKE_B"}
+        {"label": "Pad ID fake",        "points": "RM:acc{ant}:RM_PAD_ID_IS_FAKE_B"},
+        {"label": "Drives timeout",     "points": "RM:acc{ant}:RM_DRIVES_TIMEOUT_FLAG_S"}
       ]
     },
     {
