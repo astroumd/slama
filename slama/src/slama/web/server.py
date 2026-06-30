@@ -356,15 +356,22 @@ if __name__ == "__main__":
         help="Web server port to listen on",
     )
     parser.add_argument(
-        "--reload",
+        "-r", "--reload",
         action="store_true",
         help="Enable uvicorn auto-reload (development mode)",
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Print debugging info",
     )
     args = parser.parse_args()
 
     # Set env vars so the module-level DataBridge picks them up on import
     os.environ["SMAX_HOST"] = args.smax_host
     os.environ["SMAX_PORT"] = str(args.smax_port)
+    if args.verbose:
+        print(args)
 
     uvicorn.run(
         "slama.web.server:app",
