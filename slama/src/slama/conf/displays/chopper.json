@@ -12,8 +12,8 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "Pos (X,Y,Z,Tilt) rel far",  "points": "RM:acc{ant}:RM_CHOPPER_POS_MM_V4_F"},
-        {"label": "Pos (X,Y,Z,Tilt) rel home", "points": "RM:acc{ant}:RM_CHOPPER_FAR_POS_MM_V4_F"}
+        {"label": "Pos (X,Y,Z,Tilt) rel far", "points": "RM:acc{ant}:RM_CHOPPER_FAR_POS_MM_V4_F"},
+        {"label": "Pos (X,Y,Z,Tilt) rel home",  "points": "RM:acc{ant}:RM_CHOPPER_POS_MM_V4_F"}
       ]
     },
     {
