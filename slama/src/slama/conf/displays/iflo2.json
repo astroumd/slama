@@ -20,7 +20,17 @@
         {"label": "YIG1 quadrature",   "points": "RM:acc{ant}:RM_YIG1_QUADRATURE_F",     "format": "{:.3f}", "display_min": -10, "display_max": 10},
         {"label": "Cal wheel status",  "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"},
         {"label": "Cont1 Det2 (mV)",   "points": "RM:acc{ant}:RM_CONT1_DET2_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
-        {"label": "Cont2 Det2 (mV)",   "points": "RM:acc{ant}:RM_CONT2_DET2_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767}
+        {"label": "Cont2 Det2 (mV)",   "points": "RM:acc{ant}:RM_CONT2_DET2_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "Cont1 Det1 (mV)",   "points": "RM:acc{ant}:RM_CONT1_DET1_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "Cont2 Det1 (mV)",   "points": "RM:acc{ant}:RM_CONT2_DET1_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "MRG RF power",      "points": "RM:acc{ant}:RM_MRG_RF_POWER_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "Xmit1 op alarm",    "points": "RM:acc{ant}:RM_XMIT1_OP_ALARM_F"},
+        {"label": "Xmit1 temp alarm",  "points": "RM:acc{ant}:RM_XMIT1_TEMP_ALARM_F"},
+        {"label": "Xmit2 op alarm",    "points": "RM:acc{ant}:RM_XMIT2_OP_ALARM_F"},
+        {"label": "Xmit2 temp alarm",  "points": "RM:acc{ant}:RM_XMIT2_TEMP_ALARM_F"},
+        {"label": "YIG1 stress",       "points": "RM:acc{ant}:RM_YIG1_STRESS_F", "format": "{:.3f}", "display_min": -10, "display_max": 10},
+        {"label": "YIG2 stress",       "points": "RM:acc{ant}:RM_YIG2_STRESS_F", "format": "{:.3f}", "display_min": -10, "display_max": 10},
+        {"label": "YIG2 quadrature",   "points": "RM:acc{ant}:RM_YIG2_QUADRATURE_F", "format": "{:.3f}", "display_min": -10, "display_max": 10}
       ]
     }
   ]
