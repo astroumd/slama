@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+import os
 import redis
 import argparse
+
+_DEFAULT_HOST = os.environ.get("SMAX_HOST", "localhost")
+_DEFAULT_PORT = int(os.environ.get("SMAX_PORT", 6380))
 
 
 def _decode(b):
@@ -32,9 +36,11 @@ if __name__ == '__main__':
     parser.add_argument("--flat", "-f", action="store_true", help="write flat list of monitor points", default=False)
     parser.add_argument("--strip", "-s", action="store_true", help="strip the top table enclosed in <> if it is present", default=False)
     parser.add_argument("--values", "-v", action="store_true", help="also print the values of the leaves", default=False)
+    parser.add_argument("--host", default=_DEFAULT_HOST, help="Redis/SMAX host (default: $SMAX_HOST or localhost)")
+    parser.add_argument("--port", type=int, default=_DEFAULT_PORT, help="Redis/SMAX port (default: $SMAX_PORT or 6380)")
     args = parser.parse_args()
 
-    r = redis.Redis(host='localhost', port=6380, db=0)
+    r = redis.Redis(host=args.host, port=args.port, db=0)
     dump = {}
 
     # Use SCAN cursor to iterate safely

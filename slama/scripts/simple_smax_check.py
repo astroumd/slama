@@ -1,11 +1,14 @@
 # use this to test basic functioning of redis I/O
+import os
 import numpy as np
 from smax import SmaxRedisClient
 
 def smacallback(data):
     print(f"got {data=}")
 
-smax_client = SmaxRedisClient("localhost",redis_port=6380) # Replace localhost with redis hostname or IP.
+_host = os.environ.get("SMAX_HOST", "localhost")
+_port = int(os.environ.get("SMAX_PORT", 6380))
+smax_client = SmaxRedisClient(_host, redis_port=_port)
 value = float(np.random.rand(1)[0])
 table = "weather:forecast:gfs"
 key = "test_tau"
