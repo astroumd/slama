@@ -1,0 +1,52 @@
+{
+  "name": "Receiver Scan Page",
+  "description": "Pointing offsets, M3 state, hotload, Gunn-on, board presence, SIS calibration not covered elsewhere (from rscanpage.c)",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Pointing Offsets",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Commanded Az (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_AZ_DEG_F", "format": "{:.3f}", "display_min": 0, "display_max": 360},
+        {"label": "Commanded El (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_EL_DEG_F", "format": "{:.3f}", "display_min": -90, "display_max": 90},
+        {"label": "Az offset",           "points": "RM:acc{ant}:RM_AZOFF_D",            "format": "{:.3f}", "display_min": -3600, "display_max": 3600},
+        {"label": "El offset",           "points": "RM:acc{ant}:RM_ELOFF_D",            "format": "{:.3f}", "display_min": -3600, "display_max": 3600},
+        {"label": "RA offset (asec)",    "points": "RM:acc{ant}:RM_RAOFF_ARCSEC_D",     "format": "{:.2f}", "display_min": -3600, "display_max": 3600},
+        {"label": "Dec offset (asec)",   "points": "RM:acc{ant}:RM_DECOFF_ARCSEC_D",    "format": "{:.2f}", "display_min": -3600, "display_max": 3600}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Receiver / Drive State",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "M3 state",              "points": "RM:acc{ant}:RM_M3STATE_B"},
+        {"label": "Hotload style",         "points": "RM:acc{ant}:RM_HOTLOAD_STYLE_S"},
+        {"label": "Gunn on",               "points": "RM:acc{ant}:RM_GUNN_ON_S"},
+        {"label": "Gunn2 on",              "points": "RM:acc{ant}:RM_GUNN2_ON_S"},
+        {"label": "Mixer board present",   "points": "RM:acc{ant}:RM_MIXER_BOARD_PRESENT_S"},
+        {"label": "Optics board present",  "points": "RM:acc{ant}:RM_OPTICS_BOARD_PRESENT_S"},
+        {"label": "SIS mixer0 cal (uA)",   "points": "RM:acc{ant}:RM_SIS_MIXER0_CURRENT_CALIB_F", "format": "{:.3f}", "display_min": -1000, "display_max": 1000},
+        {"label": "SIS mixer1 cal (uA)",   "points": "RM:acc{ant}:RM_SIS_MIXER1_CURRENT_CALIB_F", "format": "{:.3f}", "display_min": -1000, "display_max": 1000}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Nightly Pointing Model (DSM — placeholders)",
+      "cells": [
+        {"label": "Last C-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_CPOINT_V11_L"},
+        {"label": "Last I-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_IPOINT_V11_L"},
+        {"label": "Nightly pointing (DSM)",   "point": "dsm:placeholder:DSM_HAL_HAL_NIGHTLY_POINTING_S"}
+      ]
+    }
+  ]
+}
