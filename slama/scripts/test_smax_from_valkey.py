@@ -77,6 +77,19 @@ class TestFilterInput:
         result = filter_input(["  DSM:acc1:FOO_F  "])
         assert result == ["DSM:acc1:FOO_F"]
 
+    def test_skips_summary_stat_lines_with_spaces(self):
+        # Lines like "  smax.json canonical names : 4723" must be rejected
+        lines = [
+            "  smax.json canonical names : 4723",
+            "  In Valkey, not smax.json  : 8542",
+            "  In both                   : 2144",
+        ]
+        assert filter_input(lines) == []
+
+    def test_keeps_paths_with_dots_in_segment(self):
+        # Some SMAX names use dots (e.g. weather.forecast)
+        assert filter_input(["weather.forecast:gfs:tau"]) == ["weather.forecast:gfs:tau"]
+
 
 # ---------------------------------------------------------------------------
 # detect_each_group

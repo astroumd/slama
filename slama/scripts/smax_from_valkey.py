@@ -51,11 +51,16 @@ class EachGroup:
 # Input filtering
 # ---------------------------------------------------------------------------
 
+_VALID_SEGMENT = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_.\-]*$")
+
+
 def filter_input(lines: list[str]) -> list[str]:
     """Filter raw input lines to valid hierarchical SMAX paths.
 
     Skips blank lines, comment lines (starting with ``#``), lines with no
-    ``:`` separator (no hierarchy), and ``RM:acc9:*`` entries.
+    ``:`` separator (no hierarchy), lines whose first segment contains
+    characters not valid in an SMAX name (e.g. spaces in summary lines),
+    and ``RM:acc9:*`` entries.
 
     Parameters
     ----------
@@ -73,6 +78,9 @@ def filter_input(lines: list[str]) -> list[str]:
         if not line or line.startswith("#"):
             continue
         if ":" not in line:
+            continue
+        first_segment = line.split(":", 1)[0]
+        if not _VALID_SEGMENT.match(first_segment):
             continue
         if line.startswith("RM:acc9:"):
             continue
