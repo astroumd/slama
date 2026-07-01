@@ -12222,7 +12222,7 @@
       "lo_sidebands": {
         "description": "LO sidebands (array or \u2018u\u2019 for USB or \u2018l\u2019 for LSB, or \u20180\u2019 for unspecified)",
         "size": "2+",
-        "smax_type": "char"
+        "smax_type": "string"
       },
       "mrg_frequencies": {
         "description": "Commanded MRG frequencies, or 0 if unused",
