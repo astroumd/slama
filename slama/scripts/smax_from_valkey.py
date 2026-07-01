@@ -412,7 +412,11 @@ if __name__ == "__main__":
                         const=str(_DEFAULT_SMAX_JSON),
                         help="Merge generated entries into SMAX_JSON (default: conf/smax.json) "
                              "and write the combined result to --output. "
-                             "smax.json values take precedence on conflicts.")
+                             "smax.json values take precedence on conflicts unless --overwrite is set.")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="With --merge, let generated (Valkey) values take precedence over "
+                             "smax.json values on conflicts. Useful when live database has updated "
+                             "type or size information.")
     parser.add_argument("--host", default=_DEFAULT_HOST, help="SMAX host (default: $SMAX_HOST or localhost)")
     parser.add_argument("--port", type=int, default=_DEFAULT_PORT, help="SMAX port (default: $SMAX_PORT or 6380)")
     parser.add_argument("--verbose", "-v", action="store_true",
@@ -432,9 +436,15 @@ if __name__ == "__main__":
         if not merge_path.exists():
             print(f"Error: merge file not found: {merge_path}", file=sys.stderr)
             sys.exit(1)
-        base = json.loads(merge_path.read_text())
-        result = deep_merge(base, result)
-        print(f"Merged with {merge_path}", file=sys.stderr)
+        existing = json.loads(merge_path.read_text())
+        if args.overwrite:
+            # Generated (Valkey) values win: existing is the overlay
+            result = deep_merge(result, existing)
+            print(f"Merged with {merge_path} (Valkey takes precedence)", file=sys.stderr)
+        else:
+            # smax.json wins: existing is the base
+            result = deep_merge(existing, result)
+            print(f"Merged with {merge_path} (smax.json takes precedence)", file=sys.stderr)
 
     json_str = json.dumps(result, indent=2)
     if args.output == "-":
