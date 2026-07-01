@@ -1,0 +1,22 @@
+{
+  "name": "C. Room IF/LO Parameters",
+  "description": "iFLO integrated F-Engine LO lock status and IF power — DSM placeholders",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "iFLO LO Lock and IF Power (DSM — placeholders)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "LO lock status (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_LO_LOCK"},
+        {"label": "IF power (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_IF_POWER"},
+        {"label": "LO freq (GHz) (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_LO_FREQ"},
+        {"label": "Last update (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_TIMESTAMP"}
+      ]
+    }
+  ]
+}
