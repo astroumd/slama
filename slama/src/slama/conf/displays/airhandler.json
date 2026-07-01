@@ -1,0 +1,43 @@
+{
+  "name": "Air Handler",
+  "description": "Antenna air handler dampers, temperatures, and heater status (from airHandler.c)",
+  "update_interval": 10,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Air Handler",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Inside air damper",   "points": "RM:acc{ant}:RM_AIR_HANDLER_INSIDE_AIR_DAMPER_F",  "format": "{:.1f}", "display_min": -100, "display_max": 100},
+        {"label": "Outside air damper",  "points": "RM:acc{ant}:RM_AIR_HANDLER_OUTSIDE_AIR_DAMPER_F", "format": "{:.1f}", "display_min": -100, "display_max": 100},
+        {"label": "Enclosure temp (C)",  "points": "RM:acc{ant}:RM_AIR_HANDLER_ENCLOSURE_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Intake temp (C)",     "points": "RM:acc{ant}:RM_AIR_HANDLER_INTAKE_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Pre-heater temp (C)", "points": "RM:acc{ant}:RM_AIR_HANDLER_PRE_HEATER_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Differential P",      "points": "RM:acc{ant}:RM_AIR_HANDLER_DIFFERENTIAL_PRESSURE_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "Heater enabled",      "points": "RM:acc{ant}:RM_AIR_HANDLER_HEATER_ENABLED_S"},
+        {"label": "Heater delta-T seen", "points": "RM:acc{ant}:RM_AIR_HANDLER_HEATER_DELTA_T_SEEN_S"},
+        {"label": "Rack temp (C)",       "points": "RM:acc{ant}:RM_AIR_HANDLER_RACK_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Servo cabin temp (C)","points": "RM:acc{ant}:RM_AIR_HANDLER_SERVO_CABIN_TEMP_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Servo output (V)",    "points": "RM:acc{ant}:RM_AIR_HANDLER_SERVO_CMD_TO_DAMPERS_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "Set point (C)",       "points": "RM:acc{ant}:RM_AIR_HANDLER_SET_POINT_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Sock humidity (%)",   "points": "RM:acc{ant}:RM_AIR_HANDLER_SOCK_HUMIDITY_F", "format": "{:.1f}", "display_min": 0, "display_max": 100},
+        {"label": "Sock temp (C)",       "points": "RM:acc{ant}:RM_AIR_HANDLER_SOCK_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Ambient load temp (C)","points": "RM:acc{ant}:RM_AMBIENTLOAD_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50, "display_max": 200},
+        {"label": "Timestamp",           "points": "RM:acc{ant}:RM_AIR_HANDLER_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
+        {"label": "Cal wheel timestamp", "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Site Weather (DSM — placeholder)",
+      "cells": [
+        {"label": "SMA temp (DSM)",     "point": "dsm:placeholder:DSM_SMA_TEMP_F"},
+        {"label": "SMA humidity (DSM)", "point": "dsm:placeholder:DSM_SMA_HUMIDITY_F"}
+      ]
+    }
+  ]
+}
