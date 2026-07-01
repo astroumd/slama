@@ -15,7 +15,9 @@
         {"label": "Position",        "points": "RM:acc{ant}:RM_WIRE_GRID_POSITION_L",          "display_min": 0, "display_max": 150000},
         {"label": "Nominal Pos",     "points": "RM:acc{ant}:RM_WIRE_GRID_NOMINAL_POSITION_L",  "display_min": 0, "display_max": 150000},
         {"label": "Encoder",         "points": "RM:acc{ant}:RM_WIRE_GRID_ENCODER_POSITION_L",  "display_min": 0, "display_max": 150000},
-        {"label": "Band Location",   "points": "RM:acc{ant}:RM_WIRE_GRID_RECEIVER_LOCATION_L", "display_min": 0, "display_max": 20}
+        {"label": "Band Location",   "points": "RM:acc{ant}:RM_WIRE_GRID_RECEIVER_LOCATION_L", "display_min": 0, "display_max": 20},
+        {"label": "Table [8]",       "points": "RM:acc{ant}:RM_WIRE_GRID_TABLE_V8_L"},
+        {"label": "Timestamp",       "points": "RM:acc{ant}:RM_WIRE_GRID_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
       ]
     },
     {
@@ -31,7 +33,9 @@
         {"label": "Nominal Pos",     "points": "RM:acc{ant}:RM_COMBINER_MIRROR_NOMINAL_POSITION_L",  "display_min": 0, "display_max": 1000000},
         {"label": "Encoder",         "points": "RM:acc{ant}:RM_COMBINER_MIRROR_ENCODER_POSITION_L",  "display_min": 0, "display_max": 1000000},
         {"label": "Band Location",   "points": "RM:acc{ant}:RM_COMBINER_MIRROR_RECEIVER_LOCATION_L", "display_min": 0, "display_max": 20},
-        {"label": "Motorized",       "points": "RM:acc{ant}:RM_COMBINER_MIRROR_MOTORIZED_S"}
+        {"label": "Motorized",       "points": "RM:acc{ant}:RM_COMBINER_MIRROR_MOTORIZED_S"},
+        {"label": "Table [8]",       "points": "RM:acc{ant}:RM_COMBINER_MIRROR_TABLE_V8_L"},
+        {"label": "Timestamp",       "points": "RM:acc{ant}:RM_COMBINER_MIRROR_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
       ]
     },
     {
@@ -46,7 +50,11 @@
         {"label": "Hot Load Temp (F)",   "points": "RM:acc{ant}:RM_HEATEDLOAD_TEMPERATURE_F",   "format": "{:.1f}", "display_min": -50,  "display_max": 500},
         {"label": "Amb Load Temp (F)",   "points": "RM:acc{ant}:RM_UNHEATEDLOAD_TEMPERATURE_F", "format": "{:.1f}", "display_min": -50,  "display_max": 200},
         {"label": "Servo Temp (F)",      "points": "RM:acc{ant}:RM_HEATEDLOAD_SERVO_TEMP_F",    "format": "{:.1f}", "display_min": -50,  "display_max": 500},
-        {"label": "Cmd Voltage",         "points": "RM:acc{ant}:RM_HEATEDLOAD_CMDVOLTAGE_F",    "format": "{:.2f}", "display_min": -100, "display_max": 100}
+        {"label": "Cmd Voltage",         "points": "RM:acc{ant}:RM_HEATEDLOAD_CMDVOLTAGE_F",    "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "Hot Load Timestamp",  "points": "RM:acc{ant}:RM_HEATEDLOAD_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
+        {"label": "Amb Load Position",   "points": "RM:acc{ant}:RM_AMBIENTLOAD_POSITION_L"},
+        {"label": "Amb Load In Pos",     "points": "RM:acc{ant}:RM_AMBIENTLOAD_INPOS_L"},
+        {"label": "Amb Load Out Pos",    "points": "RM:acc{ant}:RM_AMBIENTLOAD_OUTPOS_L"}
       ]
     },
     {
@@ -60,9 +68,29 @@
       "rows": [
         {"label": "Cal Wheel (0=Sky,1=Amb,2=Hot,3=WP)", "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"},
         {"label": "Cal Wheel Encoder",                   "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_POSITION_L"},
+        {"label": "Cal Wheel Timestamp",                 "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
         {"label": "Waveplate Status",                    "points": "RM:acc{ant}:RM_WAVEPLATE_STATUS_S"},
         {"label": "Hot Load Status",                     "points": "RM:acc{ant}:RM_HEATEDLOAD_STATUS_S"},
-        {"label": "Amb Load Status",                     "points": "RM:acc{ant}:RM_UNHEATEDLOAD_STATUS_S"}
+        {"label": "Amb Load Status",                     "points": "RM:acc{ant}:RM_UNHEATEDLOAD_STATUS_S"},
+        {"label": "Hotload Style",                       "points": "RM:acc{ant}:RM_HOTLOAD_STYLE_S"},
+        {"label": "Tune6 Command Busy",                  "points": "RM:acc{ant}:RM_TUNE6_COMMAND_BUSY_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Optics Board / Receiver Select",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Active Low Rx",         "points": "RM:acc{ant}:RM_ACTIVE_LOW_RECEIVER_C10"},
+        {"label": "Active High Rx",         "points": "RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10"},
+        {"label": "Optics Board Present",   "points": "RM:acc{ant}:RM_OPTICS_BOARD_PRESENT_S"},
+        {"label": "Optics Board EPROM ver", "points": "RM:acc{ant}:RM_OPTICS_BOARD_EPROM_VERSION_S"},
+        {"label": "Optics Board SRAM ver",  "points": "RM:acc{ant}:RM_OPTICS_BOARD_SRAM_VERSION_S"},
+        {"label": "Optical Breaks [8]",     "points": "RM:acc{ant}:RM_OPTICAL_BREAKS_V8_S"}
       ]
     }
   ]

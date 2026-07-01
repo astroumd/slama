@@ -19,12 +19,16 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional
+
+_DEFAULT_HOST = os.environ.get("SMAX_HOST", "localhost")
+_DEFAULT_PORT = int(os.environ.get("SMAX_PORT", 6380))
 
 # Import filter_leaves from sibling script (safe now that argparse is guarded)
 sys.path.insert(0, str(Path(__file__).parent))
@@ -409,8 +413,8 @@ if __name__ == "__main__":
                         help="Merge generated entries into SMAX_JSON (default: conf/smax.json) "
                              "and write the combined result to --output. "
                              "smax.json values take precedence on conflicts.")
-    parser.add_argument("--host", default="localhost", help="SMAX host (default: localhost)")
-    parser.add_argument("--port", type=int, default=6380, help="SMAX port (default: 6380)")
+    parser.add_argument("--host", default=_DEFAULT_HOST, help="SMAX host (default: $SMAX_HOST or localhost)")
+    parser.add_argument("--port", type=int, default=_DEFAULT_PORT, help="SMAX port (default: $SMAX_PORT or 6380)")
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="List names of variables that could not be fetched")
     args = parser.parse_args()

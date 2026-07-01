@@ -1,0 +1,92 @@
+{
+  "name": "Receiver Scan Page",
+  "description": "Complete mirror of rscanpage.c (some rows also shown on other dedicated displays)",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Position / Source",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Actual Az (deg)", "points": "RM:acc{ant}:RM_ACTUAL_AZ_DEG_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
+        {"label": "Actual El (deg)", "points": "RM:acc{ant}:RM_ACTUAL_EL_DEG_F", "format": "{:.2f}", "display_min": -5, "display_max": 90},
+        {"label": "Source",          "points": "RM:acc{ant}:RM_SOURCE_C34"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Pointing Offsets",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Commanded Az (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_AZ_DEG_F", "format": "{:.3f}", "display_min": 0, "display_max": 360},
+        {"label": "Commanded El (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_EL_DEG_F", "format": "{:.3f}", "display_min": -90, "display_max": 90},
+        {"label": "Az offset",           "points": "RM:acc{ant}:RM_AZOFF_D",            "format": "{:.3f}", "display_min": -3600, "display_max": 3600},
+        {"label": "El offset",           "points": "RM:acc{ant}:RM_ELOFF_D",            "format": "{:.3f}", "display_min": -3600, "display_max": 3600},
+        {"label": "RA offset (asec)",    "points": "RM:acc{ant}:RM_RAOFF_ARCSEC_D",     "format": "{:.2f}", "display_min": -3600, "display_max": 3600},
+        {"label": "Dec offset (asec)",   "points": "RM:acc{ant}:RM_DECOFF_ARCSEC_D",    "format": "{:.2f}", "display_min": -3600, "display_max": 3600}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Receiver / Drive State",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "M3 state",              "points": "RM:acc{ant}:RM_M3STATE_B"},
+        {"label": "Hotload style",         "points": "RM:acc{ant}:RM_HOTLOAD_STYLE_S"},
+        {"label": "Gunn on",               "points": "RM:acc{ant}:RM_GUNN_ON_S"},
+        {"label": "Gunn2 on",              "points": "RM:acc{ant}:RM_GUNN2_ON_S"},
+        {"label": "Mixer board present",   "points": "RM:acc{ant}:RM_MIXER_BOARD_PRESENT_S"},
+        {"label": "Optics board present",  "points": "RM:acc{ant}:RM_OPTICS_BOARD_PRESENT_S"},
+        {"label": "SIS mixer0 cal (uA)",   "points": "RM:acc{ant}:RM_SIS_MIXER0_CURRENT_CALIB_F", "format": "{:.3f}", "display_min": -1000, "display_max": 1000},
+        {"label": "SIS mixer1 cal (uA)",   "points": "RM:acc{ant}:RM_SIS_MIXER1_CURRENT_CALIB_F", "format": "{:.3f}", "display_min": -1000, "display_max": 1000},
+        {"label": "Wire grid Rx location", "points": "RM:acc{ant}:RM_WIRE_GRID_RECEIVER_LOCATION_L"},
+        {"label": "Combiner mirror motorized", "points": "RM:acc{ant}:RM_COMBINER_MIRROR_MOTORIZED_S"},
+        {"label": "Combiner mirror Rx location", "points": "RM:acc{ant}:RM_COMBINER_MIRROR_RECEIVER_LOCATION_L"},
+        {"label": "Refraction radio flag", "points": "RM:acc{ant}:RM_REFRACTION_RADIO_FLAG_B"},
+        {"label": "Tune6 command busy",    "points": "RM:acc{ant}:RM_TUNE6_COMMAND_BUSY_S"},
+        {"label": "LO board EPROM ver",    "points": "RM:acc{ant}:RM_LO_BOARD_EPROM_VERSION_V8_S"},
+        {"label": "RX microctrl network [15]", "points": "RM:acc{ant}:RM_RX_MICROCONTROLLER_NETWORK_V15_S"},
+        {"label": "Slave1 PLL no",         "points": "RM:acc{ant}:RM_SLAVE1_PLL_NO_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Calibration / Chopper",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Cal wheel status",      "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"},
+        {"label": "Cal wheel timestamp",   "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
+        {"label": "Chopper pos [4] (mm)",  "points": "RM:acc{ant}:RM_CHOPPER_POS_MM_V4_F"},
+        {"label": "Chopper status bits [16]", "points": "RM:acc{ant}:RM_CHOPPER_STATUS_BITS_V16_B"},
+        {"label": "Cont1 Det1 (mV)",       "points": "RM:acc{ant}:RM_CONT1_DET1_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "Cont2 Det1 (mV)",       "points": "RM:acc{ant}:RM_CONT2_DET1_F", "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
+        {"label": "SyncDet2 channels [2]", "points": "RM:acc{ant}:RM_SYNCDET2_CHANNELS_V2_F"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Nightly Pointing Model (DSM — placeholders)",
+      "cells": [
+        {"label": "Last C-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_CPOINT_V11_L"},
+        {"label": "Last I-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_IPOINT_V11_L"},
+        {"label": "Nightly pointing (DSM)",   "point": "dsm:placeholder:DSM_HAL_HAL_NIGHTLY_POINTING_S"}
+      ]
+    }
+  ]
+}

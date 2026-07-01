@@ -1,17 +1,8 @@
 {
-  "name": "Misc DSM (deice, genset, network, c1DC)",
-  "description": "Deicing, generator, network, C1DC correlator — all DSM placeholders",
+  "name": "Misc DSM (genset, network, c1DC)",
+  "description": "Network, C1DC (live RM, from networkPage.c/c1DC.c); generator, YIG, SMA init (DSM placeholders)",
   "update_interval": 30,
   "layout": [
-    {
-      "type": "cells",
-      "title": "Deicing System (DSM — placeholders)",
-      "cells": [
-        {"label": "Deice state (DSM)",       "point": "dsm:placeholder:DSM_DEICE_STATE"},
-        {"label": "Deice temp (C) (DSM)",    "point": "dsm:placeholder:DSM_DEICE_TEMP_C"},
-        {"label": "Deice status bits (DSM)", "point": "dsm:placeholder:DSM_DEICE_STATUS_BITS"}
-      ]
-    },
     {
       "type": "cells",
       "title": "Generator Set (DSM — placeholders)",
@@ -21,12 +12,33 @@
       ]
     },
     {
-      "type": "cells",
-      "title": "Network Interfaces (DSM — placeholders)",
-      "cells": [
-        {"label": "IP status (DSM)",         "point": "dsm:placeholder:DSM_NETWORK_IP_STATUS"},
-        {"label": "Bandwidth (DSM)",         "point": "dsm:placeholder:DSM_NETWORK_BANDWIDTH"},
-        {"label": "Packet errors (DSM)",     "point": "dsm:placeholder:DSM_NETWORK_ERRORS"}
+      "type": "table",
+      "title": "Receiver Network Status (from networkPage.c)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "RX microctrl network [15]", "points": "RM:acc{ant}:RM_RX_MICROCONTROLLER_NETWORK_V15_S"},
+        {"label": "RX microctrl subtype [15]", "points": "RM:acc{ant}:RM_RX_MICROCONTROLLER_SUBTYPE_V15_S"},
+        {"label": "Mixer board EPROM ver",     "points": "RM:acc{ant}:RM_MIXER_BOARD_EPROM_VERSION_S"},
+        {"label": "Mixer board SRAM ver",      "points": "RM:acc{ant}:RM_MIXER_BOARD_SRAM_VERSION_S"},
+        {"label": "Slave PLL no",              "points": "RM:acc{ant}:RM_SLAVE_PLL_NO_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "C1DC Correlator (from c1DC.c)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Optics board present", "points": "RM:acc{ant}:RM_OPTICS_BOARD_PRESENT_S"},
+        {"label": "Cal wheel status",     "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_S"},
+        {"label": "Cal wheel timestamp",  "points": "RM:acc{ant}:RM_CALIBRATION_WHEEL_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
       ]
     },
     {

@@ -1,0 +1,56 @@
+{
+  "name": "IF/LO Attenuators (Page 2)",
+  "description": "YIG/Gunn attenuator voltages and control per antenna",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "YIG 1 / Receiver Chain 1",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "MRG Attn",      "points": "RM:acc{ant}:RM_MRG_RX_ATTN_F",            "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "109/200 Rx1",   "points": "RM:acc{ant}:RM_109_200_RX1_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Y1 Req Attn",   "points": "RM:acc{ant}:RM_YIG1_ATTENUATOR_VOLTAGE_F", "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Y1 Act Attn",   "points": "RM:acc{ant}:RM_YIG1_OUTPUT_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "YIG1 IF",       "points": "RM:acc{ant}:RM_YIG1_PLL_IF_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "YIG1 Tune (V)", "points": "RM:acc{ant}:RM_YIG1_CTRL_VOLTAGE_F",       "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Rx1 Attn",      "points": "RM:acc{ant}:RM_DEWAR_POWER1_ATTEN_F",      "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Gunn1 TEC (V)", "points": "RM:acc{ant}:RM_GUNN1_TEC_FEEDBACK_F",      "format": "{:+.3f}", "display_min": -15, "display_max": 15}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "YIG 2 / Receiver Chain 2",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "109/200 Rx2",   "points": "RM:acc{ant}:RM_109_200_RX2_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Y2 Req Attn",   "points": "RM:acc{ant}:RM_YIG2_ATTENUATOR_VOLTAGE_F", "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Y2 Act Attn",   "points": "RM:acc{ant}:RM_YIG2_OUTPUT_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "YIG2 IF",       "points": "RM:acc{ant}:RM_YIG2_PLL_IF_ATTN_F",        "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "YIG2 Tune (V)", "points": "RM:acc{ant}:RM_YIG2_CTRL_VOLTAGE_F",       "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Rx2 Attn",      "points": "RM:acc{ant}:RM_DEWAR_POWER2_ATTEN_F",      "format": "{:.4f}", "display_min": -11, "display_max": 11},
+        {"label": "Gunn2 TEC (V)", "points": "RM:acc{ant}:RM_GUNN2_TEC_FEEDBACK_F",      "format": "{:+.3f}", "display_min": -15, "display_max": 15}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "YIG Service Timestamp Age (s)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "YIG SVC time", "points": "RM:acc{ant}:RM_YIG_SVC_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
+      ]
+    }
+  ]
+}

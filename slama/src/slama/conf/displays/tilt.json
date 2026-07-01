@@ -20,7 +20,8 @@
         {"label": "Tilt El Off (asec)",    "points": "RM:acc{ant}:RM_TILT_ELOFF_ARCSEC_D",              "format": "{:+.1f}", "display_min": -3600,   "display_max": 3600},
         {"label": "Tilt Volts [V0-V3]",   "points": "RM:acc{ant}:RM_TILT_VOLTS_V4_F"},
         {"label": "Correction Flag",       "points": "RM:acc{ant}:RM_TILT_CORRECTION_FLAG_L"},
-        {"label": "Tilt Timestamp",        "points": "RM:acc{ant}:RM_TILT_TIMESTAMP_L",                  "display_min": 0, "display_max": 2000000000}
+        {"label": "Tilt Timestamp",        "points": "RM:acc{ant}:RM_TILT_TIMESTAMP_L",                  "display_min": 0, "display_max": 2000000000},
+        {"label": "Pad ID",                "points": "RM:acc{ant}:RM_PAD_ID_B", "display_min": 1, "display_max": 30}
       ]
     },
     {

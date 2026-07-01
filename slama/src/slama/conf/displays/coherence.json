@@ -5,6 +5,13 @@
   "layout": [
     {
       "type": "cells",
+      "title": "Reference Antenna (RM — live)",
+      "cells": [
+        {"label": "Ref antenna El (deg)", "point": "RM:acc1:RM_ACTUAL_EL_DEG_F", "format": "{:.2f}", "display_min": -5, "display_max": 90}
+      ]
+    },
+    {
+      "type": "cells",
       "title": "Fringe / Coherence Status (DSM — placeholders)",
       "cells": [
         {"label": "Fringe amplitude (DSM)",   "point": "dsm:placeholder:DSM_FRINGE_AMPLITUDE"},

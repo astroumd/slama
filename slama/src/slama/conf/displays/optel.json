@@ -15,7 +15,8 @@
         {"label": "Humidity (%)",  "points": "RM:acc{ant}:RM_CELESTRON_HUMIDITY_F",      "format": "{:.1f}", "display_min": -1,   "display_max": 102},
         {"label": "Temp (C)",      "points": "RM:acc{ant}:RM_CELESTRON_TEMPERATURE_F",   "format": "{:.1f}", "display_min": -50,  "display_max": 100},
         {"label": "Focus (mils)",  "points": "RM:acc{ant}:RM_CELESTRON_FOCUS_MILS_F",    "format": "{:.2f}", "display_min": 0,    "display_max": 500},
-        {"label": "Motor present", "points": "RM:acc{ant}:RM_CELESTRON_FOCUS_MOTOR_PRESENT_S"}
+        {"label": "Motor present", "points": "RM:acc{ant}:RM_CELESTRON_FOCUS_MOTOR_PRESENT_S"},
+        {"label": "Timestamp",     "points": "RM:acc{ant}:RM_CELESTRON_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
       ]
     },
     {

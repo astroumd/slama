@@ -4,6 +4,18 @@
   "update_interval": 10,
   "layout": [
     {
+      "type": "table",
+      "title": "Pad Assignment (RM — live)",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Pad ID", "points": "RM:acc{ant}:RM_PAD_ID_B", "display_min": 1, "display_max": 30}
+      ]
+    },
+    {
       "type": "cells",
       "title": "Phase Monitor Baselines (DSM — placeholders)",
       "cells": [

@@ -10,9 +10,13 @@ Usage:
 """
 
 import argparse
+import os
 import random
 import time
 import sys
+
+_DEFAULT_HOST = os.environ.get("SMAX_HOST", "localhost")
+_DEFAULT_PORT = int(os.environ.get("SMAX_PORT", 6380))
 
 
 import numpy as np
@@ -33,8 +37,9 @@ from slama.monitor import (
 SMALOC = EarthLocation.from_geodetic(-155.47955558*u.degree,
                                      19.826055555*u.degree, 4080*u.m)
 class FakeObs:
-    def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None):
-        self._client = SmaxRedisClient("localhost", redis_port=6380)
+    def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None,
+                 host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT):
+        self._client = SmaxRedisClient(host, redis_port=port)
         if conf is None:
             conf_path = Path(__file__).parent / "conf" / "mpdefs.json"
         else:
@@ -317,9 +322,11 @@ if __name__ == "__main__":
     parser.add_argument("--gaincal", "-g", action="store", help="gain calibrator", default="0530+135", type=str)
     parser.add_argument("--source", "-s", action="store", help="source aka science target", default="ORIMSR", type=str)
     parser.add_argument("--time", "-t", action="store", help="how long to observe each target, in seconds", default=60, type=float)
+    parser.add_argument("--host", default=_DEFAULT_HOST, help="SMAX/Redis host (default: $SMAX_HOST or localhost)")
+    parser.add_argument("--port", type=int, default=_DEFAULT_PORT, help="SMAX/Redis port (default: $SMAX_PORT or 6380)")
     args = parser.parse_args()
-    
-    fo = FakeObs()
+
+    fo = FakeObs(host=args.host, port=args.port)
     print(f"Slewing to Flux Calibrator {args.fluxcal}")
     fo.observe(args.fluxcal,obstime=args.time)
     print(f"Slewing to Bandpass Calibrator {args.bandpass}")
