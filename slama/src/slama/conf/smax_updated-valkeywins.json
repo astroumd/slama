@@ -1,20 +1,185 @@
 {
   "DSM": {
-    "description": "Digital Signal Manager - SWARM correlator board data",
     "__each__": {
-      "over": "01-08,11-18,21-28,31-38,41-48,51-58",
-      "prefix": "roach2-",
+      "over": "1-9",
+      "prefix": "acc",
       "template": {
+        "CPU_MAC_ADDRESS_V8_B": {
+          "size": "8",
+          "smax_type": "int8"
+        },
+        "DSM_ESTOP_BYPASS_L": {
+          "size": "1",
+          "smax_type": "int32"
+        },
+        "DSM_ESTOP_COMMAND_S": {
+          "size": "1",
+          "smax_type": "int16"
+        },
+        "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
+          "size": "1",
+          "smax_type": "int16"
+        },
+        "DSM_RECEIVER_DELAY_V2_F": {
+          "size": "2",
+          "smax_type": "float"
+        },
+        "DSM_RESET_THE_CHOPPER_S": {
+          "size": "1",
+          "smax_type": "int16"
+        },
+        "DSM_RESET_THE_SCB_S": {
+          "size": "1",
+          "smax_type": "int16"
+        },
+        "DSM_TUNE6_USERNAME_C20": {
+          "size": "1",
+          "smax_type": "string"
+        },
+        "DSM_TURN_ON_THE_TURBOPUMP_S": {
+          "size": "1",
+          "smax_type": "int16"
+        },
         "SMAINIT_REPORT_X": {
           "PRG_NAMES_V24_C24": {
-            "description": "Program names (24 entries)",
             "size": "24",
-            "smax_type": "string"
+            "smax_type": "string",
+            "description": "Program names (24 entries)"
           },
           "PRG_STATUS_V24_V6_L": {
-            "description": "Program status array (24x6)",
             "size": "144",
-            "smax_type": "int"
+            "smax_type": "int32",
+            "description": "Program status array (24x6)"
+          }
+        },
+        "UPS_DATA_X": {
+          "ACTIVE_ALARMS_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "AC_CURRENT_OUT_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_FREQUENCY_IN_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_VA_LIMIT_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_VA_OUT_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_VOLTAGE_IN_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_VOLTAGE_OUT_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AC_WATTS_IN_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "AMBIENT_TEMPERATURE_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "BATTERY_CURRENT_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "BATTERY_VOLTAGE_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "BEEPER_STATE_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "BROWNOUT_DURATION_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "BROWNOUT_THRESHOLD_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "CHARGER_STATE_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "EXTENDED_BROWNOUT_MODE_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "HEAT_SINK_TEMPERATURE_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "INVERTER_STATE_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "INV_MIN_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "LINE_FAULT_DURATION_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "LOAD_PERCENTAGE_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "MOST_RECENT_BROWNOUT_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "MOST_RECENT_LINE_FAULT_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "MOST_RECENT_TURN_ON_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "NUMBER_OF_OVERLOADS_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "NUMBER_OF_POWER_OUTAGES_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "RUN_TIME_AVAILABLE_F": {
+            "size": "1",
+            "smax_type": "float"
+          },
+          "SOFTWARE_VERSION_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "SYSTEM_HOURS_L": {
+            "size": "1",
+            "smax_type": "int32"
+          },
+          "SYSTEM_MODE_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "SYSTEM_READY_S": {
+            "size": "1",
+            "smax_type": "int16"
+          },
+          "TRANSFORMER_TEMPERATURE_F": {
+            "size": "1",
+            "smax_type": "float"
           }
         },
         "SWARM_FIXED_OFFSETS_X": {
@@ -214,1626 +379,6 @@
             "smax_type": "float64",
             "unit": "s"
           }
-        }
-      }
-    },
-    "acc1": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc2": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc3": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc4": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc5": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc6": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc7": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc8": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      }
-    },
-    "acc9": {
-      "CPU_MAC_ADDRESS_V8_B": {
-        "size": "8",
-        "smax_type": "int8"
-      },
-      "DSM_ESTOP_BYPASS_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_ESTOP_COMMAND_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_OPEN_THE_CRYOSTAT_VALVE_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RECEIVER_DELAY_V2_F": {
-        "size": "2",
-        "smax_type": "float"
-      },
-      "DSM_RESET_THE_CHOPPER_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_RESET_THE_SCB_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "DSM_TUNE6_USERNAME_C20": {
-        "size": "1",
-        "smax_type": "string"
-      },
-      "DSM_TURN_ON_THE_TURBOPUMP_S": {
-        "size": "1",
-        "smax_type": "int16"
-      },
-      "SMAINIT_REPORT_X": {
-        "PRG_NAMES_V24_C24": {
-          "size": "24",
-          "smax_type": "string",
-          "description": "Program names (24 entries)"
-        },
-        "PRG_STATUS_V24_V6_L": {
-          "size": "144",
-          "smax_type": "int32",
-          "description": "Program status array (24x6)"
-        }
-      },
-      "UPS_DATA_X": {
-        "ACTIVE_ALARMS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "AC_CURRENT_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_FREQUENCY_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_LIMIT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VA_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_VOLTAGE_OUT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AC_WATTS_IN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "AMBIENT_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_CURRENT_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BATTERY_VOLTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "BEEPER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "BROWNOUT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "BROWNOUT_THRESHOLD_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "CHARGER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "EXTENDED_BROWNOUT_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "HEAT_SINK_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "INVERTER_STATE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "INV_MIN_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "LINE_FAULT_DURATION_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "LOAD_PERCENTAGE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MOST_RECENT_BROWNOUT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_LINE_FAULT_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "MOST_RECENT_TURN_ON_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "NUMBER_OF_OVERLOADS_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "NUMBER_OF_POWER_OUTAGES_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "RUN_TIME_AVAILABLE_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SOFTWARE_VERSION_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_HOURS_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "SYSTEM_MODE_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "SYSTEM_READY_S": {
-          "size": "1",
-          "smax_type": "int16"
-        },
-        "TRANSFORMER_TEMPERATURE_F": {
-          "size": "1",
-          "smax_type": "float"
         }
       }
     },
@@ -5305,7 +3850,8 @@
           "smax_type": "int32"
         }
       }
-    }
+    },
+    "description": "Digital Signal Manager - SWARM correlator board data"
   },
   "RM": {
     "__each__": {
@@ -8322,224 +6868,234 @@
             "template": {
               "scanspec": {
                 "cal_channel_adc": {
-                  "1": {},
-                  "description": "The axis description for `cal`\\_`channel_adc` array",
-                  "size": "\\<*n*\\>",
-                  "smax_type": "int16"
+                  "1": {}
                 },
                 "channel_adc": {
-                  "1": {},
-                  "description": "Array of raw power measurements, with \\<*n*\\> elements. See coordinate system description in [\\<coords\\>:antenna:1:if:1:channel\\_adc](#\\<coords\\>:antenna:1:if:1:channel_adc)",
-                  "size": "\\<*n*\\>",
-                  "smax_type": "int16"
+                  "1": {}
                 },
                 "tsys": {
-                  "1": {},
-                  "description": "The axis description for `tsys` array",
-                  "size": "\\<*n*\\>",
-                  "smax_type": "float"
-                },
-                "cal_duration": {
-                  "description": "The duration of the calibrating ambient measurement in seconds.",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "description": "Scanning spectrometer data",
-                "gain": {
-                  "description": "The voltage to the variable gain amplifier \\[-4,2\\] non-linear.  2 is the highest gain",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "integration_time": {
-                  "description": "Scan duration in seconds",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "s"
-                },
-                "is_tsys_valid": {
-                  "description": "1 if the Tsys data is valid, or else 0",
-                  "size": "1",
-                  "smax_type": "boolean"
-                },
-                "name": {
-                  "description": "E.g. \u201cIF frequency\u201d",
-                  "size": "1",
-                  "smax_type": "string"
-                },
-                "ref_index": {
-                  "description": "0-based index of element, for which we\u2019ll define a reference coordinate value",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "ref_value": {
-                  "description": "Value (in the defined axis `unit`).",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "scene": {
-                  "description": "\u201cAmbient\u201d, \u201cSky\u201d, or \u201cunknown\u201d (we may add allowed values as necessary)",
-                  "size": "1",
-                  "smax_type": "string"
-                },
-                "step": {
-                  "description": "The spacing of measurements in consecutive array bins in the defined `unit`.",
-                  "size": "1",
-                  "smax_type": "float"
-                },
-                "unit": {
-                  "description": "E.g. \u201cHz\u201d",
-                  "size": "1",
-                  "smax_type": "string"
+                  "1": {}
                 }
-              },
-              "bdc": {
-                "1": {
-                  "attenuator": {
-                    "description": "attenuator",
-                    "v_det": {
-                      "description": "actual detector voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_out": {
-                      "description": "Nominal control voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_readback": {
-                      "description": "Readback control voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_target": {
-                      "description": "Detector target voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    }
-                  },
-                  "f_hi": {
-                    "description": "High-end of IF bandwidth for this BDC",
+              }
+            }
+          },
+          "1": {
+            "bdc": {
+              "1": {
+                "attenuator": {
+                  "description": "attenuator",
+                  "v_det": {
+                    "description": "actual detector voltage",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "Hz"
+                    "unit": "V"
                   },
-                  "f_lo": {
-                    "description": "Low-end of IF bandwidth for this BDC",
+                  "v_out": {
+                    "description": "Nominal control voltage",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "Hz"
+                    "unit": "V"
                   },
-                  "id": {
-                    "description": "ID, e.g. \u201c4-8\u201d",
+                  "v_readback": {
+                    "description": "Readback control voltage",
                     "size": "1",
-                    "smax_type": "string"
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_target": {
+                    "description": "Detector target voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
                   }
                 },
-                "1\u20268": {
-                  "description": "Data on individual BDC units"
+                "f_hi": {
+                  "description": "High-end of IF bandwidth for this BDC",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "Hz"
                 },
-                "description": "Block downconverters for this antenna IF chain"
+                "f_lo": {
+                  "description": "Low-end of IF bandwidth for this BDC",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "Hz"
+                },
+                "id": {
+                  "description": "ID, e.g. \u201c4-8\u201d",
+                  "size": "1",
+                  "smax_type": "string"
+                }
               },
-              "c1dc": {
-                "1": {
-                  "attenuator": {
-                    "description": "attenuator",
-                    "rms_det": {
-                      "description": "RMS detector voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_det": {
-                      "description": "actual detector voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_out": {
-                      "description": "Nominal control voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_readback": {
-                      "description": "Readback control voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    },
-                    "v_target": {
-                      "description": "Detector target voltage",
-                      "size": "1",
-                      "smax_type": "float",
-                      "unit": "V"
-                    }
-                  },
-                  "if_hi": {
-                    "description": "High-end of IF bandwidth for this BDC",
+              "1\u20268": {
+                "description": "Data on individual BDC units"
+              },
+              "description": "Block downconverters for this antenna IF chain"
+            },
+            "c1dc": {
+              "1": {
+                "attenuator": {
+                  "description": "attenuator",
+                  "rms_det": {
+                    "description": "RMS detector voltage",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "Hz"
+                    "unit": "V"
                   },
-                  "if_lo": {
-                    "description": "Low-end of IF bandwidth for this BDC",
+                  "v_det": {
+                    "description": "actual detector voltage",
                     "size": "1",
                     "smax_type": "float",
-                    "unit": "Hz"
+                    "unit": "V"
+                  },
+                  "v_out": {
+                    "description": "Nominal control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_readback": {
+                    "description": "Readback control voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
+                  },
+                  "v_target": {
+                    "description": "Detector target voltage",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "V"
                   }
                 },
-                "description": "First downconverter"
-              },
-              "cabinspec": {},
-              "contdet": {
-                "description": "Continuum detector data",
-                "power": {
-                  "description": "A sequence of the most recent 10ms samples",
-                  "size": "100",
+                "if_hi": {
+                  "description": "High-end of IF bandwidth for this BDC",
+                  "size": "1",
                   "smax_type": "float",
-                  "unit": "W"
+                  "unit": "Hz"
+                },
+                "if_lo": {
+                  "description": "Low-end of IF bandwidth for this BDC",
+                  "size": "1",
+                  "smax_type": "float",
+                  "unit": "Hz"
                 }
               },
-              "processor": {
-                "atten": {
-                  "description": "Current actual RF attenuation",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "dBc"
-                },
-                "atten_control": {
-                  "description": "Requested RF attenuation (0-31.5 dB in 0.5 dB increments)",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "dBc"
-                },
-                "description": "IF processor data",
-                "input": {
-                  "description": "Current IF input port index (1-4)",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "input_control": {
-                  "description": "Requested IF input port index (1-4)",
-                  "size": "1",
-                  "smax_type": "int"
-                },
-                "power": {
-                  "description": "Current power level",
-                  "size": "1",
-                  "smax_type": "float",
-                  "unit": "dBm"
-                }
+              "description": "First downconverter"
+            },
+            "cabinspec": {},
+            "contdet": {
+              "description": "Continuum detector data",
+              "power": {
+                "description": "A sequence of the most recent 10ms samples",
+                "size": "100",
+                "smax_type": "float",
+                "unit": "W"
+              }
+            },
+            "processor": {
+              "atten": {
+                "description": "Current actual RF attenuation",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBc"
               },
-              "source": {
-                "description": "\u2019receiver:a\u2019 or \u2018receiver:b\u2019 if RxA / RxB,  or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
+              "atten_control": {
+                "description": "Requested RF attenuation (0-31.5 dB in 0.5 dB increments)",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBc"
+              },
+              "description": "IF processor data",
+              "input": {
+                "description": "Current IF input port index (1-4)",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "input_control": {
+                "description": "Requested IF input port index (1-4)",
+                "size": "1",
+                "smax_type": "int"
+              },
+              "power": {
+                "description": "Current power level",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "dBm"
+              }
+            },
+            "scanspec": {
+              "cal_channel_adc": {
+                "description": "The axis description for `cal`\\_`channel_adc` array",
+                "size": "\\<*n*\\>",
+                "smax_type": "int16"
+              },
+              "cal_duration": {
+                "description": "The duration of the calibrating ambient measurement in seconds.",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "channel_adc": {
+                "description": "Array of raw power measurements, with \\<*n*\\> elements. See coordinate system description in [\\<coords\\>:antenna:1:if:1:channel\\_adc](#\\<coords\\>:antenna:1:if:1:channel_adc)",
+                "size": "\\<*n*\\>",
+                "smax_type": "int16"
+              },
+              "description": "Scanning spectrometer data",
+              "gain": {
+                "description": "The voltage to the variable gain amplifier \\[-4,2\\] non-linear.  2 is the highest gain",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "integration_time": {
+                "description": "Scan duration in seconds",
+                "size": "1",
+                "smax_type": "float",
+                "unit": "s"
+              },
+              "is_tsys_valid": {
+                "description": "1 if the Tsys data is valid, or else 0",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "name": {
+                "description": "E.g. \u201cIF frequency\u201d",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "ref_index": {
+                "description": "0-based index of element, for which we\u2019ll define a reference coordinate value",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "ref_value": {
+                "description": "Value (in the defined axis `unit`).",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "scene": {
+                "description": "\u201cAmbient\u201d, \u201cSky\u201d, or \u201cunknown\u201d (we may add allowed values as necessary)",
+                "size": "1",
+                "smax_type": "string"
+              },
+              "step": {
+                "description": "The spacing of measurements in consecutive array bins in the defined `unit`.",
+                "size": "1",
+                "smax_type": "float"
+              },
+              "tsys": {
+                "description": "The axis description for `tsys` array",
+                "size": "\\<*n*\\>",
+                "smax_type": "float"
+              },
+              "unit": {
+                "description": "E.g. \u201cHz\u201d",
                 "size": "1",
                 "smax_type": "string"
               }
+            },
+            "source": {
+              "description": "\u2019receiver:a\u2019 or \u2018receiver:b\u2019 if RxA / RxB,  or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
+              "size": "1",
+              "smax_type": "string"
             }
           },
           "description": "IF chains"
@@ -10489,110 +9045,120 @@
                         "cgains": {
                           "size": "16384",
                           "smax_type": "int16"
-                        },
-                        "attenuation": {
-                          "description": "Input attenuation, or 0 if not attenuated",
-                          "size": "1",
-                          "smax_type": "float",
-                          "unit": "dB"
-                        },
-                        "source": {
-                          "description": "\u201cantenna:1:if:1`\u201d` or \u201cantenna1:if:2\u201d, or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
-                          "size": "1",
-                          "smax_type": "string"
                         }
                       }
                     }
-                  },
-                  "cgains": {
-                    "description": "Channel gains",
-                    "size": "16384",
-                    "smax_type": "int16"
                   }
                 }
+              }
+            }
+          }
+        },
+        "1": {
+          "antenna": {
+            "1": {
+              "cgains": {
+                "description": "Channel gains",
+                "size": "16384",
+                "smax_type": "int16"
               },
-              "description": "Antenna-specific correlator unit\u2019s for this band."
+              "input": {
+                "1": {
+                  "attenuation": {
+                    "description": "Input attenuation, or 0 if not attenuated",
+                    "size": "1",
+                    "smax_type": "float",
+                    "unit": "dB"
+                  },
+                  "source": {
+                    "description": "\u201cantenna:1:if:1`\u201d` or \u201cantenna1:if:2\u201d, or \u201cnoise:1\u201d if connected to noise box 1, or \u201cnoise:2\u201d, or \u201cnone\u201d, or \u201cunknown\u201d",
+                    "size": "1",
+                    "smax_type": "string"
+                  }
+                }
+              }
             },
-            "frequency_offset": {
-              "description": "IF frequency offset for the given band",
-              "size": "1",
-              "smax_type": "float64",
-              "unit": "Hz"
+            "description": "Antenna-specific correlator unit\u2019s for this band."
+          },
+          "frequency_offset": {
+            "description": "IF frequency offset for the given band",
+            "size": "1",
+            "smax_type": "float64",
+            "unit": "Hz"
+          },
+          "preview": {
+            "a1-a2": {
+              "amps": {
+                "description": "amplitudes",
+                "size": "(256)",
+                "smax_type": "float",
+                "unit": "arb.u"
+              },
+              "is_valid": {
+                "description": "1 if the product is valid, or else 0",
+                "size": "1",
+                "smax_type": "boolean"
+              },
+              "phases": {
+                "description": "phases",
+                "size": "(256)",
+                "smax_type": "float",
+                "unit": "rad"
+              },
+              "resolution": {
+                "description": "Spectral binning (e.g. 64\\)",
+                "size": "1",
+                "smax_type": "int16"
+              },
+              "spikes": {
+                "description": "Number of spikes in spectrum",
+                "size": "1",
+                "smax_type": "int32"
+              }
             },
-            "preview": {
-              "a1-a2": {
-                "amps": {
-                  "description": "amplitudes",
-                  "size": "(256)",
-                  "smax_type": "float",
+            "description": "Spectral previews for all baselines and products"
+          },
+          "stats": {
+            "a1-a2": {
+              "1x1": {
+                "ave_amp": {
+                  "description": "pseudo continuum amplitude",
+                  "size": "1",
+                  "smax_type": "float32+",
                   "unit": "arb.u"
                 },
+                "ave_phase": {
+                  "description": "pseudo continuum phase",
+                  "size": "1",
+                  "smax_type": "float32+",
+                  "unit": "rad"
+                },
                 "is_valid": {
-                  "description": "1 if the product is valid, or else 0",
+                  "description": "1 if the data is valid, or else 0",
                   "size": "1",
                   "smax_type": "boolean"
                 },
-                "phases": {
-                  "description": "phases",
-                  "size": "(256)",
-                  "smax_type": "float",
-                  "unit": "rad"
-                },
-                "resolution": {
-                  "description": "Spectral binning (e.g. 64\\)",
+                "max": {
+                  "description": "maximum amplitude in spectral band",
                   "size": "1",
-                  "smax_type": "int16"
+                  "smax_type": "float32+",
+                  "unit": "arb.u"
                 },
-                "spikes": {
-                  "description": "Number of spikes in spectrum",
+                "rms": {
+                  "description": "rms amplitude in spectral band",
                   "size": "1",
-                  "smax_type": "int32"
+                  "smax_type": "float32+",
+                  "unit": "arb.u"
                 }
               },
-              "description": "Spectral previews for all baselines and products"
+              "1x1, 1x2, 2x1, 2x2": {
+                "description": "Segment continuum levels for each baseline product"
+              }
             },
-            "stats": {
-              "a1-a2": {
-                "1x1": {
-                  "ave_amp": {
-                    "description": "pseudo continuum amplitude",
-                    "size": "1",
-                    "smax_type": "float32+",
-                    "unit": "arb.u"
-                  },
-                  "ave_phase": {
-                    "description": "pseudo continuum phase",
-                    "size": "1",
-                    "smax_type": "float32+",
-                    "unit": "rad"
-                  },
-                  "is_valid": {
-                    "description": "1 if the data is valid, or else 0",
-                    "size": "1",
-                    "smax_type": "boolean"
-                  },
-                  "max": {
-                    "description": "maximum amplitude in spectral band",
-                    "size": "1",
-                    "smax_type": "float32+",
-                    "unit": "arb.u"
-                  },
-                  "rms": {
-                    "description": "rms amplitude in spectral band",
-                    "size": "1",
-                    "smax_type": "float32+",
-                    "unit": "arb.u"
-                  }
-                },
-                "1x1, 1x2, 2x1, 2x2": {
-                  "description": "Segment continuum levels for each baseline product"
-                }
-              },
-              "a1-a2 \u2026 a7-a8": {
-                "description": "Segment pseudo continuum for each individual baseline"
-              },
-              "description": "Segment statistics for all baselines and products"
-            }
+            "a1-a2 \u2026 a7-a8": {
+              "description": "Segment pseudo continuum for each individual baseline"
+            },
+            "description": "Segment statistics for all baselines and products"
           }
         }
       },
