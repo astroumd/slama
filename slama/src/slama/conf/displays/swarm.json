@@ -12,11 +12,11 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "Ambient (C) (DSM)",   "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_AMBIENT"},
-        {"label": "Inlet (C) (DSM)",     "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_INLET"},
-        {"label": "Outlet (C) (DSM)",    "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_OUTLET"},
-        {"label": "PowerPC (C) (DSM)",   "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_PPC"},
-        {"label": "FPGA (C) (DSM)",      "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_FPGA"},
+        {"label": "Ambient (C) (DSM)",   "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:AMBIENT_TEMP_V8_F"},
+        {"label": "Inlet (C) (DSM)",     "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:INLET_TEMP_V8_F"},
+        {"label": "Outlet (C) (DSM)",    "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:OUTLET_TEMP_V8_F"},
+        {"label": "PowerPC (C) (DSM)",   "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:PPC_TEMP_V8_F"},
+        {"label": "FPGA (C) (DSM)",      "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:FPGA_TEMP_V8_F"},
         {"label": "Temp age (DSM)",      "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_AGE"}
       ]
     },

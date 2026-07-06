@@ -42,7 +42,7 @@
       "type": "cells",
       "title": "Drive Fault State (DSM — placeholder)",
       "cells": [
-        {"label": "DSM ESTOP (unavailable)", "point": "dsm:placeholder:DSM_ESTOP_COMMAND_S"}
+        {"label": "DSM ESTOP (unavailable)", "point": "DSM:acc{ant}:DSM_ESTOP_COMMAND_S"}
       ]
     }
   ]

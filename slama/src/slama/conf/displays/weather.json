@@ -19,14 +19,14 @@
       "type": "cells",
       "title": "Multi-Site Weather (DSM — placeholders)",
       "cells": [
-        {"label": "JCMT Temp (C) (DSM)",      "point": "dsm:placeholder:DSM_JCMT_TEMP"},
-        {"label": "JCMT Humidity % (DSM)",    "point": "dsm:placeholder:DSM_JCMT_HUMIDITY"},
-        {"label": "JCMT Wind (mph) (DSM)",    "point": "dsm:placeholder:DSM_JCMT_WINDSPEED"},
-        {"label": "Subaru Temp (C) (DSM)",    "point": "dsm:placeholder:DSM_SUBARU_TEMP"},
-        {"label": "Subaru Humidity % (DSM)",  "point": "dsm:placeholder:DSM_SUBARU_HUMIDITY"},
-        {"label": "UKIRT Temp (C) (DSM)",     "point": "dsm:placeholder:DSM_UKIRT_TEMP"},
-        {"label": "Tau225 GFS (DSM)",         "point": "dsm:placeholder:DSM_TAU225_GFS"},
-        {"label": "Tau350 (DSM)",             "point": "dsm:placeholder:DSM_TAU350"}
+        {"label": "JCMT Temp (C) (DSM)",      "point": "DSM:colossus:JCMT_METEOROLOGY_X:TEMP_F"},
+        {"label": "JCMT Humidity % (DSM)",    "point": "DSM:colossus:JCMT_METEOROLOGY_X:HUMIDITY_F"},
+        {"label": "JCMT Wind (mph) (DSM)",    "point": "DSM:colossus:JCMT_METEOROLOGY_X:WINDSPEED_F"},
+        {"label": "Subaru Temp (C) (DSM)",    "point": "DSM:colossus:SUBARU_METEOROLOGY_X:TEMP_F"},
+        {"label": "Subaru Humidity % (DSM)",  "point": "DSM:colossus:SUBARU_METEOROLOGY_X:HUMIDITY_F"},
+        {"label": "UKIRT Temp (C) (DSM)",     "point": "DSM:colossus:UKIRT_METEOROLOGY_X:TEMP_F"},
+        {"label": "Tau225 GFS (DSM)",         "point": "weather:forecast:gfs:tau225"},
+        {"label": "Tau350 (DSM)",             "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
     },
     {

@@ -9,16 +9,16 @@
       "cells": [
         {"label": "GPS8 lock (DSM)",        "point": "dsm:placeholder:DSM_GPS8_LOCK_STATUS"},
         {"label": "TrueTime lock (DSM)",    "point": "dsm:placeholder:DSM_TRUETIME_LOCK_STATUS"},
-        {"label": "Avg Phase (ns) (DSM)",   "point": "dsm:placeholder:DSM_GPS_AVG_PHASE_NS"},
-        {"label": "Freq ctl (DSM)",         "point": "dsm:placeholder:DSM_GPS_FREQ_CTL"},
-        {"label": "Next leap sec (DSM)",    "point": "dsm:placeholder:DSM_GPS_NEXT_LEAP"},
-        {"label": "GPS8 Lat (deg) (DSM)",   "point": "dsm:placeholder:DSM_GPS8_LAT_DEG"},
-        {"label": "GPS8 Lon (deg) (DSM)",   "point": "dsm:placeholder:DSM_GPS8_LON_DEG"},
-        {"label": "GPS8 Alt (ft) (DSM)",    "point": "dsm:placeholder:DSM_GPS8_ALT_FT"},
-        {"label": "DOP (DSM)",              "point": "dsm:placeholder:DSM_GPS8_DOP"},
-        {"label": "GPS-UTC offset (s) (DSM)","point": "dsm:placeholder:DSM_GPS_UTC_OFFSET"},
-        {"label": "Num sats (DSM)",         "point": "dsm:placeholder:DSM_GPS_NUM_SATS"},
-        {"label": "Bad messages (DSM)",     "point": "dsm:placeholder:DSM_GPS_BAD_MSG_COUNT"}
+        {"label": "Avg Phase (ns) (DSM)",   "point": "DSM:colossus:GPSD_REPORT_X:GPS8_AVG_PHASE_F"},
+        {"label": "Freq ctl (DSM)",         "point": "DSM:colossus:GPSD_REPORT_X:GPS8_FREQ_CTLR_VALUE_F"},
+        {"label": "Next leap sec (DSM)",    "point": "DSM:colossus:GPSD_REPORT_X:GPS8_NEXT_LEAP_SECOND_L"},
+        {"label": "GPS8 Lat (deg) (DSM)",   "point": "DSM:colossus:GPSD_REPORT_X:GPS8_LAT_D"},
+        {"label": "GPS8 Lon (deg) (DSM)",   "point": "DSM:colossus:GPSD_REPORT_X:GPS8_LON_D"},
+        {"label": "GPS8 Alt (ft) (DSM)",    "point": "DSM:colossus:GPSD_REPORT_X:GPS8_ALT_F"},
+        {"label": "DOP (DSM)",              "point": "DSM:colossus:GPSD_REPORT_X:GPS8_DOP_F"},
+        {"label": "GPS-UTC offset (s) (DSM)","point": "DSM:colossus:GPSD_REPORT_X:GPS8_GPS_MINUS_UTC_B"},
+        {"label": "Num sats (DSM)",         "point": "DSM:colossus:GPSD_REPORT_X:TT_NUM_SATS_S"},
+        {"label": "Bad messages (DSM)",     "point": "DSM:colossus:GPSD_REPORT_X:GPS8_BAD_MSGS_B"}
       ]
     }
   ]

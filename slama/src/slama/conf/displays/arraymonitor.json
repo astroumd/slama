@@ -7,15 +7,15 @@
       "type": "cells",
       "title": "Project / Observation (DSM — placeholders)",
       "cells": [
-        {"label": "Project ID (DSM)",    "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
-        {"label": "Observer (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
-        {"label": "Location (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
-        {"label": "Scans remain (DSM)",  "point": "dsm:placeholder:DSM_SCANS_REMAINING"},
+        {"label": "Project ID (DSM)",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L"},
+        {"label": "Observer (DSM)",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Location (DSM)",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
+        {"label": "Scans remain (DSM)",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L"},
         {"label": "FullPol (DSM)",       "point": "dsm:placeholder:DSM_FULLPOL_STATUS"},
         {"label": "SWARM status (DSM)",  "point": "dsm:placeholder:DSM_SWARM_STATUS"},
         {"label": "DUT (DSM)",           "point": "dsm:placeholder:DSM_DUT"},
         {"label": "Tau225 (DSM)",        "point": "dsm:placeholder:DSM_TAU225"},
-        {"label": "Tau350 (DSM)",        "point": "dsm:placeholder:DSM_TAU350"}
+        {"label": "Tau350 (DSM)",        "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
     },
     {

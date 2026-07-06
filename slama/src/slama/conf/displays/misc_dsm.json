@@ -54,8 +54,8 @@
       "title": "YIG Frequencies (DSM — placeholders)",
       "cells": [
         {"label": "YIG freq (GHz) (DSM)",    "point": "dsm:placeholder:DSM_YIG_FREQ_GHZ"},
-        {"label": "YIG lock status (DSM)",   "point": "dsm:placeholder:DSM_YIG_LOCK_STATUS"},
-        {"label": "YIG tune word (DSM)",     "point": "dsm:placeholder:DSM_YIG_TUNE_WORD"}
+        {"label": "YIG lock status (DSM)",   "point": "reference:mrg:1:yig:is_locked"},
+        {"label": "YIG tune word (DSM)",     "point": "reference:mrg:1:yig:v_tune"}
       ]
     },
     {

@@ -83,7 +83,7 @@
       "type": "cells",
       "title": "Nightly Pointing Model (DSM — placeholders)",
       "cells": [
-        {"label": "Last C-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_CPOINT_V11_L"},
+        {"label": "Last C-point (DSM)",       "point": "DSM:hal9000:DSM_HAL_HAL_LAST_CPOINT_V11_L"},
         {"label": "Last I-point (DSM)",       "point": "dsm:placeholder:DSM_HAL_HAL_LAST_IPOINT_V11_L"},
         {"label": "Nightly pointing (DSM)",   "point": "dsm:placeholder:DSM_HAL_HAL_NIGHTLY_POINTING_S"}
       ]

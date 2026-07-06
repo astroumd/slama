@@ -35,8 +35,8 @@
       "type": "cells",
       "title": "Site Weather (DSM — placeholder)",
       "cells": [
-        {"label": "SMA temp (DSM)",     "point": "dsm:placeholder:DSM_SMA_TEMP_F"},
-        {"label": "SMA humidity (DSM)", "point": "dsm:placeholder:DSM_SMA_HUMIDITY_F"}
+        {"label": "SMA temp (DSM)",     "point": "DSM:colossus:SMA_METEOROLOGY_X:TEMP_F"},
+        {"label": "SMA humidity (DSM)", "point": "DSM:colossus:SMA_METEOROLOGY_X:HUMIDITY_F"}
       ]
     }
   ]

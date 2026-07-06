@@ -34,13 +34,13 @@
       "type": "cells",
       "title": "Vault Voltages (DSM — placeholders)",
       "cells": [
-        {"label": "+5V (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_VAULT_5V"},
-        {"label": "+12V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_12V"},
-        {"label": "+25V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_25V"},
-        {"label": "-15V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_M15V"},
-        {"label": "+15Va (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VA"},
-        {"label": "+15Vb (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VB"},
-        {"label": "SynthLock (DSM)", "point": "dsm:placeholder:DSM_PHASEMON_SYNTH_LOCK"}
+        {"label": "+5V (DSM)",    "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_5V_RACK_F"},
+        {"label": "+12V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_12V_RACK_F"},
+        {"label": "+25V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_25V_RACK_F"},
+        {"label": "-15V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:NEG_15V_RACK_F"},
+        {"label": "+15Va (DSM)",  "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VA_RACK_F"},
+        {"label": "+15Vb (DSM)",  "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VB_RACK_F"},
+        {"label": "SynthLock (DSM)", "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:SYNTH_LOCK_B"}
       ]
     }
   ]

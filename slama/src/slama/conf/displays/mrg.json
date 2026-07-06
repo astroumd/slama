@@ -7,9 +7,9 @@
       "type": "cells",
       "title": "MRG Status (DSM — placeholders)",
       "cells": [
-        {"label": "Lock status (DSM)",     "point": "dsm:placeholder:DSM_MRG_LOCK_STATUS"},
+        {"label": "Lock status (DSM)",     "point": "reference:mrg:1:yig:is_locked"},
         {"label": "Freq (GHz) (DSM)",      "point": "dsm:placeholder:DSM_MRG_FREQ_GHZ"},
-        {"label": "Tune word (DSM)",       "point": "dsm:placeholder:DSM_MRG_TUNE_WORD"},
+        {"label": "Tune word (DSM)",       "point": "reference:mrg:1:yig:v_tune"},
         {"label": "Phase err (DSM)",       "point": "dsm:placeholder:DSM_MRG_PHASE_ERROR"},
         {"label": "Power (dBm) (DSM)",     "point": "dsm:placeholder:DSM_MRG_POWER_DBM"},
         {"label": "Last update (DSM)",     "point": "dsm:placeholder:DSM_MRG_TIMESTAMP"}

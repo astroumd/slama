@@ -12,12 +12,12 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "AC Input (V) (DSM)",    "points": "dsm:placeholder:DSM_ANT{ant}_UPS_AC_INPUT_V"},
-        {"label": "Frequency (Hz) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_FREQ_HZ"},
-        {"label": "AC Output (V) (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_UPS_AC_OUTPUT_V"},
-        {"label": "Current (A) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_CURRENT_A"},
-        {"label": "Power (W) (DSM)",       "points": "dsm:placeholder:DSM_ANT{ant}_UPS_POWER_W"},
-        {"label": "App Power (VA) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_APPOWER_VA"}
+        {"label": "AC Input (V) (DSM)",    "points": "DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_IN_F"},
+        {"label": "Frequency (Hz) (DSM)",  "points": "DSM:acc{ant}:UPS_DATA_X:AC_FREQUENCY_IN_F"},
+        {"label": "AC Output (V) (DSM)",   "points": "DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_OUT_F"},
+        {"label": "Current (A) (DSM)",     "points": "DSM:acc{ant}:UPS_DATA_X:AC_CURRENT_OUT_F"},
+        {"label": "Power (W) (DSM)",       "points": "DSM:acc{ant}:UPS_DATA_X:AC_WATTS_IN_F"},
+        {"label": "App Power (VA) (DSM)",  "points": "DSM:acc{ant}:UPS_DATA_X:AC_VA_OUT_F"}
       ]
     },
     {
@@ -29,15 +29,15 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "Battery (V) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_BATT_V"},
-        {"label": "Batt I (A) (DSM)",      "points": "dsm:placeholder:DSM_ANT{ant}_UPS_BATT_I"},
-        {"label": "Load % (DSM)",          "points": "dsm:placeholder:DSM_ANT{ant}_UPS_LOAD_PCT"},
-        {"label": "Run time (min) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_UPS_RUNTIME"},
-        {"label": "Ambient (C) (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_UPS_TEMP_AMB"},
-        {"label": "HeatSink (C) (DSM)",    "points": "dsm:placeholder:DSM_ANT{ant}_UPS_TEMP_HSINK"},
-        {"label": "OverLoads (DSM)",       "points": "dsm:placeholder:DSM_ANT{ant}_UPS_OVERLOADS"},
-        {"label": "Power outs (DSM)",      "points": "dsm:placeholder:DSM_ANT{ant}_UPS_POWER_OUTS"},
-        {"label": "Active alarms (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_UPS_ALARMS"}
+        {"label": "Battery (V) (DSM)",     "points": "DSM:acc{ant}:UPS_DATA_X:BATTERY_VOLTAGE_F"},
+        {"label": "Batt I (A) (DSM)",      "points": "DSM:acc{ant}:UPS_DATA_X:BATTERY_CURRENT_F"},
+        {"label": "Load % (DSM)",          "points": "DSM:acc{ant}:UPS_DATA_X:LOAD_PERCENTAGE_F"},
+        {"label": "Run time (min) (DSM)",  "points": "DSM:acc{ant}:UPS_DATA_X:RUN_TIME_AVAILABLE_F"},
+        {"label": "Ambient (C) (DSM)",     "points": "DSM:acc{ant}:UPS_DATA_X:AMBIENT_TEMPERATURE_F"},
+        {"label": "HeatSink (C) (DSM)",    "points": "DSM:acc{ant}:UPS_DATA_X:HEAT_SINK_TEMPERATURE_F"},
+        {"label": "OverLoads (DSM)",       "points": "DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_OVERLOADS_S"},
+        {"label": "Power outs (DSM)",      "points": "DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_POWER_OUTAGES_S"},
+        {"label": "Active alarms (DSM)",   "points": "DSM:acc{ant}:UPS_DATA_X:ACTIVE_ALARMS_L"}
       ]
     }
   ]
