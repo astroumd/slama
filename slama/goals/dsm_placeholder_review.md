@@ -48,9 +48,9 @@ each line, then let Claude know which mappings to apply.
 
 ### Site Weather (DSM — placeholder)
 
-- [ ] `DSM_SMA_TEMP_F`  (SMA temp (DSM))
+- [x] `DSM_SMA_TEMP_F`  (SMA temp (DSM))
       → proposed: `DSM:colossus:SMA_METEOROLOGY_X:TEMP_F`   **[HIGH]**
-- [ ] `DSM_SMA_HUMIDITY_F`  (SMA humidity (DSM))
+- [x] `DSM_SMA_HUMIDITY_F`  (SMA humidity (DSM))
       → proposed: `DSM:colossus:SMA_METEOROLOGY_X:HUMIDITY_F`   **[HIGH]**
 
 ---
@@ -59,7 +59,7 @@ each line, then let Claude know which mappings to apply.
 
 ### Drive Fault State (DSM — placeholder)
 
-- [ ] `DSM_ESTOP_COMMAND_S`  (DSM ESTOP (unavailable))
+- [x] `DSM_ESTOP_COMMAND_S`  (DSM ESTOP (unavailable))
       → proposed: `DSM:acc{ant}:DSM_ESTOP_COMMAND_S`   **[HIGH]**
       note: Per-antenna computer field; needs {ant} template, not a single global point
 
@@ -69,14 +69,14 @@ each line, then let Claude know which mappings to apply.
 
 ### Project / Observation (DSM — placeholders)
 
-- [ ] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
+- [x] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_ID_L`   **[HIGH]**
       note: hal9000 = current control computer (oldhal is legacy backup with same field)
-- [ ] `DSM_AS_PROJECT_OBSERVER_C30`  (Observer (DSM))
+- [x] `DSM_AS_PROJECT_OBSERVER_C30`  (Observer (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_OPERATINGLOCATION_C256`  (Location (DSM))
+- [x] `DSM_AS_PROJECT_OPERATINGLOCATION_C256`  (Location (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256`   **[HIGH]**
-- [ ] `DSM_SCANS_REMAINING`  (Scans remain (DSM))
+- [x] `DSM_SCANS_REMAINING`  (Scans remain (DSM))
       → proposed: `DSM:hal9000:DSM_AS_SCANS_REMAINING_L`   **[HIGH]**
 - [ ] `DSM_FULLPOL_STATUS`  (FullPol (DSM))
       → **NO MATCH**
@@ -90,7 +90,7 @@ each line, then let Claude know which mappings to apply.
 - [ ] `DSM_TAU225`  (Tau225 (DSM))
       → proposed: `DSM:colossus:DSM_CSO_225GHZ_TAU_F`   **[MEDIUM]**
       note: Alternative: weather:forecast:cso:tau225 (forecast value) vs this raw CSO feed — pick which source is intended
-- [ ] `DSM_TAU350`  (Tau350 (DSM))
+- [x] `DSM_TAU350`  (Tau350 (DSM))
       → proposed: `DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F`   **[HIGH]**
 
 ---
@@ -198,7 +198,7 @@ each line, then let Claude know which mappings to apply.
 
 ### Antenna 5 Structural Temps (DSM — placeholder)
 
-- [ ] `DSM_ANTENNA5_TEMPS_X`  (Ant5 structural temps (DSM))
+- [x] `DSM_ANTENNA5_TEMPS_X`  (Ant5 structural temps (DSM))
       → proposed: `DSM:hal9000:DSM_ANTENNA5_TEMPS_X`   **[HIGH]**
       note: Branch node with several sub-fields (ANTENNA_SURFACE_MINMAX_TEMPS_V24_F, ANTENNA_THERMOMETERS_V20_F, QUADRUPOD_1-4_V24_F) — display should reference specific sub-field, not the branch itself
 
@@ -214,25 +214,25 @@ each line, then let Claude know which mappings to apply.
 - [ ] `DSM_TRUETIME_LOCK_STATUS`  (TrueTime lock (DSM))
       → proposed: `DSM:m5:MRG_STATUS_X:52MHZ_LOCK_S`   **[LOW]**
       note: No TrueTime-specific field found; MRG lock status is a loose proxy
-- [ ] `DSM_GPS_AVG_PHASE_NS`  (Avg Phase (ns) (DSM))
+- [x] `DSM_GPS_AVG_PHASE_NS`  (Avg Phase (ns) (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_AVG_PHASE_F`   **[HIGH]**
-- [ ] `DSM_GPS_FREQ_CTL`  (Freq ctl (DSM))
+- [x] `DSM_GPS_FREQ_CTL`  (Freq ctl (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_FREQ_CTLR_VALUE_F`   **[HIGH]**
-- [ ] `DSM_GPS_NEXT_LEAP`  (Next leap sec (DSM))
+- [x] `DSM_GPS_NEXT_LEAP`  (Next leap sec (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_NEXT_LEAP_SECOND_L`   **[HIGH]**
-- [ ] `DSM_GPS8_LAT_DEG`  (GPS8 Lat (deg) (DSM))
+- [x] `DSM_GPS8_LAT_DEG`  (GPS8 Lat (deg) (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_LAT_D`   **[HIGH]**
-- [ ] `DSM_GPS8_LON_DEG`  (GPS8 Lon (deg) (DSM))
+- [x] `DSM_GPS8_LON_DEG`  (GPS8 Lon (deg) (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_LON_D`   **[HIGH]**
-- [ ] `DSM_GPS8_ALT_FT`  (GPS8 Alt (ft) (DSM))
+- [x] `DSM_GPS8_ALT_FT`  (GPS8 Alt (ft) (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_ALT_F`   **[HIGH]**
-- [ ] `DSM_GPS8_DOP`  (DOP (DSM))
+- [x] `DSM_GPS8_DOP`  (DOP (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_DOP_F`   **[HIGH]**
-- [ ] `DSM_GPS_UTC_OFFSET`  (GPS-UTC offset (s) (DSM))
+- [x] `DSM_GPS_UTC_OFFSET`  (GPS-UTC offset (s) (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_GPS_MINUS_UTC_B`   **[HIGH]**
-- [ ] `DSM_GPS_NUM_SATS`  (Num sats (DSM))
+- [x] `DSM_GPS_NUM_SATS`  (Num sats (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:TT_NUM_SATS_S`   **[HIGH]**
-- [ ] `DSM_GPS_BAD_MSG_COUNT`  (Bad messages (DSM))
+- [x] `DSM_GPS_BAD_MSG_COUNT`  (Bad messages (DSM))
       → proposed: `DSM:colossus:GPSD_REPORT_X:GPS8_BAD_MSGS_B`   **[HIGH]**
 
 ---
@@ -241,16 +241,16 @@ each line, then let Claude know which mappings to apply.
 
 ### Current Project (DSM — placeholders)
 
-- [ ] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
+- [x] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_ID_L`   **[HIGH]**
       note: hal9000 = current control computer (oldhal is legacy backup with same field)
-- [ ] `DSM_AS_PROJECT_DESCRIPTION_C256`  (Description (DSM))
+- [x] `DSM_AS_PROJECT_DESCRIPTION_C256`  (Description (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_DESCRIPTION_C256`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_PI_C30`  (PI (DSM))
+- [x] `DSM_AS_PROJECT_PI_C30`  (PI (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_PI_C30`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_OBSERVER_C30`  (Observer (DSM))
+- [x] `DSM_AS_PROJECT_OBSERVER_C30`  (Observer (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30`   **[HIGH]**
-- [ ] `DSM_HANGAR_LIGHT_L`  (Hangar Light (DSM))
+- [x] `DSM_HANGAR_LIGHT_L`  (Hangar Light (DSM))
       → proposed: `DSM:colossus:DSM_HANGAR_LIGHT_L`   **[HIGH]**
 
 ---
@@ -280,10 +280,10 @@ each line, then let Claude know which mappings to apply.
 - [ ] `DSM_YIG_FREQ_GHZ`  (YIG freq (GHz) (DSM))
       → proposed: `reference:mrg:1:set_frequency`   **[MEDIUM]**
       note: Field is in Hz (int32), not GHz — needs unit conversion in display code
-- [ ] `DSM_YIG_LOCK_STATUS`  (YIG lock status (DSM))
+- [x] `DSM_YIG_LOCK_STATUS`  (YIG lock status (DSM))
       → proposed: `reference:mrg:1:yig:is_locked`   **[HIGH]**
       note: Validated existing smax.json entry (not new from Valkey); alternative per-antenna: antenna:{ant}:lo:1:yig:is_locked
-- [ ] `DSM_YIG_TUNE_WORD`  (YIG tune word (DSM))
+- [x] `DSM_YIG_TUNE_WORD`  (YIG tune word (DSM))
       → proposed: `reference:mrg:1:yig:v_tune`   **[HIGH]**
       note: "Tune word" = "tuning voltage" field; alternative per-antenna: antenna:{ant}:lo:1:yig:v_tune
 
@@ -302,13 +302,13 @@ each line, then let Claude know which mappings to apply.
 
 ### MRG Status (DSM — placeholders)
 
-- [ ] `DSM_MRG_LOCK_STATUS`  (Lock status (DSM))
+- [x] `DSM_MRG_LOCK_STATUS`  (Lock status (DSM))
       → proposed: `reference:mrg:1:yig:is_locked`   **[HIGH]**
       note: Validated existing smax.json entry
 - [ ] `DSM_MRG_FREQ_GHZ`  (Freq (GHz) (DSM))
       → proposed: `reference:mrg:1:set_frequency`   **[MEDIUM]**
       note: Field is in Hz (int32), not GHz — needs unit conversion (divide by 1e9)
-- [ ] `DSM_MRG_TUNE_WORD`  (Tune word (DSM))
+- [x] `DSM_MRG_TUNE_WORD`  (Tune word (DSM))
       → proposed: `reference:mrg:1:yig:v_tune`   **[HIGH]**
       note: "Tune word" = "tuning voltage"
 - [ ] `DSM_MRG_PHASE_ERROR`  (Phase err (DSM))
@@ -327,29 +327,29 @@ each line, then let Claude know which mappings to apply.
 
 ### Project Information (DSM — placeholders)
 
-- [ ] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
+- [x] `DSM_AS_PROJECT_ID_L`  (Project ID (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_ID_L`   **[HIGH]**
       note: hal9000 = current control computer (oldhal is legacy backup with same field)
-- [ ] `DSM_AS_PROJECT_DESCRIPTION_C256`  (Description (DSM))
+- [x] `DSM_AS_PROJECT_DESCRIPTION_C256`  (Description (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_DESCRIPTION_C256`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_PI_C30`  (P.I. (DSM))
+- [x] `DSM_AS_PROJECT_PI_C30`  (P.I. (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_PI_C30`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_OBSERVER_C30`  (Observers (DSM))
+- [x] `DSM_AS_PROJECT_OBSERVER_C30`  (Observers (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_OPERATINGLOCATION_C256`  (Operating from (DSM))
+- [x] `DSM_AS_PROJECT_OPERATINGLOCATION_C256`  (Operating from (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_COMMENT`  (Comment (DSM))
+- [x] `DSM_AS_PROJECT_COMMENT`  (Comment (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_COMMENT_C256`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_ANTENNAS`  (Antennas (DSM))
+- [x] `DSM_AS_PROJECT_ANTENNAS`  (Antennas (DSM))
       → proposed: `DSM:hal9000:DSM_HAL_HAL_PROJECT_ANTENNAS_V11_S`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_SCRIPT`  (Obs script (DSM))
+- [x] `DSM_AS_PROJECT_SCRIPT`  (Obs script (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_SCRIPT_FILENAME_C256`   **[HIGH]**
-- [ ] `DSM_AS_PROJECT_SCRIPT_PID`  (Script PID (DSM))
+- [x] `DSM_AS_PROJECT_SCRIPT_PID`  (Script PID (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_SCRIPT_PID_L`   **[HIGH]**
 - [ ] `DSM_AS_PROJECT_MIR_FILE`  (MIR file (DSM))
       → **NO MATCH**
       note: No MIR-file field found under hal9000/oldhal
-- [ ] `DSM_AS_PROJECT_START_TIME`  (Start time UTC (DSM))
+- [x] `DSM_AS_PROJECT_START_TIME`  (Start time UTC (DSM))
       → proposed: `DSM:hal9000:DSM_AS_PROJECT_STARTTIME_L`   **[HIGH]**
       note: NOTE: DSM_AS_PROJECT_ACTIVE_TIME (below) maps to the same field — likely a duplicate placeholder, pick one
 - [ ] `DSM_AS_PROJECT_ACTIVE_TIME`  (Active time (DSM))
@@ -362,7 +362,7 @@ each line, then let Claude know which mappings to apply.
 
 ### Nightly Pointing Model (DSM — placeholders)
 
-- [ ] `DSM_HAL_HAL_LAST_CPOINT_V11_L`  (Last C-point (DSM))
+- [x] `DSM_HAL_HAL_LAST_CPOINT_V11_L`  (Last C-point (DSM))
       → proposed: `DSM:hal9000:DSM_HAL_HAL_LAST_CPOINT_V11_L`   **[HIGH]**
 - [ ] `DSM_HAL_HAL_LAST_IPOINT_V11_L`  (Last I-point (DSM))
       → **NO MATCH**
@@ -407,21 +407,21 @@ each line, then let Claude know which mappings to apply.
 
 ### Vault Voltages (DSM — placeholders)
 
-- [ ] `DSM_PHASEMON_VAULT_5V`  (+5V (DSM))
+- [x] `DSM_PHASEMON_VAULT_5V`  (+5V (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_5V_RACK_F`   **[HIGH]**
       note: Also NEG_5V_RACK_F, NEG_5V_PAD_V5_F, POS_5VA/B_PAD_V5_F exist — pick correct rail
-- [ ] `DSM_PHASEMON_VAULT_12V`  (+12V (DSM))
+- [x] `DSM_PHASEMON_VAULT_12V`  (+12V (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_12V_RACK_F`   **[HIGH]**
       note: Also POS_12V_PAD_V5_F exists
-- [ ] `DSM_PHASEMON_VAULT_25V`  (+25V (DSM))
+- [x] `DSM_PHASEMON_VAULT_25V`  (+25V (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_25V_RACK_F`   **[HIGH]**
-- [ ] `DSM_PHASEMON_VAULT_M15V`  (-15V (DSM))
+- [x] `DSM_PHASEMON_VAULT_M15V`  (-15V (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:NEG_15V_RACK_F`   **[HIGH]**
-- [ ] `DSM_PHASEMON_VAULT_15VA`  (+15Va (DSM))
+- [x] `DSM_PHASEMON_VAULT_15VA`  (+15Va (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VA_RACK_F`   **[HIGH]**
-- [ ] `DSM_PHASEMON_VAULT_15VB`  (+15Vb (DSM))
+- [x] `DSM_PHASEMON_VAULT_15VB`  (+15Vb (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VB_RACK_F`   **[HIGH]**
-- [ ] `DSM_PHASEMON_SYNTH_LOCK`  (SynthLock (DSM))
+- [x] `DSM_PHASEMON_SYNTH_LOCK`  (SynthLock (DSM))
       → proposed: `DSM:phasemon:PHASEMON_HRDWR_STAT_X:SYNTH_LOCK_B`   **[HIGH]**
 
 ---
@@ -430,19 +430,19 @@ each line, then let Claude know which mappings to apply.
 
 ### ROACH2 Board Temperatures (C) (DSM — placeholders)
 
-- [ ] `DSM_ROACH{roach}_TEMP_AMBIENT`  (Ambient (C) (DSM))
+- [x] `DSM_ROACH{roach}_TEMP_AMBIENT`  (Ambient (C) (DSM))
       → proposed: `DSM:obscon:ROACH2_{roach}_TEMPS_X:AMBIENT_TEMP_V8_F`   **[HIGH]**
       note: Only ROACH2_1_TEMPS_X through ROACH2_6_TEMPS_X exist under obscon (6 boards), NOT all 48 — separate/duplicate from the DSM:roach2-01..58 __each__ hierarchy. Flag for Marc: which source is authoritative?
-- [ ] `DSM_ROACH{roach}_TEMP_INLET`  (Inlet (C) (DSM))
+- [x] `DSM_ROACH{roach}_TEMP_INLET`  (Inlet (C) (DSM))
       → proposed: `DSM:obscon:ROACH2_{roach}_TEMPS_X:INLET_TEMP_V8_F`   **[HIGH]**
       note: Same 6-board-only caveat as above
-- [ ] `DSM_ROACH{roach}_TEMP_OUTLET`  (Outlet (C) (DSM))
+- [x] `DSM_ROACH{roach}_TEMP_OUTLET`  (Outlet (C) (DSM))
       → proposed: `DSM:obscon:ROACH2_{roach}_TEMPS_X:OUTLET_TEMP_V8_F`   **[HIGH]**
       note: Same 6-board-only caveat as above
-- [ ] `DSM_ROACH{roach}_TEMP_PPC`  (PowerPC (C) (DSM))
+- [x] `DSM_ROACH{roach}_TEMP_PPC`  (PowerPC (C) (DSM))
       → proposed: `DSM:obscon:ROACH2_{roach}_TEMPS_X:PPC_TEMP_V8_F`   **[HIGH]**
       note: Same 6-board-only caveat as above
-- [ ] `DSM_ROACH{roach}_TEMP_FPGA`  (FPGA (C) (DSM))
+- [x] `DSM_ROACH{roach}_TEMP_FPGA`  (FPGA (C) (DSM))
       → proposed: `DSM:obscon:ROACH2_{roach}_TEMPS_X:FPGA_TEMP_V8_F`   **[HIGH]**
       note: Same 6-board-only caveat as above
 - [ ] `DSM_ROACH{roach}_TEMP_AGE`  (Temp age (DSM))
@@ -476,39 +476,39 @@ each line, then let Claude know which mappings to apply.
 
 ### UPS AC Input / Output (DSM — placeholders)
 
-- [ ] `DSM_ANT{ant}_UPS_AC_INPUT_V`  (AC Input (V) (DSM))
+- [x] `DSM_ANT{ant}_UPS_AC_INPUT_V`  (AC Input (V) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_IN_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_FREQ_HZ`  (Frequency (Hz) (DSM))
+- [x] `DSM_ANT{ant}_UPS_FREQ_HZ`  (Frequency (Hz) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_FREQUENCY_IN_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_AC_OUTPUT_V`  (AC Output (V) (DSM))
+- [x] `DSM_ANT{ant}_UPS_AC_OUTPUT_V`  (AC Output (V) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_OUT_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_CURRENT_A`  (Current (A) (DSM))
+- [x] `DSM_ANT{ant}_UPS_CURRENT_A`  (Current (A) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_CURRENT_OUT_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_POWER_W`  (Power (W) (DSM))
+- [x] `DSM_ANT{ant}_UPS_POWER_W`  (Power (W) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_WATTS_IN_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_APPOWER_VA`  (App Power (VA) (DSM))
+- [x] `DSM_ANT{ant}_UPS_APPOWER_VA`  (App Power (VA) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AC_VA_OUT_F`   **[HIGH]**
       note: Also AC_VA_LIMIT_F exists (a threshold, not a reading)
 
 ### UPS Battery and Thermal (DSM — placeholders)
 
-- [ ] `DSM_ANT{ant}_UPS_BATT_V`  (Battery (V) (DSM))
+- [x] `DSM_ANT{ant}_UPS_BATT_V`  (Battery (V) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:BATTERY_VOLTAGE_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_BATT_I`  (Batt I (A) (DSM))
+- [x] `DSM_ANT{ant}_UPS_BATT_I`  (Batt I (A) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:BATTERY_CURRENT_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_LOAD_PCT`  (Load % (DSM))
+- [x] `DSM_ANT{ant}_UPS_LOAD_PCT`  (Load % (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:LOAD_PERCENTAGE_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_RUNTIME`  (Run time (min) (DSM))
+- [x] `DSM_ANT{ant}_UPS_RUNTIME`  (Run time (min) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:RUN_TIME_AVAILABLE_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_TEMP_AMB`  (Ambient (C) (DSM))
+- [x] `DSM_ANT{ant}_UPS_TEMP_AMB`  (Ambient (C) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:AMBIENT_TEMPERATURE_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_TEMP_HSINK`  (HeatSink (C) (DSM))
+- [x] `DSM_ANT{ant}_UPS_TEMP_HSINK`  (HeatSink (C) (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:HEAT_SINK_TEMPERATURE_F`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_OVERLOADS`  (OverLoads (DSM))
+- [x] `DSM_ANT{ant}_UPS_OVERLOADS`  (OverLoads (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_OVERLOADS_S`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_POWER_OUTS`  (Power outs (DSM))
+- [x] `DSM_ANT{ant}_UPS_POWER_OUTS`  (Power outs (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_POWER_OUTAGES_S`   **[HIGH]**
-- [ ] `DSM_ANT{ant}_UPS_ALARMS`  (Active alarms (DSM))
+- [x] `DSM_ANT{ant}_UPS_ALARMS`  (Active alarms (DSM))
       → proposed: `DSM:acc{ant}:UPS_DATA_X:ACTIVE_ALARMS_L`   **[HIGH]**
 
 ---
@@ -517,22 +517,22 @@ each line, then let Claude know which mappings to apply.
 
 ### Multi-Site Weather (DSM — placeholders)
 
-- [ ] `DSM_JCMT_TEMP`  (JCMT Temp (C) (DSM))
+- [x] `DSM_JCMT_TEMP`  (JCMT Temp (C) (DSM))
       → proposed: `DSM:colossus:JCMT_METEOROLOGY_X:TEMP_F`   **[HIGH]**
-- [ ] `DSM_JCMT_HUMIDITY`  (JCMT Humidity % (DSM))
+- [x] `DSM_JCMT_HUMIDITY`  (JCMT Humidity % (DSM))
       → proposed: `DSM:colossus:JCMT_METEOROLOGY_X:HUMIDITY_F`   **[HIGH]**
-- [ ] `DSM_JCMT_WINDSPEED`  (JCMT Wind (mph) (DSM))
+- [x] `DSM_JCMT_WINDSPEED`  (JCMT Wind (mph) (DSM))
       → proposed: `DSM:colossus:JCMT_METEOROLOGY_X:WINDSPEED_F`   **[HIGH]**
-- [ ] `DSM_SUBARU_TEMP`  (Subaru Temp (C) (DSM))
+- [x] `DSM_SUBARU_TEMP`  (Subaru Temp (C) (DSM))
       → proposed: `DSM:colossus:SUBARU_METEOROLOGY_X:TEMP_F`   **[HIGH]**
-- [ ] `DSM_SUBARU_HUMIDITY`  (Subaru Humidity % (DSM))
+- [x] `DSM_SUBARU_HUMIDITY`  (Subaru Humidity % (DSM))
       → proposed: `DSM:colossus:SUBARU_METEOROLOGY_X:HUMIDITY_F`   **[HIGH]**
-- [ ] `DSM_UKIRT_TEMP`  (UKIRT Temp (C) (DSM))
+- [x] `DSM_UKIRT_TEMP`  (UKIRT Temp (C) (DSM))
       → proposed: `DSM:colossus:UKIRT_METEOROLOGY_X:TEMP_F`   **[HIGH]**
-- [ ] `DSM_TAU225_GFS`  (Tau225 GFS (DSM))
+- [x] `DSM_TAU225_GFS`  (Tau225 GFS (DSM))
       → proposed: `weather:forecast:gfs:tau225`   **[HIGH]**
       note: Already-validated existing smax.json entry (predates this merge)
-- [ ] `DSM_TAU350`  (Tau350 (DSM))
+- [x] `DSM_TAU350`  (Tau350 (DSM))
       → proposed: `DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F`   **[HIGH]**
 
 ### Per-Antenna Skydip Age and Tau (DSM — placeholders)
