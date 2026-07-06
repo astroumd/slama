@@ -13,7 +13,7 @@ from pathlib import Path
 
 import json
 from pathlib import Path
-path = Path("../conf/smax.json")
+path = Path("../slama/src/slama/conf/smax.json")
 mpdefs = json.load(open(path,"r"))
 monsys = MonitorSystem(path)
 topparent = "SMA Monitor System"
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(prog=progname)
     parser.add_argument("--brief", "-b", action="store_true", help="Brief display", default=False)
-    parser.add_argument("--file", "-f", action="store", help="Input file", default="../conf/smax.json", type=str)
+    parser.add_argument("--file", "-f", action="store", help="Input file", default="../slama/src/slama/conf/smax.json", type=str)
     args = parser.parse_args()
     print(args)
     json_data = read_json_file(args.file)
