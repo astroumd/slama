@@ -11,8 +11,7 @@ Generated from cross-referencing `dsm:placeholder:DSM_*` strings in
 - **LOW** — weak match, likely wrong; included only as a starting point
 - **NO MATCH** — no corresponding field found in current `smax.json`; may not exist in Valkey yet, or needs a different namespace
 
-**Nothing has been changed in the display JSON files yet.** Check off or edit
-each line, then let Claude know which mappings to apply.
+Note: **HIGH** confidence mappings have been edited to JSON (checked off below).
 
 ---
 
