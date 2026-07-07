@@ -1,0 +1,139 @@
+DSM ID (monitor C code),Proposed SMAX canonical name,Confidence,Alternatives / notes (if not HIGH),Verified,C source file(s) (cursesmonitor/src),Display JSON file(s)
+DSM_AC_TEMP_C,DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_TEMP_F,MEDIUM,"Multiple temp fields exist (RETURN_AIR_TEMP_F, SUPPLY_AIR_TEMP_F, MIXED_AIR_TEMP_F, OUTSIDE_AIR_TEMP_F) — pick the one that matches the physical sensor intended",,aCMonitor.c,aCmonitor.json
+DSM_AC_SMOKE,DSM:corcon:CORR_PACU_STATUS_X:RETURN_DUCT_SMOKE_B,MEDIUM,Also SUPPLY_DUCT_SMOKE_B and ANALOG_RACK_SMOKE_V14_B/DIGITAL_RACK_SMOKE_V9_B exist — pick correct sensor,,aCMonitor.c,aCmonitor.json
+DSM_AC_FAN_STATUS,DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_STARTED_B,MEDIUM,"Also SUPPLY_FAN_STARTED_B, SUPPLY_FAN_ENABLE_B, RETURN_FAN_ENABLE_B exist",,aCMonitor.c,aCmonitor.json
+DSM_AC_COMPRESSOR1,DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_ALARM_B,MEDIUM,Also COMPRESSOR_1_STAGE_A_B / STAGE_B_B exist — pick alarm vs stage status,,aCMonitor.c,aCmonitor.json
+DSM_AC_COMPRESSOR2,DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_ALARM_B,MEDIUM,Also COMPRESSOR_2_STAGE_A_B / STAGE_B_B exist,,aCMonitor.c,aCmonitor.json
+DSM_AC_HUMIDITY,DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_REL_HUM_F,MEDIUM,"Also OUTSIDE_AIR_REL_HUM_F, SUPPLY_AIR_REL_HUM_F exist",,aCMonitor.c,aCmonitor.json
+DSM_PACU_STATUS,(no match found),NO MATCH,"No single composite ""status"" field; CORR_PACU_STATUS_X has 50+ individual fields. Needs Marc to pick specific field(s) or this cell should be dropped/replaced with multiple cells",,aCMonitor.c,aCmonitor.json
+DSM_SMA_TEMP_F,DSM:colossus:SMA_METEOROLOGY_X:TEMP_F,HIGH,,x,airHandler.c,airhandler.json
+DSM_SMA_HUMIDITY_F,DSM:colossus:SMA_METEOROLOGY_X:HUMIDITY_F,HIGH,,x,airHandler.c,airhandler.json
+DSM_ESTOP_COMMAND_S,DSM:acc{ant}:DSM_ESTOP_COMMAND_S,HIGH,,x,antMonitor.c; antPage2.c,antdrive.json
+DSM_AS_PROJECT_ID_L,DSM:hal9000:DSM_AS_PROJECT_ID_L,HIGH,,x,arrayMonitor.c; hangarPage.c; projectpage.c,arraymonitor.json; hangar.json; project.json
+DSM_AS_PROJECT_OBSERVER_C30,DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30,HIGH,,x,arrayMonitor.c; hangarPage.c; projectpage.c,arraymonitor.json; hangar.json; project.json
+DSM_AS_PROJECT_OPERATINGLOCATION_C256,DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256,HIGH,,x,arrayMonitor.c; projectpage.c,arraymonitor.json; project.json
+DSM_SCANS_REMAINING,DSM:hal9000:DSM_AS_SCANS_REMAINING_L,HIGH,,x,arrayMonitor.c,arraymonitor.json
+DSM_FULLPOL_STATUS,(no match found),NO MATCH,"No full-polarization status field found in DSM; may need to check ""polar"" fields: DSM_AS_POLAR_MODE_S / DSM_OBS_POLAR_MODE_S under hal9000 as loose candidates",,arrayMonitor.c,arraymonitor.json
+DSM_SWARM_STATUS,(no match found),NO MATCH,"No single SWARM status field; closest is per-board DSM:<roach2-idx>:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L (per-board init status, not overall status)",,arrayMonitor.c,arraymonitor.json
+DSM_DUT,(no match found),NO MATCH,"DUT1 (delta-UT) not found in DSM; may live in ""reference"" or ""telescope"" namespace, or not tracked at all",,arrayMonitor.c,arraymonitor.json
+DSM_TAU225,DSM:colossus:DSM_CSO_225GHZ_TAU_F,MEDIUM,Alternative: weather:forecast:cso:tau225 (forecast value) vs this raw CSO feed — pick which source is intended,,arrayMonitor.c,arraymonitor.json
+DSM_TAU350,DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F,HIGH,,x,arrayMonitor.c; weather.c; weatherPage2.c,arraymonitor.json; weather.json
+DSM_BDC_4_8_DET_V_CH1,DSM:obscon:BDC48_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F,MEDIUM,"Node-to-band mapping (BDC48_X=4-8GHz) is inferred by name, not confirmed",,BDC_4_8.c,bdc.json
+DSM_BDC_4_8_DET_V_CH2,DSM:obscon:BDC48_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F,MEDIUM,,,BDC_4_8.c,bdc.json
+DSM_BDC_4_8_VGA,DSM:obscon:BDC48_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F,LOW,"VVA field exists but which of VVA1-6 maps to ""VGA setting"" is unclear",,BDC_4_8.c,bdc.json
+DSM_BDC_4_8_ATTN,(no match found),NO MATCH,"No ATTN-named field in BDC48_X (only VVA1-6, CR1-6, TEMP, DI); may be same as VGA/VVA",,BDC_4_8.c,bdc.json
+DSM_BDC_8_12_DET_V_CH1,DSM:obscon:BDC_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F,LOW,"BDC_X has no band name; mapped here only by elimination (4 obscon BDC nodes exist: BDC48_X, BDC1012_X, BDC1216_X, BDC_X — need Marc to confirm BDC_X = 8-12 GHz)",,BDC_8_12.c,bdc.json
+DSM_BDC_8_12_DET_V_CH2,DSM:obscon:BDC_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F,LOW,,,BDC_8_12.c,bdc.json
+DSM_BDC_8_12_VGA,(no match found),NO MATCH,BDC_X has no VVA/VGA field (only AR1/AR2/AT20/AT21 attenuator fields),,BDC_8_12.c,bdc.json
+DSM_BDC_8_12_ATTN,DSM:obscon:BDC_X:DSM_BDC_AR1_CTRL_READBACK_V8_F,LOW,"Multiple attenuator fields exist: AR1, AR2, AT20, AT21",,BDC_8_12.c,bdc.json
+DSM_BDC_10_12_DET_V_CH1,DSM:obscon:BDC1012_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F,MEDIUM,,,BDC_10_12.c,bdc.json
+DSM_BDC_10_12_DET_V_CH2,DSM:obscon:BDC1012_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F,MEDIUM,,,BDC_10_12.c,bdc.json
+DSM_BDC_10_12_ATTN,DSM:obscon:BDC1012_X:DSM_BDC_AR1_CTRL_READBACK_V8_F,LOW,"Multiple attenuators exist: AR1, AR2, AT20, AT21",,BDC_10_12.c,bdc.json
+DSM_BDC_12_16_DET_V_CH1,DSM:obscon:BDC1216_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F,MEDIUM,,,BDC_12_16.c,bdc.json
+DSM_BDC_12_16_DET_V_CH2,DSM:obscon:BDC1216_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F,MEDIUM,,,BDC_12_16.c,bdc.json
+DSM_BDC_12_16_VGA,DSM:obscon:BDC1216_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F,LOW,Which of VVA1-6 is unclear,,BDC_12_16.c,bdc.json
+DSM_BDC_12_16_ATTN,(no match found),NO MATCH,"No ATTN-named field in BDC1216_X (only VVA1-6, CR1-6, TEMP, DI)",,BDC_12_16.c,bdc.json
+DSM_FRINGE_AMPLITUDE,DSM:phasemon:PHASEMON_DATA_X:CORR_AMPLITUDE_V10_D,MEDIUM,"Field is a 10-element vector (one per baseline, V10) — need to pick index or aggregate",,coherence.c,coherence.json
+DSM_FRINGE_PHASE,DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D,MEDIUM,Same V10-vector issue as above,,coherence.c,coherence.json
+DSM_COHERENCE_PCT,(no match found),NO MATCH,No direct coherence-percent field found under phasemon,,coherence.c,coherence.json
+DSM_BASELINE_M,(no match found),NO MATCH,"Baseline length in meters not found in DSM; likely a static/geometric value from telescope or antenna namespace, not phasemon",,coherence.c,coherence.json
+DSM_COHERENCE_INTEG,(no match found),NO MATCH,No integration-time field found for coherence,,coherence.c,coherence.json
+DSM_FRINGE_TIMESTAMP,(no match found),NO MATCH,No timestamp field under phasemon:PHASEMON_DATA_X,,coherence.c,coherence.json
+DSM_ANT{ant}_IFLO_LO_LOCK,DSM:hal9000:DSM_AS_IFLO_ANT2YIG_V2_V11_B,LOW,"Field is a V11 vector (antenna-indexed within one value), not naturally a per-{ant} template point — may need array indexing support",,iFLOMonitor.c; iFLOMonitorPage2.c; iFLOMonitorPage3.c; iFLOMonitorPage4.c,croom_iflo.json
+DSM_ANT{ant}_IFLO_IF_POWER,DSM:m5:C1DC_STATUS_X:IF_POWER_V3_V9_F,MEDIUM,"Field is per-downconverter (V3xV9), not simply per-antenna; needs index mapping",,iFLOMonitor.c; iFLOMonitorPage2.c; iFLOMonitorPage3.c; iFLOMonitorPage4.c,croom_iflo.json
+DSM_ANT{ant}_IFLO_LO_FREQ,DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D,LOW,"Rest frequency, global not per-antenna; alternative: antenna:{ant}:lo:1:ref_109_mhz or ref_200_mhz structures",,iFLOMonitor.c; iFLOMonitorPage2.c; iFLOMonitorPage3.c; iFLOMonitorPage4.c,croom_iflo.json
+DSM_ANT{ant}_IFLO_TIMESTAMP,(no match found),NO MATCH,No per-antenna IFLO timestamp found,,iFLOMonitor.c; iFLOMonitorPage2.c; iFLOMonitorPage3.c; iFLOMonitorPage4.c,croom_iflo.json
+DSM_ANTENNA5_TEMPS_X,DSM:hal9000:DSM_ANTENNA5_TEMPS_X,HIGH,,x,deicemon.c,deice.json
+DSM_GPS8_LOCK_STATUS,DSM:colossus:GPSD_REPORT_X:GPS8_CTL_STATUS_B,MEDIUM,"Also GPS8_OUT_STATUS_B, GPS8_PHASE_FREQ_STATUS_B exist — pick correct lock indicator",,gpsPage.c,gps.json
+DSM_TRUETIME_LOCK_STATUS,DSM:m5:MRG_STATUS_X:52MHZ_LOCK_S,LOW,No TrueTime-specific field found; MRG lock status is a loose proxy,,gpsPage.c,gps.json
+DSM_GPS_AVG_PHASE_NS,DSM:colossus:GPSD_REPORT_X:GPS8_AVG_PHASE_F,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS_FREQ_CTL,DSM:colossus:GPSD_REPORT_X:GPS8_FREQ_CTLR_VALUE_F,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS_NEXT_LEAP,DSM:colossus:GPSD_REPORT_X:GPS8_NEXT_LEAP_SECOND_L,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS8_LAT_DEG,DSM:colossus:GPSD_REPORT_X:GPS8_LAT_D,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS8_LON_DEG,DSM:colossus:GPSD_REPORT_X:GPS8_LON_D,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS8_ALT_FT,DSM:colossus:GPSD_REPORT_X:GPS8_ALT_F,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS8_DOP,DSM:colossus:GPSD_REPORT_X:GPS8_DOP_F,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS_UTC_OFFSET,DSM:colossus:GPSD_REPORT_X:GPS8_GPS_MINUS_UTC_B,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS_NUM_SATS,DSM:colossus:GPSD_REPORT_X:TT_NUM_SATS_S,HIGH,,x,gpsPage.c,gps.json
+DSM_GPS_BAD_MSG_COUNT,DSM:colossus:GPSD_REPORT_X:GPS8_BAD_MSGS_B,HIGH,,x,gpsPage.c,gps.json
+DSM_AS_PROJECT_DESCRIPTION_C256,DSM:hal9000:DSM_AS_PROJECT_DESCRIPTION_C256,HIGH,,x,hangarPage.c; projectpage.c,hangar.json; project.json
+DSM_AS_PROJECT_PI_C30,DSM:hal9000:DSM_AS_PROJECT_PI_C30,HIGH,,x,hangarPage.c; projectpage.c,hangar.json; project.json
+DSM_HANGAR_LIGHT_L,DSM:colossus:DSM_HANGAR_LIGHT_L,HIGH,,x,hangarPage.c,hangar.json
+DSM_GENSET_POWER_W,(no match found),NO MATCH,"""Genset"" (diesel generator) not found in DSM; DSM:colossus:PACU_INST_POWER_X:W_S / PACU_POWER_STATS_X exist but those are AC-unit power draw, not a generator — confirm terminology with team",,genset.c,misc_dsm.json
+DSM_GENSET_STATUS,(no match found),NO MATCH,Same as above — no generator-specific field found,,genset.c,misc_dsm.json
+DSM_C1DC_POWER_LEVEL,DSM:m5:C1DC_STATUS_X:IF_POWER_V3_V9_F,MEDIUM,Field is a V3xV9 vector (downconverter x antenna); only one m5 node exists so this may need per-antenna array indexing,,c1DC.c,misc_dsm.json
+DSM_C1DC_STATUS,DSM:m5:C1DC_STATUS_X:OP_ALARM_V3_V9_S,MEDIUM,Also INPUTS_V3_V9_S exists — pick correct status field,,c1DC.c,misc_dsm.json
+DSM_YIG_FREQ_GHZ,reference:mrg:1:set_frequency,MEDIUM,"Field is in Hz (int32), not GHz — needs unit conversion in display code",,yIGFrequencies.c,misc_dsm.json
+DSM_YIG_LOCK_STATUS,reference:mrg:1:yig:is_locked,HIGH,,x,yIGFrequencies.c,misc_dsm.json
+DSM_YIG_TUNE_WORD,reference:mrg:1:yig:v_tune,HIGH,,x,yIGFrequencies.c,misc_dsm.json
+DSM_SMAINIT_STATE,DSM:acc1:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L,LOW,"Per-computer init report, not a single global state; exists on every acc/roach2/hal9000/oldhal/m5/phasemon/obscon node — needs a decision on which computer(s) to show",,smainitMonitor.c,misc_dsm.json
+DSM_SMAINIT_PROGRESS,(no match found),NO MATCH,"No numeric progress field; PRG_STATUS_V24_V6_L is a 24x6 status matrix, not a simple percentage",,smainitMonitor.c,misc_dsm.json
+DSM_MRG_LOCK_STATUS,reference:mrg:1:yig:is_locked,HIGH,,x,mRG.c,mrg.json
+DSM_MRG_FREQ_GHZ,reference:mrg:1:set_frequency,MEDIUM,"Field is in Hz (int32), not GHz — needs unit conversion (divide by 1e9)",,mRG.c,mrg.json
+DSM_MRG_TUNE_WORD,reference:mrg:1:yig:v_tune,HIGH,,x,mRG.c,mrg.json
+DSM_MRG_PHASE_ERROR,reference:mrg:1:residue,MEDIUM,"""Sub-Hertz residue to be tracked by DDS"" — plausible proxy for phase error, needs Marc confirmation",,mRG.c,mrg.json
+DSM_MRG_POWER_DBM,(no match found),NO MATCH,No dBm power reading found at the global MRG level (antenna:{ant}:lo:1:yig:rf_power exists per-antenna but this cell is not templated),,mRG.c,mrg.json
+DSM_MRG_TIMESTAMP,(no match found),NO MATCH,No timestamp field found for MRG status,,mRG.c,mrg.json
+DSM_AS_PROJECT_COMMENT,DSM:hal9000:DSM_AS_PROJECT_COMMENT_C256,HIGH,,x,projectpage.c,project.json
+DSM_AS_PROJECT_ANTENNAS,DSM:hal9000:DSM_HAL_HAL_PROJECT_ANTENNAS_V11_S,HIGH,,x,projectpage.c,project.json
+DSM_AS_PROJECT_SCRIPT,DSM:hal9000:DSM_AS_PROJECT_SCRIPT_FILENAME_C256,HIGH,,x,projectpage.c,project.json
+DSM_AS_PROJECT_SCRIPT_PID,DSM:hal9000:DSM_AS_PROJECT_SCRIPT_PID_L,HIGH,,x,projectpage.c,project.json
+DSM_AS_PROJECT_MIR_FILE,(no match found),NO MATCH,No MIR-file field found under hal9000/oldhal,,projectpage.c,project.json
+DSM_AS_PROJECT_START_TIME,DSM:hal9000:DSM_AS_PROJECT_STARTTIME_L,HIGH,,x,projectpage.c,project.json
+DSM_AS_PROJECT_ACTIVE_TIME,DSM:hal9000:DSM_AS_PROJECT_STARTTIME_L,MEDIUM,"Same field as DSM_AS_PROJECT_START_TIME above — likely redundant, consider removing one row",,projectpage.c,project.json
+DSM_HAL_HAL_LAST_CPOINT_V11_L,DSM:hal9000:DSM_HAL_HAL_LAST_CPOINT_V11_L,HIGH,,x,rscanpage.c,rscan.json
+DSM_HAL_HAL_LAST_IPOINT_V11_L,(no match found),NO MATCH,"No I-point field found; only LAST_CPOINT_V11_L and LAST_CPOINT_RX_V11_S exist — ""I-point"" may not be tracked separately from C-point",,rscanpage.c,rscan.json
+DSM_HAL_HAL_NIGHTLY_POINTING_S,DSM:hal9000:DSM_HAL_HAL_POLAR_PATTERN_REQUEST_S,LOW,"No exact ""nightly pointing"" field; this is a loose guess",,rscanpage.c,rscan.json
+DSM_PHASEMON_BL1_RAW_PHASE,DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D,MEDIUM,"Field is a 10-element vector over baselines (V10) — need array index for baseline 1, not a separate BL1-4 field per baseline",,seeing.c,seeing.json
+DSM_PHASEMON_BL2_RAW_PHASE,DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D,MEDIUM,"Same vector, different index",,seeing.c,seeing.json
+DSM_PHASEMON_BL3_RAW_PHASE,DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D,MEDIUM,"Same vector, different index",,seeing.c,seeing.json
+DSM_PHASEMON_BL4_RAW_PHASE,DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D,MEDIUM,"Same vector, different index",,seeing.c,seeing.json
+DSM_PHASEMON_BL1_ATMOS,DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D,MEDIUM,Same V10-vector-index issue,,seeing.c,seeing.json
+DSM_PHASEMON_BL2_ATMOS,DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D,MEDIUM,Same V10-vector-index issue,,seeing.c,seeing.json
+DSM_PHASEMON_BL1_RMS_1S,DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D,MEDIUM,Field is V10xV12 (10 baselines x 12 time windows) — needs both baseline AND window index,,seeing.c,seeing.json
+DSM_PHASEMON_BL1_RMS_16S,DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D,MEDIUM,"Same 2D array, different time-window index",,seeing.c,seeing.json
+DSM_PHASEMON_BL1_RMS_512S,DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D,MEDIUM,"Same 2D array, different time-window index",,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_5V,DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_5V_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_12V,DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_12V_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_25V,DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_25V_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_M15V,DSM:phasemon:PHASEMON_HRDWR_STAT_X:NEG_15V_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_15VA,DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VA_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_VAULT_15VB,DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VB_RACK_F,HIGH,,x,seeing.c,seeing.json
+DSM_PHASEMON_SYNTH_LOCK,DSM:phasemon:PHASEMON_HRDWR_STAT_X:SYNTH_LOCK_B,HIGH,,x,seeing.c,seeing.json
+DSM_ROACH{roach}_TEMP_AMBIENT,DSM:obscon:ROACH2_{roach}_TEMPS_X:AMBIENT_TEMP_V8_F,HIGH,,x,swarmPage.c,swarm.json
+DSM_ROACH{roach}_TEMP_INLET,DSM:obscon:ROACH2_{roach}_TEMPS_X:INLET_TEMP_V8_F,HIGH,,x,swarmPage.c,swarm.json
+DSM_ROACH{roach}_TEMP_OUTLET,DSM:obscon:ROACH2_{roach}_TEMPS_X:OUTLET_TEMP_V8_F,HIGH,,x,swarmPage.c,swarm.json
+DSM_ROACH{roach}_TEMP_PPC,DSM:obscon:ROACH2_{roach}_TEMPS_X:PPC_TEMP_V8_F,HIGH,,x,swarmPage.c,swarm.json
+DSM_ROACH{roach}_TEMP_FPGA,DSM:obscon:ROACH2_{roach}_TEMPS_X:FPGA_TEMP_V8_F,HIGH,,x,swarmPage.c,swarm.json
+DSM_ROACH{roach}_TEMP_AGE,(no match found),NO MATCH,"No ""age"" field; TIMESTAMP_V8_L exists — display would need to compute age from timestamp",,swarmPage.c,swarm.json
+DSM_ANT{ant}_DDS_DELAY,(no match found),NO MATCH,"No per-antenna DDS delay found; DSM:newdds:DDS_TO_TENZING_X:GEOM_DELAY_A/B/C_V9_D are geometry-model delays, not raw DDS delay",,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_FPGA_DELAY,DSM:<roach2-idx>:SWARM_FIXED_OFFSETS_X:DELAY_V2_D,LOW,"Field is per-SWARM-board (roach2-NN), indexed by polarization (V2) — not directly per-antenna",,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_SUM_DELAY,(no match found),NO MATCH,No summed-delay field found,,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_WALSH,DSM:newdds:DDS_TO_HAL_X:WALSH_MOD_V11_V2_S,MEDIUM,Also WALSH_DEMOD_V11_V2_S exists — field is V11 (per-antenna) x V2 (mod/demod?) vector,,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_LF_LF,(no match found),NO MATCH,No load-factor field found for SWARM under DSM,,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_LF_HF,(no match found),NO MATCH,Same — no load-factor field found,,swarmPage.c; dDSCursesMonitor.c,swarm.json
+DSM_ANT{ant}_UPS_AC_INPUT_V,DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_IN_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_FREQ_HZ,DSM:acc{ant}:UPS_DATA_X:AC_FREQUENCY_IN_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_AC_OUTPUT_V,DSM:acc{ant}:UPS_DATA_X:AC_VOLTAGE_OUT_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_CURRENT_A,DSM:acc{ant}:UPS_DATA_X:AC_CURRENT_OUT_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_POWER_W,DSM:acc{ant}:UPS_DATA_X:AC_WATTS_IN_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_APPOWER_VA,DSM:acc{ant}:UPS_DATA_X:AC_VA_OUT_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_BATT_V,DSM:acc{ant}:UPS_DATA_X:BATTERY_VOLTAGE_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_BATT_I,DSM:acc{ant}:UPS_DATA_X:BATTERY_CURRENT_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_LOAD_PCT,DSM:acc{ant}:UPS_DATA_X:LOAD_PERCENTAGE_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_RUNTIME,DSM:acc{ant}:UPS_DATA_X:RUN_TIME_AVAILABLE_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_TEMP_AMB,DSM:acc{ant}:UPS_DATA_X:AMBIENT_TEMPERATURE_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_TEMP_HSINK,DSM:acc{ant}:UPS_DATA_X:HEAT_SINK_TEMPERATURE_F,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_OVERLOADS,DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_OVERLOADS_S,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_POWER_OUTS,DSM:acc{ant}:UPS_DATA_X:NUMBER_OF_POWER_OUTAGES_S,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_ANT{ant}_UPS_ALARMS,DSM:acc{ant}:UPS_DATA_X:ACTIVE_ALARMS_L,HIGH,,x,upspage.c; upspage2.c; upspage3.c,ups.json
+DSM_JCMT_TEMP,DSM:colossus:JCMT_METEOROLOGY_X:TEMP_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_JCMT_HUMIDITY,DSM:colossus:JCMT_METEOROLOGY_X:HUMIDITY_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_JCMT_WINDSPEED,DSM:colossus:JCMT_METEOROLOGY_X:WINDSPEED_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_SUBARU_TEMP,DSM:colossus:SUBARU_METEOROLOGY_X:TEMP_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_SUBARU_HUMIDITY,DSM:colossus:SUBARU_METEOROLOGY_X:HUMIDITY_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_UKIRT_TEMP,DSM:colossus:UKIRT_METEOROLOGY_X:TEMP_F,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_TAU225_GFS,weather:forecast:gfs:tau225,HIGH,,x,weather.c; weatherPage2.c,weather.json
+DSM_ANT{ant}_SKYDIP_AGE,(no match found),NO MATCH,No per-antenna skydip-age field found in DSM,,weather.c; weatherPage2.c,weather.json
+DSM_ANT{ant}_TAU_FREQ,(no match found),NO MATCH,No per-antenna tau-at-frequency field found,,weather.c; weatherPage2.c,weather.json
+DSM_ANT{ant}_TAU225,(no match found),NO MATCH,"ANT_WEATHER_DATA_X (per-antenna, V9) has HUMIDITY/PRESSURE/TEMPERATURE only, not tau225 — no real candidate found",,weather.c; weatherPage2.c,weather.json
