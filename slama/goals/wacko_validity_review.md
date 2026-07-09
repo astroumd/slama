@@ -223,6 +223,95 @@ side), plus the `antenna:*:receiver:*:lo_plate:mixer:*:pll:stress` and
 `...mixer:*:sis_bias:*` SMAX paths, which are new additions to the earlier
 DSM/RM tables.
 
+## Correction: the H/L schema mismatch is in `smax.json`, not the hardware
+
+The schema-mismatch analysis above (the "Schema-mismatch caveat" under the
+`printInvalidFloat`/`printInvalidDouble` section) was based only on reading
+`conf/smax.json` and concluded `H` and `L` have genuinely different
+structure. Two live snapshots of the actual database —
+`conf/dump1.out` and `conf/dump2.out` (`dump_redis.py --flat`, taken 5
+minutes apart) — overturn that conclusion. The two dumps are **identical**
+for every path checked below, so this is the DB's steady-state shape, not a
+transient staleness artifact.
+
+**Live shape, by antenna and polarization** (only antennas 1, 7, 8 have
+receiver data in this dump — the rest are presumably offline or not being
+polled at capture time):
+
+| Antenna | `H` top-level keys | `L` top-level keys |
+|---|---|---|
+| 1 | `lo_plate` | `lo_plate`, `mixer`, `sis_bias` |
+| 7 | `lo_plate`, `sis_bias` | `lo_plate`, `mixer`, `sis_bias` |
+| 8 | `lo-plate`†, `lo_plate`, `sis_bias` | `lo-plate`†, `lo_plate`, `sis_bias` |
+
+† see the hyphen/underscore finding below — a live-DB duplicate, not a
+`smax.json` question.
+
+**1. `L` does have `lo_plate:mixer:{1,2}:pll:*` live** (all three antennas
+show it, e.g. `antenna:1:receiver:L:lo_plate:mixer:1:pll:stress`). The
+earlier claim that `L`'s node has no `lo_plate` container at all was
+correct *about `conf/smax.json`* but wrong as a statement about the
+instrument — `smax.json` is simply missing this subtree for `L`. This is a
+real schema gap to fill, not a hardware asymmetry.
+
+**2. The live `pll` keys are named `BPF` and `NF`, not `bandpass_power`/
+`notch_power`.** This resolves the MEDIUM-confidence flag on the IF
+Power/Nz Power rows in the `printInvalidFloat` table above, definitively and
+in the opposite direction from what was assumed: `receiverMonitor.c`'s
+`readSmaxFloat(label, "BPF", ...)` / `readSmaxFloat(label, "NF", ...)` are
+reading the *correct* live key names. **`smax.json`'s `bandpass_power` and
+`notch_power` field names are the ones that are wrong** and should be
+renamed to `BPF`/`NF` (or the live keys renamed at the source — a
+maintainer decision, not a display-layer one).
+
+**3. `H`'s SIS-bias data is real and live** (antennas 7 and 8), under
+`sis_bias:mixer:{n}:*` — the **same key set as `L`**: `voltage`, `current`,
+`bfield_current`, `power`, `LNA_state`, plus `ivp`, `Hot_ivp`, `Cold_ivp`.
+**`smax.json`'s current `H:mixer:1:{bias,current,bfield_current,if_power}`
+shape — no `sis_bias` wrapper, two of the four fields renamed — matches
+nothing in the live dump.** It isn't a simplified or legacy version of the
+real structure; it's simply incorrect. The corrected canonical name for,
+e.g., "SIS V" on `H` should be `antenna:{ant}:receiver:H:sis_bias:mixer:{n}:voltage`,
+matching `L`'s `antenna:{ant}:receiver:L:mixer:{n}:sis_bias:voltage` in
+content (same fields) but *not* in nesting order (`sis_bias:mixer` vs.
+`mixer:sis_bias`) — see point 5.
+
+**4. `ivp_curve` — the `[dict]`-typed field flagged in the 2026-07-01
+"Invalid smax_type values" insight — does not appear anywhere in either
+dump.** The live equivalent under `sis_bias:mixer:{n}` is three separate
+scalar-ish fields: `ivp`, `Hot_ivp`, `Cold_ivp`. `ivp_curve` looks stale or
+deprecated in `smax.json` rather than reflecting anything currently written.
+
+**5. Two live-database irregularities, independent of `smax.json` and not
+fixable by editing this repo:**
+   - **`lo-plate` vs. `lo_plate`** — antenna 8 (both `H` and `L`) writes
+     `109_source` and `yig_source` under *both* a hyphenated `lo-plate` key
+     and the canonical underscored `lo_plate` key, simultaneously, with
+     overlapping values. `smax.json` correctly uses only `lo_plate`, so no
+     schema change is needed for this — it's a duplicate-key bug on the
+     instrument/DSM-bridge side for at least antenna 8. (Noted per Marc:
+     already being raised with the receiver engineer.)
+   - **`sis_bias` nesting order** — antennas 1 and 7's `L` receiver write
+     the SIS-bias fields under *both* `mixer:{n}:sis_bias:*` and
+     `sis_bias:mixer:{n}:*` simultaneously (two parallel copies of the same
+     data, reversed nesting). Antenna 1's `H` has no SIS-bias data under
+     either ordering at all — likely that mixer board being offline or not
+     yet upgraded, a per-antenna gap rather than a schema question.
+
+**Net conclusion:** the `H`/`L` asymmetry documented earlier in this file is
+a `smax.json` authoring/drift problem, not a reflection of real receiver
+hardware differences — both polarizations have essentially symmetric
+`lo_plate` and `sis_bias` capability live, once the two different nesting
+orders and two renamed fields are accounted for. Fixing `smax.json` means:
+add `lo_plate:mixer:{n}:pll:*` under `L`; rewrite `H`'s SIS-bias section to
+`sis_bias:mixer:{n}:*` (matching `L`'s field names, opposite nesting order);
+rename `bandpass_power`→`BPF` and `notch_power`→`NF`; replace `ivp_curve`
+with `ivp`/`Hot_ivp`/`Cold_ivp`. None of this has been applied to
+`conf/smax.json` in this pass — proposal only, pending Marc's review (and
+resolution of the `lo-plate`/`lo_plate` question with the receiver engineer,
+which may also affect whether antenna 8's duplicate keys should be treated
+as a third valid source or simply ignored).
+
 ## Wacko checks that are NOT a static hardcoded-value comparison
 
 A broader pass over every `wacko`-emitting site (not just ones tied to a
