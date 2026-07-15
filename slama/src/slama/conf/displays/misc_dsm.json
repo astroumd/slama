@@ -7,7 +7,7 @@
       "type": "cells",
       "title": "Generator Set (DSM — placeholders)",
       "cells": [
-        {"label": "Genset power (W) (DSM)",  "point": "dsm:placeholder:DSM_GENSET_POWER_W"},
+        {"label": "Genset power (W) (DSM)",  "point": "DSM:obscon:DSM_IWATCH_DATA_X:KILOWATTS_S"},
         {"label": "Genset status (DSM)",     "point": "dsm:placeholder:DSM_GENSET_STATUS"}
       ]
     },
@@ -45,17 +45,17 @@
       "type": "cells",
       "title": "C1DC Correlator Power (DSM — placeholders)",
       "cells": [
-        {"label": "C1DC power level (DSM)",  "point": "dsm:placeholder:DSM_C1DC_POWER_LEVEL"},
-        {"label": "C1DC status (DSM)",       "point": "dsm:placeholder:DSM_C1DC_STATUS"}
+        {"label": "C1DC power level (DSM)",  "point": "DSM:m5:C1DC_STATUS_X:IF_POWER_V3_V9_F"},
+        {"label": "C1DC status (DSM)",       "point": "DSM:m5:C1DC_STATUS_X:OP_ALARM_V3_V9_S"}
       ]
     },
     {
       "type": "cells",
       "title": "YIG Frequencies (DSM — placeholders)",
       "cells": [
-        {"label": "YIG freq (GHz) (DSM)",    "point": "dsm:placeholder:DSM_YIG_FREQ_GHZ"},
-        {"label": "YIG lock status (DSM)",   "point": "reference:mrg:1:yig:is_locked"},
-        {"label": "YIG tune word (DSM)",     "point": "reference:mrg:1:yig:v_tune"}
+        {"label": "YIG freq (GHz) (DSM)",    "point": "DSM:m5:MRG_CONTROL_X:REQ_FREQ_V2_D"},
+        {"label": "YIG lock status (DSM)",   "point": "DSM:m5:MRG_CONTROL_X:YIG_LOCKED_V2_S"},
+        {"label": "YIG tune word (DSM)",     "point": "DSM:m5:MRG_CONTROL_X:CNTRL_VOLTAGE_V2_F"}
       ]
     },
     {
