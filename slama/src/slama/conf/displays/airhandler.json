@@ -41,7 +41,7 @@
       },
       "rows": [
         {"label": "Temperature (C)",     "points": "DSM:colossus:{site}_METEOROLOGY_X:TEMP_F", "format": "{:.2f}" },
-        {"label": "Rel. Humidity",       "points": "DSM:colossus:{site}_METEOROLOGY_X:HUMIDITY_F", "format": "{:.1f}" }
+        {"label": "Rel. Humidity (%)",       "points": "DSM:colossus:{site}_METEOROLOGY_X:HUMIDITY_F", "format": "{:.1f}" }
       ]
     }
   ]
