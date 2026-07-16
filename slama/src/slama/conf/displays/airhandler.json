@@ -1,5 +1,5 @@
 {
-  "name": "Air Handler",
+  "name": "Air Handler (Blower)",
   "description": "Antenna air handler dampers, temperatures, and heater status (from airHandler.c)",
   "update_interval": 10,
   "layout": [
@@ -32,11 +32,16 @@
       ]
     },
     {
-      "type": "cells",
+      "type": "table",
       "title": "Site Weather",
-      "cells": [
-        {"label": "SMA temp",     "point": "DSM:colossus:SMA_METEOROLOGY_X:TEMP_F"},
-        {"label": "SMA humidity", "point": "DSM:colossus:SMA_METEOROLOGY_X:HUMIDITY_F"}
+      "columns": {
+        "labels": ["SMA", "JCMT", "Subaru", "UKIRT", "CFHT", "UH88", "Keck", "VLBA"],
+        "var": "site",
+        "values": ["SMA", "JCMT", "SUBARU", "UKIRT", "CFHT", "UH88", "KECK", "VLBA"]
+      },
+      "rows": [
+        {"label": "Temperature (C)",     "point": "DSM:colossus:{site}_METEOROLOGY_X:TEMP_F", "format": "{:.2f}" },
+        {"label": "Rel. Humidity",       "point": "DSM:colossus:{site}_METEOROLOGY_X:HUMIDITY_F", "format": "{:.1f}" }
       ]
     }
   ]
