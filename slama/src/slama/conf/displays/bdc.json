@@ -7,9 +7,9 @@
       "type": "cells",
       "title": "BDC 4-8 GHz (DSM — placeholders)",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_4_8_DET_V_CH1"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_4_8_DET_V_CH2"},
-        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_4_8_VGA"},
+        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"},
         {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_4_8_ATTN"}
       ]
     },
@@ -17,28 +17,28 @@
       "type": "cells",
       "title": "BDC 8-12 GHz (DSM — placeholders)",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_8_12_DET_V_CH1"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_8_12_DET_V_CH2"},
-        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_8_12_VGA"},
-        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_8_12_ATTN"}
+        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_CTRL_READBACK_V8_F"},
+        {"label": "Attn setting (DSM)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"}
       ]
     },
     {
       "type": "cells",
       "title": "BDC 10-12 GHz (DSM — placeholders)",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_10_12_DET_V_CH1"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_10_12_DET_V_CH2"},
-        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_10_12_ATTN"}
+        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
+        {"label": "Attn setting (DSM)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"}
       ]
     },
     {
       "type": "cells",
       "title": "BDC 12-16 GHz (DSM — placeholders)",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "dsm:placeholder:DSM_BDC_12_16_DET_V_CH1"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "dsm:placeholder:DSM_BDC_12_16_DET_V_CH2"},
-        {"label": "VGA setting (DSM)",      "point": "dsm:placeholder:DSM_BDC_12_16_VGA"},
+        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
+        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC1216_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"},
         {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_12_16_ATTN"}
       ]
     }

@@ -62,7 +62,7 @@
       "type": "cells",
       "title": "SMA Initialization (DSM — placeholders)",
       "cells": [
-        {"label": "Init state (DSM)",        "point": "dsm:placeholder:DSM_SMAINIT_STATE"},
+        {"label": "Init state (DSM)",        "point": "DSM:acc1:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L"},
         {"label": "Init progress (DSM)",     "point": "dsm:placeholder:DSM_SMAINIT_PROGRESS"}
       ]
     }

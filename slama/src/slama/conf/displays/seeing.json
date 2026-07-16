@@ -19,15 +19,15 @@
       "type": "cells",
       "title": "Phase Monitor Baselines (DSM — placeholders)",
       "cells": [
-        {"label": "Baseline 1 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL1_RAW_PHASE"},
-        {"label": "Baseline 2 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL2_RAW_PHASE"},
-        {"label": "Baseline 3 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL3_RAW_PHASE"},
-        {"label": "Baseline 4 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL4_RAW_PHASE"},
-        {"label": "Baseline 1 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL1_ATMOS"},
-        {"label": "Baseline 2 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL2_ATMOS"},
-        {"label": "Baseline 1 RMS 1s (deg) (DSM)",     "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_1S"},
-        {"label": "Baseline 1 RMS 16s (deg) (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_16S"},
-        {"label": "Baseline 1 RMS 512s (deg) (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_512S"}
+        {"label": "Baseline 1 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 2 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 3 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 4 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 1 Atmos (deg) (DSM)",      "point": "DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D"},
+        {"label": "Baseline 2 Atmos (deg) (DSM)",      "point": "DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D"},
+        {"label": "Baseline 1 RMS 1s (deg) (DSM)",     "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"},
+        {"label": "Baseline 1 RMS 16s (deg) (DSM)",    "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"},
+        {"label": "Baseline 1 RMS 512s (deg) (DSM)",   "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"}
       ]
     },
     {

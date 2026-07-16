@@ -13,8 +13,8 @@
         {"label": "Scans remain (DSM)",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L"},
         {"label": "FullPol (DSM)",       "point": "dsm:placeholder:DSM_FULLPOL_STATUS"},
         {"label": "SWARM status (DSM)",  "point": "dsm:placeholder:DSM_SWARM_STATUS"},
-        {"label": "DUT (DSM)",           "point": "dsm:placeholder:DSM_DUT"},
-        {"label": "Tau225 (DSM)",        "point": "dsm:placeholder:DSM_TAU225"},
+        {"label": "DUT (DSM)",           "point": "RM:acc1:RM_POLAR_DUT_SEC_D"},
+        {"label": "Tau225 (DSM)",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F"},
         {"label": "Tau350 (DSM)",        "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
     },

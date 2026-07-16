@@ -14,11 +14,11 @@
       "type": "cells",
       "title": "Fringe / Coherence Status (DSM — placeholders)",
       "cells": [
-        {"label": "Fringe amplitude (DSM)",   "point": "dsm:placeholder:DSM_FRINGE_AMPLITUDE"},
-        {"label": "Fringe phase (deg) (DSM)", "point": "dsm:placeholder:DSM_FRINGE_PHASE"},
-        {"label": "Coherence (%) (DSM)",      "point": "dsm:placeholder:DSM_COHERENCE_PCT"},
+        {"label": "Fringe amplitude (DSM)",   "point": "DSM:hcn:LAST_SCAN_VISIBILITES_X:AMP_V11_V11_V2_F"},
+        {"label": "Fringe phase (deg) (DSM)", "point": "DSM:hcn:LAST_SCAN_VISIBILITES_X:PHASE_V11_V11_V2_F"},
+        {"label": "Coherence (%) (DSM)",      "point": "DSM:hcn:LAST_SCAN_VISIBILITES_X:CORR_V11_V11_V2_F"},
         {"label": "Baseline (m) (DSM)",       "point": "dsm:placeholder:DSM_BASELINE_M"},
-        {"label": "Integration (s) (DSM)",    "point": "dsm:placeholder:DSM_COHERENCE_INTEG"},
+        {"label": "Integration (s) (DSM)",    "point": "DSM:hal9000:SCAN_LENGTH_F"},
         {"label": "Last update (DSM)",        "point": "dsm:placeholder:DSM_FRINGE_TIMESTAMP"}
       ]
     }

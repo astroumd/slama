@@ -7,12 +7,12 @@
       "type": "cells",
       "title": "AC/PACU Status (DSM — placeholders)",
       "cells": [
-        {"label": "Temp (C) (DSM)",          "point": "dsm:placeholder:DSM_AC_TEMP_C"},
-        {"label": "Smoke detected (DSM)",    "point": "dsm:placeholder:DSM_AC_SMOKE"},
-        {"label": "Fan status (DSM)",        "point": "dsm:placeholder:DSM_AC_FAN_STATUS"},
-        {"label": "Compressor 1 (DSM)",      "point": "dsm:placeholder:DSM_AC_COMPRESSOR1"},
-        {"label": "Compressor 2 (DSM)",      "point": "dsm:placeholder:DSM_AC_COMPRESSOR2"},
-        {"label": "Humidity % (DSM)",        "point": "dsm:placeholder:DSM_AC_HUMIDITY"},
+        {"label": "Temp (C) (DSM)",          "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_TEMP_F"},
+        {"label": "Smoke detected (DSM)",    "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_DUCT_SMOKE_B"},
+        {"label": "Fan status (DSM)",        "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_STARTED_B"},
+        {"label": "Compressor 1 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_STAGE_A_B"},
+        {"label": "Compressor 2 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_STAGE_A_B"},
+        {"label": "Humidity % (DSM)",        "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_REL_HUM_F"},
         {"label": "PACU status (DSM)",       "point": "dsm:placeholder:DSM_PACU_STATUS"}
       ]
     }

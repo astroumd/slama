@@ -17,7 +17,7 @@
         {"label": "Outlet (C) (DSM)",    "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:OUTLET_TEMP_V8_F"},
         {"label": "PowerPC (C) (DSM)",   "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:PPC_TEMP_V8_F"},
         {"label": "FPGA (C) (DSM)",      "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:FPGA_TEMP_V8_F"},
-        {"label": "Temp age (DSM)",      "points": "dsm:placeholder:DSM_ROACH{roach}_TEMP_AGE"}
+        {"label": "Temp age (DSM)",      "points": "DSM:obscon:ROACH2_{roach}_TEMPS_X:TIMESTAMP_V8_L"}
       ]
     },
     {
@@ -29,12 +29,12 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "DDS Delay (ns) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_DDS_DELAY"},
-        {"label": "FPGA Delay (ns) (DSM)", "points": "dsm:placeholder:DSM_ANT{ant}_FPGA_DELAY"},
-        {"label": "Sum Delay (ns) (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_SUM_DELAY"},
-        {"label": "Walsh pattern (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_WALSH"},
-        {"label": "LF load factor (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_LF_LF"},
-        {"label": "HF load factor (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_LF_HF"}
+        {"label": "DDS Delay (ns) (DSM)",  "points": "DSM:newdds:DDS_TO_HAL_X:DEL_V11_D"},
+        {"label": "FPGA Delay (ns) (DSM)", "points": "DSM:roach2-{ant}:SWARM_FSTOP_STATS_X:FSTOP_DELAY_V2_D"},
+        {"label": "Sum Delay (ns) (DSM)",  "points": "DSM:roach2-{ant}:SWARM_FSTOP_STATS_X:FSTOP_DELAY_V2_D"},
+        {"label": "Walsh pattern (DSM)",   "points": "DSM:newdds:DDS_TO_HAL_X:WALSH_MOD_V11_V2_S"},
+        {"label": "LF load factor (DSM)",  "points": "DSM:roach2-{ant}:SWARM_LOADING_FACTOR_V2_F"},
+        {"label": "HF load factor (DSM)",  "points": "DSM:roach2-{ant}:SWARM_LOADING_FACTOR_V2_F"}
       ]
     }
   ]

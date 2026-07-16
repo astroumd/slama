@@ -7,8 +7,8 @@
       "type": "cells",
       "title": "GPS Status (DSM — placeholders)",
       "cells": [
-        {"label": "GPS8 lock (DSM)",        "point": "dsm:placeholder:DSM_GPS8_LOCK_STATUS"},
-        {"label": "TrueTime lock (DSM)",    "point": "dsm:placeholder:DSM_TRUETIME_LOCK_STATUS"},
+        {"label": "GPS8 lock (DSM)",        "point": "DSM:colossus:GPSD_REPORT_X:GPS8_STATUS_B"},
+        {"label": "TrueTime lock (DSM)",    "point": "DSM:colossus:GPSD_REPORT_X:TT_PHASE_LOCKED_S"},
         {"label": "Avg Phase (ns) (DSM)",   "point": "DSM:colossus:GPSD_REPORT_X:GPS8_AVG_PHASE_F"},
         {"label": "Freq ctl (DSM)",         "point": "DSM:colossus:GPSD_REPORT_X:GPS8_FREQ_CTLR_VALUE_F"},
         {"label": "Next leap sec (DSM)",    "point": "DSM:colossus:GPSD_REPORT_X:GPS8_NEXT_LEAP_SECOND_L"},

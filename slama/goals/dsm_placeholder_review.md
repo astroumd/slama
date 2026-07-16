@@ -26,6 +26,25 @@ that changed as a result of that audit are corrected in place, each flagged
 `[CORRECTED 2026-07-15]`. For any entry not so flagged, cross-check the CSV before
 relying on it, since the CSV received the full citation pass and this file did not.
 
+**2026-07-16 vector-field pass:** most corrected canonical names were then wired
+directly into the `src/slama/conf/displays/*.json` files, replacing the
+`dsm:placeholder:` strings. Along the way, `smax.json`'s `size` metadata revealed
+that many of the "real" fields identified above are multi-element arrays (2 to
+242 elements), not single scalars — e.g. the mRG/YIG fields (`_V2_*`, size 2),
+BDC detector/attenuator fields (`_V8_*`, size 8), and the coherence fringe
+fields (`_V11_V11_V2_*`, size 242). `DataBridge.fetch_cell()` has no per-index
+addressing, so these cells now show a stringified array rather than one number
+— a deliberate tradeoff (real data over a dead placeholder) confirmed with
+Marc, not an oversight. Fixing this properly needs a template/schema extension
+to select a single array index per display column. `DSM_BASELINE_M`,
+`DSM_FRINGE_TIMESTAMP`, `DSM_GENSET_STATUS`, `DSM_SMAINIT_PROGRESS`, the two
+BDC "no ATTN field" rows, `DSM_PACU_STATUS`, `DSM_FULLPOL_STATUS`,
+`DSM_SWARM_STATUS`, `DSM_ANT{ant}_SKYDIP_AGE`, `DSM_HAL_HAL_LAST_IPOINT_V11_L`,
+and `DSM_HAL_HAL_NIGHTLY_POINTING_S` remain placeholders — genuinely no live
+field exists for these. The `croom_iflo.json` IF/LO fields also remain
+placeholders: their real canonical name needs polarization (`H`/`L`) *and*
+mixer (`1`/`2`) indices that the `{ant}`-only template can't express at all.
+
 ---
 
 ## `aCmonitor.json`

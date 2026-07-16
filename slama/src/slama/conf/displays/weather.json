@@ -39,8 +39,8 @@
       },
       "rows": [
         {"label": "Skydip age (DSM)",    "points": "dsm:placeholder:DSM_ANT{ant}_SKYDIP_AGE"},
-        {"label": "Tau at freq (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_TAU_FREQ"},
-        {"label": "Tau225 (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_TAU225"}
+        {"label": "Tau at freq (DSM)",   "points": "RM:acc{ant}:RM_DIPFIT_FREQUENCY_F"},
+        {"label": "Tau225 (DSM)",        "points": "RM:acc{ant}:RM_DIPFIT_TAU_ZENITH_F"}
       ]
     }
   ]
