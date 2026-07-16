@@ -5,16 +5,45 @@
   "layout": [
     {
       "type": "cells",
-      "title": "AC/PACU Status (DSM — placeholders)",
+      "title": "Digital Rack",
       "cells": [
-        {"label": "Temp (C) (DSM)",          "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_TEMP_F"},
-        {"label": "Digital Rack Smoke detected", "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B"},
-        {"label": "Analog Rack Smoke detected",  "point": "DSM:corcon:CORR_PACU_STATUS_X:ANALOG_RACK_SMOKE_V14_B"},
-        {"label": "Fan status (DSM)",        "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_STARTED_B"},
-        {"label": "Compressor 1 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_STAGE_A_B"},
-        {"label": "Compressor 2 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_STAGE_A_B"},
-        {"label": "Humidity % (DSM)",        "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_REL_HUM_F"},
-        {"label": "PACU status (DSM)",       "point": "dsm:placeholder:DSM_PACU_STATUS"}
+        {"label": "Temp (F)",           "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_RETURN_AIR_TEMP_V9_F"},
+        {"label": "Smoke",              "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B"},
+        {"label": "Vent",               "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_VENT_SETTING_V9_F"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Analog Rack",
+      "cells": [
+        {"label": "Temp (F)",           "point": "DSM:corcon:CORR_PACU_STATUS_X:ANALOG_RACK_RETURN_AIR_TEMP_V14_F"},
+        {"label": "Smoke",              "point": "DSM:corcon:CORR_PACU_STATUS_X:ANALOG_RACK_SMOKE_V14_B"},
+        {"label": "Vent",               "point": "DSM:corcon:CORR_PACU_STATUS_X:ANALOG_RACK_VENT_SETTING_V14_F"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Compressor/Fans/Door",
+      "cells": [
+        {"label": "Compressor 1 (Stage A)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_STAGE_A_B"},
+        {"label": "Compressor 1 (Stage B)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_STAGE_B_B"},
+        {"label": "Compressor 2 (Stage A)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_STAGE_A_B"},
+        {"label": "Compressor 2 (Stage B)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_STAGE_B_B"},
+        {"label": "Supply Fan Enable",           "point": "DSM:corcon:CORR_PACU_STATUS_X:SUPPLY_FAN_ENABLE_B"},
+        {"label": "Supply Fan Started",          "point": "DSM:corcon:CORR_PACU_STATUS_X:SUPPLY_FAN_STARTED_B"},
+        {"label": "Supply Fan Flow",             "point": "DSM:corcon:CORR_PACU_STATUS_X:SUPPLY_FAN_FLOW_F"},
+        {"label": "Supply Fan Speed",            "point": "DSM:corcon:CORR_PACU_STATUS_X:SUPPLY_FAN_SPEED_F"},
+        {"label": "Return Fan Enable",           "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_ENABLE_B"},
+        {"label": "Return Fan Started",          "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_STARTED_B"},
+        {"label": "Return Fan Flow",             "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_FLOW_F"},
+        {"label": "Return Fan Speed",            "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_SPEED_F"},
+        {"label": "Supply Temp (F)",             "point": "DSM:corcon:CORR_PACU_STATUS_X:SUPPLY_AIR_TEMP_F"},
+        {"label": "DX Temp (F)",                 "point": "DSM:corcon:CORR_PACU_STATUS_X:DX_LEAVING_AIR_TEMP_F"},
+        {"label": "Mixed Temp (F)",              "point": "DSM:corcon:CORR_PACU_STATUS_X:MIXED_AIR_TEMP_F"},
+        {"label": "Return Temp (F)",             "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_TEMP_F"},
+        {"label": "Outside Temp (F)",            "point": "DSM:corcon:CORR_PACU_STATUS_X:OUTSIDE_AIR_TEMP_F"},
+        {"label": "Vault door (upper)",          "point": "DSM:colossus:DSM_UPPER_VAULT_DOOR_STATUS_B"},
+        {"label": "Vault door (lower)",          "point": "DSM:colossus:DSM_LOWER_VAULT_DOOR_STATUS_B"}
       ]
     }
   ]
