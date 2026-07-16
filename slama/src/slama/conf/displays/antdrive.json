@@ -32,15 +32,15 @@
         {"label": "Bypass Prelims",     "points": "RM:acc{ant}:RM_SCB_BYPASS_PRELIMS_S"},
         {"label": "Bypass SoftLims",    "points": "RM:acc{ant}:RM_SCB_BYPASS_SOFTLIMS_S"},
         {"label": "Stow Request",       "points": "RM:acc{ant}:RM_SCB_STOW_REQUEST_B"},
-        {"label": "Az Accel (deg/s2)",  "points": "RM:acc{ant}:RM_AZ_AMAX_F",               "format": "{:.3f}", "display_min": 0, "display_max": 10},
+        {"label": "Az Accel (deg/s2)",  "points": "RM:acc{ant}:RM_AZ_AMAX_F",               "format": "{:d}", "display_min": 0, "display_max": 99},
         {"label": "Pad ID",             "points": "RM:acc{ant}:RM_PAD_ID_B",                 "display_min": 1,   "display_max": 30},
-        {"label": "Pad ID fake",        "points": "RM:acc{ant}:RM_PAD_ID_IS_FAKE_B"},
+        {"label": "Pad ID fake",        "points": "RM:acc{ant}:RM_PAD_ID_IS_FAKE_B", "format":"{!s}"},
         {"label": "Drives timeout",     "points": "RM:acc{ant}:RM_DRIVES_TIMEOUT_FLAG_S"}
       ]
     },
     {
       "type": "cells",
-      "title": "Drive Fault State (DSM — placeholder)",
+      "title": "Drive Fault State",
       "cells": [
         {"label": "DSM ESTOP (unavailable)", "point": "DSM:acc{ant}:DSM_ESTOP_COMMAND_S"}
       ]
