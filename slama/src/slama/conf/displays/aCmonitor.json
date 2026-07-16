@@ -8,7 +8,8 @@
       "title": "AC/PACU Status (DSM — placeholders)",
       "cells": [
         {"label": "Temp (C) (DSM)",          "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_AIR_TEMP_F"},
-        {"label": "Smoke detected (DSM)",    "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_DUCT_SMOKE_B"},
+        {"label": "Digital Rack Smoke detected", "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B"},
+        {"label": "Analog Rack Smoke detected",  "point": "DSM:corcon:CORR_PACU_STATUS_X:ANALOG_RACK_SMOKE_V14_B"},
         {"label": "Fan status (DSM)",        "point": "DSM:corcon:CORR_PACU_STATUS_X:RETURN_FAN_STARTED_B"},
         {"label": "Compressor 1 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_1_STAGE_A_B"},
         {"label": "Compressor 2 (DSM)",      "point": "DSM:corcon:CORR_PACU_STATUS_X:COMPRESSOR_2_STAGE_A_B"},
