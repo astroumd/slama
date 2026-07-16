@@ -40,8 +40,8 @@
         "values": ["SMA", "JCMT", "SUBARU", "UKIRT", "CFHT", "UH88", "KECK", "VLBA"]
       },
       "rows": [
-        {"label": "Temperature (C)",     "point": "DSM:colossus:{site}_METEOROLOGY_X:TEMP_F", "format": "{:.2f}" },
-        {"label": "Rel. Humidity",       "point": "DSM:colossus:{site}_METEOROLOGY_X:HUMIDITY_F", "format": "{:.1f}" }
+        {"label": "Temperature (C)",     "points": "DSM:colossus:{site}_METEOROLOGY_X:TEMP_F", "format": "{:.2f}" },
+        {"label": "Rel. Humidity",       "points": "DSM:colossus:{site}_METEOROLOGY_X:HUMIDITY_F", "format": "{:.1f}" }
       ]
     }
   ]
