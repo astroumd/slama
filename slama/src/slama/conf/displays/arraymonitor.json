@@ -164,7 +164,7 @@
       "columns": 3,
       "cells": [
 
-        {"label": "T(amb) (C)",     "point": "RM:acc1:RM_WAATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
+        {"label": "T(amb) (C)",     "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
         {"label": "RH%",            "point": "RM:acc1:RM_WEATHER_HUMIDITY_F",  "format": "{:.1f}", "display_min": 0,    "display_max": 100},
         {"label": "P(atm) (mbar)",  "point": "RM:acc1:RM_WEATHER_MBAR_F",     "format": "{:.1f}", "display_min": 100,  "display_max": 1900},
         {"label": "Wind Server",     "point": "DSM:colossus:DSM_WIND_SERVER_C7"},
