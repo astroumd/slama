@@ -7,10 +7,10 @@
       "type": "cells",
       "title": "Project / Observation",
       "cells": [
-        {"label": "Project ID",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L", "format":"{:%10d}"},
+        {"label": "Project ID",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L", "format":"{:10d}"},
         {"label": "Observer",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
         {"label": "Location",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
-        {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L",  "format":"{:%5d}"},
+        {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L",  "format":"{:5d}"},
         {"label": "Tau225",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F"},
         {"label": "Tau350",        "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
