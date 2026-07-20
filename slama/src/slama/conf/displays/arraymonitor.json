@@ -1,26 +1,23 @@
 {
   "name": "Array Monitor",
-  "description": "Overall array status: project, weather, source, receiver — DSM rows are placeholders",
+  "description": "Overall array status: project, weather, source, receiver",
   "update_interval": 5,
   "layout": [
     {
       "type": "cells",
-      "title": "Project / Observation (DSM — placeholders)",
+      "title": "Project / Observation",
       "cells": [
-        {"label": "Project ID (DSM)",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L"},
-        {"label": "Observer (DSM)",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
-        {"label": "Location (DSM)",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
-        {"label": "Scans remain (DSM)",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L"},
-        {"label": "FullPol (DSM)",       "point": "dsm:placeholder:DSM_FULLPOL_STATUS"},
-        {"label": "SWARM status (DSM)",  "point": "dsm:placeholder:DSM_SWARM_STATUS"},
-        {"label": "DUT (DSM)",           "point": "RM:acc1:RM_POLAR_DUT_SEC_D"},
-        {"label": "Tau225 (DSM)",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F"},
-        {"label": "Tau350 (DSM)",        "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
+        {"label": "Project ID",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L"},
+        {"label": "Observer",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Location",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
+        {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L"},
+        {"label": "Tau225",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F"},
+        {"label": "Tau350",        "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
     },
     {
       "type": "cells",
-      "title": "Current Source (RM — live)",
+      "title": "Current Source",
       "cells": [
         {"label": "Source",         "point": "RM:acc1:RM_SOURCE_C34"},
         {"label": "RA (hr)",        "point": "RM:acc1:RM_RA_CAT_HOURS_D",  "format": "{:.4f}", "display_min": 0,    "display_max": 24},
@@ -32,7 +29,7 @@
     },
     {
       "type": "table",
-      "title": "Antenna Positions (RM — live)",
+      "title": "Antenna Positions",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -48,7 +45,7 @@
     },
     {
       "type": "table",
-      "title": "Safety / Operational Status (RM — live)",
+      "title": "Safety / Operational Status",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -69,7 +66,7 @@
     },
     {
       "type": "table",
-      "title": "Drive Status Detail (RM — live)",
+      "title": "Drive Status Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -94,7 +91,7 @@
     },
     {
       "type": "table",
-      "title": "Receiver / Optics Detail (RM — live)",
+      "title": "Receiver / Optics Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -122,7 +119,7 @@
     },
     {
       "type": "table",
-      "title": "Pointing / Deice / Dewar Detail (RM — live)",
+      "title": "Pointing / Deice / Dewar Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -143,7 +140,7 @@
     },
     {
       "type": "cells",
-      "title": "Ephemeris / Polar Motion (RM — live, from RM:acc1)",
+      "title": "Ephemeris / Polar Motion",
       "cells": [
         {"label": "RA apparent (hr)",      "point": "RM:acc1:RM_RA_APP_HR_D",  "format": "{:.4f}", "display_min": 0, "display_max": 24},
         {"label": "Dec apparent (deg)",    "point": "RM:acc1:RM_DEC_APP_DEG_D", "format": "{:.4f}", "display_min": -90, "display_max": 90},
@@ -164,7 +161,7 @@
     },
     {
       "type": "grid",
-      "title": "Weather (RM — live)",
+      "title": "Weather",
       "columns": 3,
       "cells": [
         {"label": "T(amb) (F)",     "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
