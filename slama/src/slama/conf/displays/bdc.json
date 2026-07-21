@@ -1,45 +1,88 @@
 {
-  "name": "BDC Backend",
-  "description": "Backend doubler chassis: detector voltages, VGA, attenuators (4-8, 8-12, 10-12, 12-16 GHz) — DSM placeholders",
+  "name": "BDC Status",
+  "description": "Bandwith doubler chassis: detector voltages, attenuators (4-8, 8-12, 10-12, 12-16 GHz)",
   "update_interval": 10,
   "layout": [
     {
       "type": "cells",
-      "title": "BDC 4-8 GHz (DSM — placeholders)",
+      "title": "BDC 4-8 GHz",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
-        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"},
-        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_4_8_ATTN"}
+        {"label": "BDC Time",  "point": "DSM:obscon:BDC48_X:DSM_BDC_TIMESTAMP_C15"},
+        {"label": "BDC Temps (C)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_TEMP_V2_V8_F"},
+        {"label": "VVA1 Control Readback (4-8)L (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (4-8)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR1_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback  (4-8)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
+        {"label": "VVA2 Control Readback (4-8)H (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA2_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (4-8)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR2_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback (4-8)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
+
+        {"label": "VVA3 Control Readback (4-6)L (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA3_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (4-6)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR3_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback (4-6)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR3_DETECTOR_READBACK_V8_F"},
+        {"label": "VVA4 Control Readback (4-6)H (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA4_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (4-6)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR4_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback (4-6)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR4_DETECTOR_READBACK_V8_F"},
+
+        {"label": "VVA5 Control Readback (6-8)L (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA5_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (6-8)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR5_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback (6-8)L (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR5_DETECTOR_READBACK_V8_F"},
+        {"label": "VVA6 Control Readback (6-8)H (V)",      "point": "DSM:obscon:BDC48_X:DSM_BDC_VVA6_CTRL_READBACK_V8_F"},
+        {"label": "Detector Target (6-8)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR6_DETECTOR_TARGET_V8_F"},
+        {"label": "Detector Readback (6-8)H (V)",  "point": "DSM:obscon:BDC48_X:DSM_BDC_CR6_DETECTOR_READBACK_V8_F"}
       ]
     },
     {
       "type": "cells",
-      "title": "BDC 8-12 GHz (DSM — placeholders)",
+      "title": "BDC 8-10 GHz",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
-        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_CTRL_READBACK_V8_F"},
-        {"label": "Attn setting (DSM)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"}
+        {"label": "BDC Time",  "point": "DSM:obscon:BDC_X:DSM_BDC_TIMESTAMP_C15"}, 
+        {"label": "BDC Temps (C)",  "point": "DSM:obscon:BDC_X:DSM_BDC_TEMP_V2_V7_F"},
+        {"label": "VGA1 Control Nominal (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_CTRL_NOMINAL_V8_F"},
+        {"label": "VGA1 Detector Target (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_DETECTOR_TARGET_V8_F"},
+        {"label": "VGA1 Detector Readback (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA2 Control Nominal (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR2_CTRL_NOMINAL_V8_F"},
+        {"label": "VGA2 Detector Target (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR2_DETECTOR_TARGET_V8_F"},
+        {"label": "VGA2 Detector Readback (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
+        {"label": "Atten1 Control Nominal (V)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT20_CTRL_NOMINAL_V8_F"},
+        {"label": "Atten1 Control Readback (V)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"},
+        {"label": "Atten1 Detector Target (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_A20_DETECTOR_TARGET_V8_F"},
+        {"label": "Atten1 Detector Readback (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AT20_DETECTOR_READBACK_V8_F"},
+        {"label": "Atten2 Control Nominal (V)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT21_CTRL_NOMINAL_V8_F"},
+        {"label": "Atten2 Control Readback (V)",     "point": "DSM:obscon:BDC_X:DSM_BDC_AT21_CTRL_READBACK_V8_F"},
+        {"label": "Atten2 Detector Target (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_A21_DETECTOR_TARGET_V8_F"},
+        {"label": "Atten2 Detector Readback (V)",  "point": "DSM:obscon:BDC_X:DSM_BDC_AT21_DETECTOR_READBACK_V8_F"},
+        {"label": "SWITCH POSITION",  "point": "DSM:obscon:BDC_X:DSM_BDC_DO_V8_C16"}
       ]
     },
     {
       "type": "cells",
-      "title": "BDC 10-12 GHz (DSM — placeholders)",
+      "title": "BDC 10-12 GHz",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
-        {"label": "Attn setting (DSM)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"}
+        {"label": "BDC Time",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_TIMESTAMP_C15"}, 
+        {"label": "BDC Temps (C)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_TEMP_V2_V7_F"},
+        {"label": "VGA1 Control Nominal (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR1_CTRL_NOMINAL_V8_F"},
+        {"label": "VGA1 Detector Target (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR1_DETECTOR_TARGET_V8_F"},
+        {"label": "VGA1 Detector Readback (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR1_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA2 Control Nominal (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR2_CTRL_NOMINAL_V8_F"},
+        {"label": "VGA2 Detector Target (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR2_DETECTOR_TARGET_V8_F"},
+        {"label": "VGA2 Detector Readback (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AR2_DETECTOR_READBACK_V8_F"},
+        {"label": "Atten1 Control Nominal (V)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT20_CTRL_NOMINAL_V8_F"},
+        {"label": "Atten1 Control Readback (V)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT20_CTRL_READBACK_V8_F"},
+        {"label": "Atten1 Detector Target (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_A20_DETECTOR_TARGET_V8_F"},
+        {"label": "Atten1 Detector Readback (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT20_DETECTOR_READBACK_V8_F"},
+        {"label": "Atten2 Control Nominal (V)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT21_CTRL_NOMINAL_V8_F"},
+        {"label": "Atten2 Control Readback (V)",     "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT21_CTRL_READBACK_V8_F"},
+        {"label": "Atten2 Detector Target (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_A21_DETECTOR_TARGET_V8_F"},
+        {"label": "Atten2 Detector Readback (V)",  "point": "DSM:obscon:BDC1012_X:DSM_BDC_AT21_DETECTOR_READBACK_V8_F"}
       ]
     },
     {
       "type": "cells",
-      "title": "BDC 12-16 GHz (DSM — placeholders)",
+      "title": "BDC 12-16 GHz",
       "cells": [
-        {"label": "Det voltage ch1 (DSM)",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
-        {"label": "Det voltage ch2 (DSM)",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
-        {"label": "VGA setting (DSM)",      "point": "DSM:obscon:BDC1216_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"},
-        {"label": "Attn setting (DSM)",     "point": "dsm:placeholder:DSM_BDC_12_16_ATTN"}
+        {"label": "Det voltage ch1",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR1_DETECTOR_READBACK_V8_F"},
+        {"label": "Det voltage ch2",  "point": "DSM:obscon:BDC1216_X:DSM_BDC_CR2_DETECTOR_READBACK_V8_F"},
+        {"label": "VGA setting",      "point": "DSM:obscon:BDC1216_X:DSM_BDC_VVA1_CTRL_READBACK_V8_F"}
       ]
     }
   ]
