@@ -191,10 +191,10 @@ class TestFetchVectorRowCells:
         assert cells["test:vec.3"].value == "40.0000"
 
     def test_2d_array_with_vector_index(self):
-        # Flat storage of a 2x3 array: [[1,2,3],[4,5,6]]
-        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        # SMAX returns 2D pulls already correctly shaped, e.g. [[1,2,3],[4,5,6]]
+        db = bridge_with_array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
         cells = db.fetch_vector_row_cells(
-            "test:mat", [0, 1, 2], vector_index=1, shape=(2, 3)
+            "test:mat", [0, 1, 2], vector_index=1
         )
         assert cells["test:mat.0"].value == "4.0000"
         assert cells["test:mat.2"].value == "6.0000"
@@ -228,19 +228,15 @@ class TestFetchVectorRowCells:
 
 class TestFetchMatrixCells:
     def test_full_2x3_matrix(self):
-        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-        cells = db.fetch_matrix_cells(
-            "test:mat", [0, 1], [0, 1, 2], shape=(2, 3)
-        )
+        db = bridge_with_array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        cells = db.fetch_matrix_cells("test:mat", [0, 1], [0, 1, 2])
         assert len(cells) == 6
         assert cells["test:mat.0.0"].value == "1.0000"
         assert cells["test:mat.1.2"].value == "6.0000"
 
     def test_row_and_column_subset(self):
-        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-        cells = db.fetch_matrix_cells(
-            "test:mat", [1], [0, 2], shape=(2, 3)
-        )
+        db = bridge_with_array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        cells = db.fetch_matrix_cells("test:mat", [1], [0, 2])
         assert set(cells.keys()) == {"test:mat.1.0", "test:mat.1.2"}
         assert cells["test:mat.1.0"].value == "4.0000"
         assert cells["test:mat.1.2"].value == "6.0000"
@@ -248,6 +244,6 @@ class TestFetchMatrixCells:
     def test_no_client_returns_nodata_for_every_cell(self):
         db = DataBridge()
         db._get_client = lambda: None  # force lazy-connect failure without a real network attempt
-        cells = db.fetch_matrix_cells("test:mat", [0], [0, 1], shape=(1, 2))
+        cells = db.fetch_matrix_cells("test:mat", [0], [0, 1])
         assert cells["test:mat.0.0"].css_class == CSS_NODATA
         assert cells["test:mat.0.1"].css_class == CSS_NODATA

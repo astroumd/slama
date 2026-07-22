@@ -30,10 +30,11 @@ class TableBlock:
           is pre-expanded to synthetic per-element keys of the form
           ``"{vector_point}.{index}"``, and ``"vector_point"``,
           ``"vector_elements"`` (the raw array indices selected, one per
-          column), ``"vector_index"`` (which outer index to slice first,
-          for a 2D array; None for a 1D vector), and ``"shape"`` (the
-          array's full shape, required only when ``vector_index`` is set)
-          are also present so ``DataBridge`` can fetch and slice it.
+          column), and ``"vector_index"`` (which outer index to slice
+          first, for a 2D array; None for a 1D vector) are also present so
+          ``DataBridge`` can fetch and slice it. No shape is needed here —
+          SMAX returns multi-dimensional array pulls already reshaped
+          according to its own dimensionality metadata.
 
         Every row dict also has optionally ``"format"`` (str or None), and
         optionally ``"display_min"`` / ``"display_max"`` (float or None).
@@ -64,10 +65,12 @@ class MatrixBlock:
     point : str
         SMAX canonical name of the array-valued monitor point.
     shape : tuple of int
-        Full shape of the underlying array, e.g. ``(2, 8)``. Required
-        because SMAX's array pull flattens multi-dimensional arrays and
-        does not preserve dimensionality metadata — the shape must be
-        declared here to reshape the flat pulled data correctly.
+        Full shape of the underlying array, e.g. ``(2, 8)``. Required so
+        default element selection (when ``row_elements``/``column_elements``
+        is omitted, meaning "all indices") can be resolved at config-load
+        time, without a live SMAX connection. Not used to reshape pulled
+        data — SMAX already returns multi-dimensional array pulls
+        correctly shaped.
     row_labels : list of str
         Header label for each displayed row, one per entry in
         ``row_elements``.
@@ -361,7 +364,6 @@ def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock |
                     "vector_point": vector_point,
                     "vector_elements": elements,
                     "vector_index": row_def.get("vector_index"),
-                    "shape": row_def.get("shape"),
                 })
             else:
                 expanded = _expand_template(row_def["points"], var, values)

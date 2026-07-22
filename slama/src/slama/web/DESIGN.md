@@ -172,19 +172,20 @@ blocks rendered top-to-bottom.
   SMAX point across the table's existing columns:
   ```json
   {"label": "BDC Temp (Chassis 0)", "vector_point": "DSM:...:DSM_BDC_TEMP_V2_V8_F",
-   "vector_index": 0, "shape": [2, 8], "elements": [1, 2, 3, 4, 5, 6, 7, 8]}
+   "vector_index": 0, "elements": [1, 2, 3, 4, 5, 6, 7, 8]}
   ```
   `elements` selects which raw array indices populate the row's cells, in
   column order — either an explicit list (for arbitrary/non-contiguous
   picks, e.g. `[1, 2, 4, 7, 8]`) or a slice dict `{"start":, "stop":,
   "step":}` (Python-style, exclusive stop). Defaults to every index up to
-  the column count. `vector_index` + `shape` are only needed when the
-  point is a 2D array: `shape` is required because SMAX flattens
-  multi-dimensional array pulls and does not preserve dimensionality
-  metadata, so the display config must declare it explicitly. A vector row
-  can be mixed with ordinary scalar rows in the same table, and different
-  vector rows may select different `elements` as long as every row selects
-  the same number of elements as there are columns.
+  the column count. `vector_index` is only needed when the point is a 2D
+  array, to pick which outer row to slice first — no `shape` is needed
+  here, since SMAX already returns multi-dimensional array pulls correctly
+  shaped (it reshapes using its own dimensionality metadata before
+  returning). A vector row can be mixed with ordinary scalar rows in the
+  same table, and different vector rows may select different `elements`
+  as long as every row selects the same number of elements as there are
+  columns.
 
 - **`matrix`** — A standalone table where every cell comes from slicing one
   array-valued SMAX point along one or two axes (rather than many distinct
@@ -207,7 +208,9 @@ blocks rendered top-to-bottom.
   `"Chassis{index-1}"`-style numbering via a negative offset), or
   `{"prefix":, "start":}` labels sequential display position instead of
   the raw index. `row_elements`/`column_elements` use the same
-  list-or-slice selection schema as a vector row's `elements`.
+  list-or-slice selection schema as a vector row's `elements`. `shape` here
+  is used only to resolve "all elements" defaults at config-load time
+  without a live SMAX connection — it is not used to reshape pulled data.
 
 - **`grid`** — Label: Value pairs arranged in a CSS grid with a configurable
   number of columns. Each cell maps to one SMAX canonical name.
@@ -257,8 +260,10 @@ key of the form `"{canonical_name}.{index}"` (vector row) or
 `"{canonical_name}.{row}.{col}"` (matrix block) — never a bare canonical
 name, since one no longer maps to exactly one cell. `fetch_vector_row_cells()`
 and `fetch_matrix_cells()` each pull the array once via `_pull_array()` and
-index into the flat result (reshaping with `numpy` when a shape is given,
-since SMAX does not preserve multi-dimensional shape on pull). Threshold
+index directly into the result — SMAX already returns multi-dimensional
+array pulls correctly shaped per its own dimensionality metadata
+(`smax_data_types.UserArray.__new__` reshapes before the object is even
+constructed), so no manual reshape is needed on this side. Threshold
 lookup and history recording still key off the parent canonical name for
 thresholds (one threshold set applies to every element) but off the
 synthetic per-element key for history, so each antenna/chassis element gets
