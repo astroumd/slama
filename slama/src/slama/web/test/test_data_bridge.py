@@ -221,6 +221,29 @@ class TestFetchVectorRowCells:
         assert cells["test:point.0"].css_class == CSS_GOOD
         assert cells["test:point.1"].css_class == CSS_WARNING
 
+    def test_string_array_elements(self):
+        # e.g. DSM_BDC_DO_V8_C16 — a vector of strings, not numbers
+        db = bridge_with_array(["A1", "B1", "OPEN"])
+        cells = db.fetch_vector_row_cells("test:switch", [0, 1, 2])
+        assert cells["test:switch.0"].value == "A1"
+        assert cells["test:switch.0"].is_numeric is False
+        assert cells["test:switch.2"].value == "OPEN"
+
+    def test_string_array_uses_valid_strings_threshold(self):
+        db = bridge_with_thresholds(valid_strings=["A1", "B1"])
+        db._client = FakeSmaxClient(["A1", "FAULT"])
+        cells = db.fetch_vector_row_cells("test:point", [0, 1])
+        assert cells["test:point.0"].css_class == CSS_GOOD
+        assert cells["test:point.1"].css_class == CSS_ERROR
+
+    def test_string_array_ignores_display_min_max(self):
+        db = bridge_with_array(["A1", "B1"])
+        cells = db.fetch_vector_row_cells(
+            "test:switch", [0, 1], display_min=0.0, display_max=100.0
+        )
+        assert cells["test:switch.0"].value == "A1"
+        assert cells["test:switch.0"].css_class != CSS_NODATA
+
 
 # ---------------------------------------------------------------------------
 # fetch_matrix_cells — standalone 2D array table

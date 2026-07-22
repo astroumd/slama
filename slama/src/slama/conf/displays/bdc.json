@@ -55,8 +55,7 @@
       "type": "cells",
       "title": "BDC 8-10 GHz",
       "cells": [
-        {"label": "BDC Time",  "point": "DSM:obscon:BDC_X:DSM_BDC_TIMESTAMP_C15"},
-        {"label": "SWITCH POSITION",  "point": "DSM:obscon:BDC_X:DSM_BDC_DO_V8_C16"}
+        {"label": "BDC Time",  "point": "DSM:obscon:BDC_X:DSM_BDC_TIMESTAMP_C15"}
       ]
     },
     {
@@ -92,7 +91,8 @@
         {"label": "Atten2 Control Nominal (V)",  "vector_point": "DSM:obscon:BDC_X:DSM_BDC_AT21_CTRL_NOMINAL_V8_F"},
         {"label": "Atten2 Control Readback (V)", "vector_point": "DSM:obscon:BDC_X:DSM_BDC_AT21_CTRL_READBACK_V8_F"},
         {"label": "Atten2 Detector Target (V)",  "vector_point": "DSM:obscon:BDC_X:DSM_BDC_AT21_DETECTOR_TARGET_V8_F"},
-        {"label": "Atten2 Detector Readback (V)","vector_point": "DSM:obscon:BDC_X:DSM_BDC_AT21_DETECTOR_READBACK_V8_F"}
+        {"label": "Atten2 Detector Readback (V)","vector_point": "DSM:obscon:BDC_X:DSM_BDC_AT21_DETECTOR_READBACK_V8_F"},
+        {"label": "Switch Position",  "vector_point": "DSM:obscon:BDC_X:DSM_BDC_DO_V8_C16"}
       ]
     },
     {

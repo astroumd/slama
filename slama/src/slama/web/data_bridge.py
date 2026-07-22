@@ -393,7 +393,36 @@ class DataBridge:
             logger.debug("Failed to fetch array %s", canonical_name, exc_info=True)
             return None
 
-    def _slice_cell(self, key: str, canonical_name: str, raw_value: float,
+    @staticmethod
+    def _normalize_element(value):
+        """Normalize one pulled array element to a native float or str.
+
+        Numeric SMAX array elements come back as numpy scalar types
+        (e.g. ``np.float32``); string array elements (``SmaxStrArray``)
+        come back as native ``str`` already. This gives callers a single
+        type to branch on downstream, mirroring how ``fetch_cell`` already
+        handles a scalar pull.
+
+        Parameters
+        ----------
+        value : object
+            One element indexed out of a pulled array-like value.
+
+        Returns
+        -------
+        float or str
+            The element as a native Python float or str.
+
+        Raises
+        ------
+        TypeError, ValueError
+            If ``value`` is neither a string nor convertible to float.
+        """
+        if isinstance(value, str):
+            return value
+        return float(value)
+
+    def _slice_cell(self, key: str, canonical_name: str, raw_value,
                      fmt: str, display_min: float, display_max: float) -> CellData:
         """Build one ``CellData`` for a single sliced array element.
 
@@ -403,14 +432,16 @@ class DataBridge:
             Synthetic per-element cell key, e.g. ``"{point}.3"``.
         canonical_name : str
             Parent SMAX canonical name, used for threshold lookup.
-        raw_value : float
+        raw_value : float or str
             The element's value.
         fmt : str or None
             Python format string.
         display_min : float or None
-            If set, values strictly below this are shown as no-data.
+            If set, numeric values strictly below this are shown as
+            no-data. Ignored for string values.
         display_max : float or None
-            If set, values strictly above this are shown as no-data.
+            If set, numeric values strictly above this are shown as
+            no-data. Ignored for string values.
 
         Returns
         -------
@@ -418,17 +449,20 @@ class DataBridge:
             Rendered cell, or a no-data cell if outside
             ``[display_min, display_max]``.
         """
-        if (display_min is not None and raw_value < display_min) or \
-           (display_max is not None and raw_value > display_max):
-            return self._nodata_cell(key)
+        is_numeric = isinstance(raw_value, Number) and not isinstance(raw_value, bool)
 
-        self._record_history(key, raw_value)
+        if is_numeric:
+            if (display_min is not None and raw_value < display_min) or \
+               (display_max is not None and raw_value > display_max):
+                return self._nodata_cell(key)
+            self._record_history(key, raw_value)
+
         return CellData(
             canonical_name=key,
             value=self._format_value(raw_value, fmt),
             css_class=self._compute_css_class(canonical_name, raw_value),
             cell_id=self._make_cell_id(key),
-            is_numeric=True,
+            is_numeric=is_numeric,
         )
 
     def fetch_vector_row_cells(self, vector_point: str, elements: list[int],
@@ -476,7 +510,7 @@ class DataBridge:
         cells = {}
         for key, idx in zip(keys, elements):
             try:
-                raw_value = float(row[idx])
+                raw_value = self._normalize_element(row[idx])
             except (IndexError, TypeError, ValueError):
                 cells[key] = self._nodata_cell(key)
                 continue
@@ -527,7 +561,7 @@ class DataBridge:
             for c in column_elements:
                 key = f"{point}.{r}.{c}"
                 try:
-                    raw_value = float(arr[r][c])
+                    raw_value = self._normalize_element(arr[r][c])
                 except (IndexError, TypeError, ValueError):
                     cells[key] = self._nodata_cell(key)
                     continue
