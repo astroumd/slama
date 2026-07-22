@@ -17,6 +17,8 @@
     <div id="block-{{ loop.index0 }}" class="layout-block">
         {% if block.block_type == "table" %}
             {% include "components/table.html" %}
+        {% elif block.block_type == "matrix" %}
+            {% include "components/matrix.html" %}
         {% elif block.block_type == "grid" %}
             {% include "components/grid.html" %}
         {% elif block.block_type == "cells" %}

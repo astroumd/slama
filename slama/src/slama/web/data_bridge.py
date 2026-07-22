@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from numbers import Number
 from pathlib import Path
 
+import numpy as np
 from smax import SmaxRedisClient
 
 logger = logging.getLogger(__name__)
@@ -125,14 +126,16 @@ class DataBridge:
         Parameters
         ----------
         canonical_name : str
-            SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``).
+            SMAX canonical name (e.g., ``RM:acc1:RM_TRACK_EL_F``), or a
+            synthetic per-element vector/matrix cell key (e.g.,
+            ``RM:acc1:RM_TRACK_EL_F.3``).
 
         Returns
         -------
         str
             HTML-safe element id (e.g., ``cell-RM-acc1-RM-TRACK-EL-F``).
         """
-        return "cell-" + canonical_name.replace(":", "-")
+        return "cell-" + canonical_name.replace(":", "-").replace(".", "-")
 
     def _format_value(self, value, fmt: str = None) -> str:
         """Format a value for display.
@@ -364,6 +367,186 @@ class DataBridge:
             is_numeric=isinstance(raw_value, Number) and not isinstance(raw_value, bool),
         )
 
+    def _pull_array(self, canonical_name: str) -> list | None:
+        """Pull an array-valued point from SMAX as a flat list of floats.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name of an array-valued monitor point.
+
+        Returns
+        -------
+        list of float or None
+            Flat list of values in storage order (multi-dimensional arrays
+            are returned flattened — SMAX does not preserve dimensionality
+            on pull, which is why callers that need a 2D array must supply
+            the shape themselves to reshape it). None if SMAX is
+            unreachable or the pull fails.
+        """
+        client = self._get_client()
+        if client is None:
+            return None
+        table, key = canonical_name.rsplit(":", 1)
+        try:
+            result = client.smax_pull(table, key)
+            return [float(v) for v in result]
+        except Exception:
+            logger.debug("Failed to fetch array %s", canonical_name, exc_info=True)
+            return None
+
+    def _slice_cell(self, key: str, canonical_name: str, raw_value: float,
+                     fmt: str, display_min: float, display_max: float) -> CellData:
+        """Build one ``CellData`` for a single sliced array element.
+
+        Parameters
+        ----------
+        key : str
+            Synthetic per-element cell key, e.g. ``"{point}.3"``.
+        canonical_name : str
+            Parent SMAX canonical name, used for threshold lookup.
+        raw_value : float
+            The element's value.
+        fmt : str or None
+            Python format string.
+        display_min : float or None
+            If set, values strictly below this are shown as no-data.
+        display_max : float or None
+            If set, values strictly above this are shown as no-data.
+
+        Returns
+        -------
+        CellData
+            Rendered cell, or a no-data cell if outside
+            ``[display_min, display_max]``.
+        """
+        if (display_min is not None and raw_value < display_min) or \
+           (display_max is not None and raw_value > display_max):
+            return self._nodata_cell(key)
+
+        self._record_history(key, raw_value)
+        return CellData(
+            canonical_name=key,
+            value=self._format_value(raw_value, fmt),
+            css_class=self._compute_css_class(canonical_name, raw_value),
+            cell_id=self._make_cell_id(key),
+            is_numeric=True,
+        )
+
+    def fetch_vector_row_cells(self, vector_point: str, elements: list[int],
+                                vector_index: int = None, shape: tuple = None,
+                                fmt: str = None, display_min: float = None,
+                                display_max: float = None) -> dict[str, CellData]:
+        """Fetch one array-valued point and slice it into a table row's cells.
+
+        Pulls the array once (not once per displayed element), then indexes
+        into it. For a plain 1D vector, ``elements`` indexes the flat pulled
+        array directly. For a 2D array, ``vector_index`` selects which outer
+        row to use first (the array is reshaped using ``shape`` since SMAX
+        does not preserve dimensionality on pull).
+
+        Parameters
+        ----------
+        vector_point : str
+            SMAX canonical name of the array-valued monitor point.
+        elements : list of int
+            Raw array indices to display, one per table column, in order.
+        vector_index : int or None, optional
+            For a 2D array, which outer index (axis 0) to slice before
+            indexing with ``elements``. None for a 1D vector.
+        shape : tuple of int or None, optional
+            Full array shape, required when ``vector_index`` is given.
+        fmt : str or None, optional
+            Python format string applied to every cell.
+        display_min : float or None, optional
+            If set, values strictly below this are shown as no-data.
+        display_max : float or None, optional
+            If set, values strictly above this are shown as no-data.
+
+        Returns
+        -------
+        dict of str to CellData
+            Keyed by synthetic cell key ``"{vector_point}.{index}"``, one
+            entry per entry in ``elements``.
+        """
+        keys = [f"{vector_point}.{idx}" for idx in elements]
+        flat = self._pull_array(vector_point)
+        if flat is None:
+            return {key: self._nodata_cell(key) for key in keys}
+
+        if vector_index is not None:
+            if shape is None:
+                raise ValueError("vector_index requires shape to reshape the flat array")
+            row = np.array(flat).reshape(shape)[vector_index]
+        else:
+            row = flat
+
+        cells = {}
+        for key, idx in zip(keys, elements):
+            try:
+                raw_value = float(row[idx])
+            except (IndexError, TypeError, ValueError):
+                cells[key] = self._nodata_cell(key)
+                continue
+            cells[key] = self._slice_cell(
+                key, vector_point, raw_value, fmt, display_min, display_max
+            )
+        return cells
+
+    def fetch_matrix_cells(self, point: str, row_elements: list[int],
+                            column_elements: list[int], shape: tuple,
+                            fmt: str = None, display_min: float = None,
+                            display_max: float = None) -> dict[str, CellData]:
+        """Fetch a 2D array-valued point and slice it into a matrix block's cells.
+
+        Pulls the array once, reshapes it to ``shape``, then indexes every
+        selected (row, column) pair.
+
+        Parameters
+        ----------
+        point : str
+            SMAX canonical name of the 2D array-valued monitor point.
+        row_elements : list of int
+            Raw array indices along axis 0 to display, in row order.
+        column_elements : list of int
+            Raw array indices along axis 1 to display, in column order.
+        shape : tuple of int
+            Full array shape, e.g. ``(2, 8)``.
+        fmt : str or None, optional
+            Python format string applied to every cell.
+        display_min : float or None, optional
+            If set, values strictly below this are shown as no-data.
+        display_max : float or None, optional
+            If set, values strictly above this are shown as no-data.
+
+        Returns
+        -------
+        dict of str to CellData
+            Keyed by synthetic cell key ``"{point}.{row}.{col}"``.
+        """
+        keys = [
+            f"{point}.{r}.{c}" for r in row_elements for c in column_elements
+        ]
+        flat = self._pull_array(point)
+        if flat is None:
+            return {key: self._nodata_cell(key) for key in keys}
+
+        arr = np.array(flat).reshape(shape)
+
+        cells = {}
+        for r in row_elements:
+            for c in column_elements:
+                key = f"{point}.{r}.{c}"
+                try:
+                    raw_value = float(arr[r][c])
+                except (IndexError, TypeError, ValueError):
+                    cells[key] = self._nodata_cell(key)
+                    continue
+                cells[key] = self._slice_cell(
+                    key, point, raw_value, fmt, display_min, display_max
+                )
+        return cells
+
     def fetch_all(self, config) -> dict[str, CellData]:
         """Fetch all monitor point values for a display configuration.
 
@@ -381,7 +564,7 @@ class DataBridge:
         dict of str to CellData
             Mapping of canonical name to its rendered cell data.
         """
-        from .display_config import TableBlock, GridBlock, CellsBlock
+        from .display_config import TableBlock, MatrixBlock, GridBlock, CellsBlock
 
         cells = {}
         for block in config.layout:
@@ -390,8 +573,20 @@ class DataBridge:
                     fmt = row.get("format")
                     dmin = row.get("display_min")
                     dmax = row.get("display_max")
-                    for point in row["points"]:
-                        cells[point] = self.fetch_cell(point, fmt, dmin, dmax)
+                    if row.get("vector_point"):
+                        cells.update(self.fetch_vector_row_cells(
+                            row["vector_point"], row["vector_elements"],
+                            row.get("vector_index"), row.get("shape"),
+                            fmt, dmin, dmax,
+                        ))
+                    else:
+                        for point in row["points"]:
+                            cells[point] = self.fetch_cell(point, fmt, dmin, dmax)
+            elif isinstance(block, MatrixBlock):
+                cells.update(self.fetch_matrix_cells(
+                    block.point, block.row_elements, block.column_elements,
+                    block.shape, block.format, block.display_min, block.display_max,
+                ))
             elif isinstance(block, (GridBlock, CellsBlock)):
                 for cell_def in block.cells:
                     fmt = cell_def.get("format")

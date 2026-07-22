@@ -1,0 +1,27 @@
+<h3>{{ block.title }}</h3>
+<table class="mp-table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for col in block.column_labels %}
+            <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in block.row_elements %}
+        <tr>
+            <td class="row-label">{{ block.row_labels[loop.index0] }}</td>
+            {% for c in block.column_elements %}
+            {% set key = block.point ~ "." ~ r ~ "." ~ c %}
+            {% set cell = cells.get(key) %}
+            <td id="{{ cell.cell_id if cell else '' }}"
+                class="{{ cell.css_class if cell else 'cell-nodata' }}{% if cell and cell.is_numeric %} plotable{% endif %}"
+                {% if cell and cell.is_numeric %}data-canonical="{{ cell.canonical_name }}"{% endif %}>
+                {{ cell.value if cell else '---' }}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

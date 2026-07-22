@@ -30,6 +30,7 @@ from .data_bridge import DataBridge
 from .display_config import (
     DisplayConfig,
     TableBlock,
+    MatrixBlock,
     GridBlock,
     CellsBlock,
     load_display_config,
@@ -290,7 +291,7 @@ def _render_block(block, index: int, cells: dict,
 
     Parameters
     ----------
-    block : TableBlock, GridBlock, or CellsBlock
+    block : TableBlock, MatrixBlock, GridBlock, or CellsBlock
         Layout block to render.
     index : int
         Zero-based block index, used for the block's HTML id.
@@ -311,6 +312,8 @@ def _render_block(block, index: int, cells: dict,
 
     if isinstance(block, TableBlock):
         template = jinja_env.get_template("components/table.html")
+    elif isinstance(block, MatrixBlock):
+        template = jinja_env.get_template("components/matrix.html")
     elif isinstance(block, GridBlock):
         template = jinja_env.get_template("components/grid.html")
     elif isinstance(block, CellsBlock):

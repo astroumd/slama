@@ -19,6 +19,23 @@ def bridge_with_thresholds(**thresholds):
     return db
 
 
+class FakeSmaxClient:
+    """Stand-in for SmaxRedisClient that returns a fixed array on pull."""
+
+    def __init__(self, values):
+        self._values = values
+
+    def smax_pull(self, table, key):
+        return self._values
+
+
+def bridge_with_array(values):
+    """Return a DataBridge wired to a FakeSmaxClient returning ``values``."""
+    db = DataBridge()
+    db._client = FakeSmaxClient(values)
+    return db
+
+
 # ---------------------------------------------------------------------------
 # _compute_css_class — numeric thresholds
 # ---------------------------------------------------------------------------
@@ -150,3 +167,87 @@ class TestLoadThresholdsFromSmaxJson:
         db = DataBridge(smax_path=SMAX_JSON)
         # RM_TRACK_EL_F warn_low=15.0 — value of 10.0 should be CSS_WARNING
         assert db._compute_css_class("RM:acc1:RM_TRACK_EL_F", 10.0) == CSS_WARNING
+
+
+# ---------------------------------------------------------------------------
+# fetch_vector_row_cells — 1D vector spread across table columns
+# ---------------------------------------------------------------------------
+
+class TestFetchVectorRowCells:
+    def test_all_elements(self):
+        db = bridge_with_array([10.0, 20.0, 30.0, 40.0])
+        cells = db.fetch_vector_row_cells("test:vec", [0, 1, 2, 3])
+        assert set(cells.keys()) == {
+            "test:vec.0", "test:vec.1", "test:vec.2", "test:vec.3",
+        }
+        assert cells["test:vec.0"].value == "10.0000"
+        assert cells["test:vec.0"].is_numeric is True
+        assert cells["test:vec.0"].cell_id == "cell-test-vec-0"
+
+    def test_subset_of_elements_skip_middle(self):
+        db = bridge_with_array([10.0, 20.0, 30.0, 40.0, 50.0])
+        cells = db.fetch_vector_row_cells("test:vec", [0, 1, 3])
+        assert set(cells.keys()) == {"test:vec.0", "test:vec.1", "test:vec.3"}
+        assert cells["test:vec.3"].value == "40.0000"
+
+    def test_2d_array_with_vector_index(self):
+        # Flat storage of a 2x3 array: [[1,2,3],[4,5,6]]
+        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        cells = db.fetch_vector_row_cells(
+            "test:mat", [0, 1, 2], vector_index=1, shape=(2, 3)
+        )
+        assert cells["test:mat.0"].value == "4.0000"
+        assert cells["test:mat.2"].value == "6.0000"
+
+    def test_no_client_returns_nodata(self):
+        db = DataBridge()
+        db._get_client = lambda: None  # force lazy-connect failure without a real network attempt
+        cells = db.fetch_vector_row_cells("test:vec", [0, 1])
+        assert cells["test:vec.0"].css_class == CSS_NODATA
+        assert cells["test:vec.0"].value == "---"
+
+    def test_display_min_max_suppresses_value(self):
+        db = bridge_with_array([-999.0, 5.0])
+        cells = db.fetch_vector_row_cells(
+            "test:vec", [0, 1], display_min=0.0, display_max=100.0
+        )
+        assert cells["test:vec.0"].css_class == CSS_NODATA
+        assert cells["test:vec.1"].value == "5.0000"
+
+    def test_uses_parent_thresholds(self):
+        db = bridge_with_thresholds(warn_high=25.0)
+        db._client = FakeSmaxClient([10.0, 30.0])
+        cells = db.fetch_vector_row_cells("test:point", [0, 1])
+        assert cells["test:point.0"].css_class == CSS_GOOD
+        assert cells["test:point.1"].css_class == CSS_WARNING
+
+
+# ---------------------------------------------------------------------------
+# fetch_matrix_cells — standalone 2D array table
+# ---------------------------------------------------------------------------
+
+class TestFetchMatrixCells:
+    def test_full_2x3_matrix(self):
+        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        cells = db.fetch_matrix_cells(
+            "test:mat", [0, 1], [0, 1, 2], shape=(2, 3)
+        )
+        assert len(cells) == 6
+        assert cells["test:mat.0.0"].value == "1.0000"
+        assert cells["test:mat.1.2"].value == "6.0000"
+
+    def test_row_and_column_subset(self):
+        db = bridge_with_array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+        cells = db.fetch_matrix_cells(
+            "test:mat", [1], [0, 2], shape=(2, 3)
+        )
+        assert set(cells.keys()) == {"test:mat.1.0", "test:mat.1.2"}
+        assert cells["test:mat.1.0"].value == "4.0000"
+        assert cells["test:mat.1.2"].value == "6.0000"
+
+    def test_no_client_returns_nodata_for_every_cell(self):
+        db = DataBridge()
+        db._get_client = lambda: None  # force lazy-connect failure without a real network attempt
+        cells = db.fetch_matrix_cells("test:mat", [0], [0, 1], shape=(1, 2))
+        assert cells["test:mat.0.0"].css_class == CSS_NODATA
+        assert cells["test:mat.0.1"].css_class == CSS_NODATA

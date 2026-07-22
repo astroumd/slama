@@ -168,6 +168,47 @@ blocks rendered top-to-bottom.
   The `{ant}` placeholder in `points` is expanded into 8 canonical names,
   one per column.
 
+  A row may instead be a **vector row**, spreading a single array-valued
+  SMAX point across the table's existing columns:
+  ```json
+  {"label": "BDC Temp (Chassis 0)", "vector_point": "DSM:...:DSM_BDC_TEMP_V2_V8_F",
+   "vector_index": 0, "shape": [2, 8], "elements": [1, 2, 3, 4, 5, 6, 7, 8]}
+  ```
+  `elements` selects which raw array indices populate the row's cells, in
+  column order — either an explicit list (for arbitrary/non-contiguous
+  picks, e.g. `[1, 2, 4, 7, 8]`) or a slice dict `{"start":, "stop":,
+  "step":}` (Python-style, exclusive stop). Defaults to every index up to
+  the column count. `vector_index` + `shape` are only needed when the
+  point is a 2D array: `shape` is required because SMAX flattens
+  multi-dimensional array pulls and does not preserve dimensionality
+  metadata, so the display config must declare it explicitly. A vector row
+  can be mixed with ordinary scalar rows in the same table, and different
+  vector rows may select different `elements` as long as every row selects
+  the same number of elements as there are columns.
+
+- **`matrix`** — A standalone table where every cell comes from slicing one
+  array-valued SMAX point along one or two axes (rather than many distinct
+  canonical names, as in `table`). Used for multi-axis arrays such as a
+  2x8 (devices x antennas) monitor point:
+  ```json
+  {
+    "type": "matrix",
+    "point": "DSM:...:DSM_BDC_TEMP_V2_V8_F",
+    "shape": [2, 8],
+    "row_labels": {"prefix": "Chassis", "index_offset": 0},
+    "column_labels": {"prefix": "Antenna", "index_offset": 1},
+    "row_elements": [0, 1],
+    "column_elements": {"start": 0, "stop": 8}
+  }
+  ```
+  `row_labels`/`column_labels` accept either a literal list of strings, or
+  a generator dict: `{"prefix":, "index_offset": 0}` labels each selected
+  raw index `idx` as `f"{prefix}{idx + index_offset}"` (e.g. `"Chassis0"`,
+  `"Chassis{index-1}"`-style numbering via a negative offset), or
+  `{"prefix":, "start":}` labels sequential display position instead of
+  the raw index. `row_elements`/`column_elements` use the same
+  list-or-slice selection schema as a vector row's `elements`.
+
 - **`grid`** — Label: Value pairs arranged in a CSS grid with a configurable
   number of columns. Each cell maps to one SMAX canonical name.
 
@@ -176,7 +217,8 @@ blocks rendered top-to-bottom.
 
 **Key classes:**
 - `DisplayConfig` — Top-level config with `all_canonical_names()` helper.
-- `TableBlock`, `GridBlock`, `CellsBlock` — Dataclasses for each block type.
+- `TableBlock`, `MatrixBlock`, `GridBlock`, `CellsBlock` — Dataclasses for
+  each block type.
 - `load_display_config(path)` — Loads and parses one JSON file.
 - `list_display_configs(dir)` — Discovers all configs in a directory.
 
@@ -209,10 +251,25 @@ type system.
 - **Value formatting** — Floats display with 4 decimal places by default.
   A `format` field in the display config can override this per-row.
 
+**Vector/matrix cells:** an array-valued point maps to *many* displayed
+cells from a *single* SMAX pull. Each sliced element gets a synthetic cell
+key of the form `"{canonical_name}.{index}"` (vector row) or
+`"{canonical_name}.{row}.{col}"` (matrix block) — never a bare canonical
+name, since one no longer maps to exactly one cell. `fetch_vector_row_cells()`
+and `fetch_matrix_cells()` each pull the array once via `_pull_array()` and
+index into the flat result (reshaping with `numpy` when a shape is given,
+since SMAX does not preserve multi-dimensional shape on pull). Threshold
+lookup and history recording still key off the parent canonical name for
+thresholds (one threshold set applies to every element) but off the
+synthetic per-element key for history, so each antenna/chassis element gets
+its own independent time series and plot.
+
 **Key classes:**
-- `CellData` — Dataclass holding `canonical_name`, formatted `value` string,
+- `CellData` — Dataclass holding `canonical_name` (bare, or a synthetic
+  per-element key for vector/matrix cells), formatted `value` string,
   `css_class`, and `cell_id` (HTML-safe ID for HTMX targeting).
-- `DataBridge` — Stateful bridge with `fetch_cell()` and `fetch_all()`.
+- `DataBridge` — Stateful bridge with `fetch_cell()`, `fetch_vector_row_cells()`,
+  `fetch_matrix_cells()`, and `fetch_all()`.
 
 ### `server.py` — FastAPI Application
 
@@ -272,7 +329,13 @@ placeholder, and connection status badge.
 
 **`components/table.html`** — Renders a `TableBlock` as an HTML `<table>`.
 Supports row filtering via the `hidden_rows` set: rows whose label appears
-in `hidden_rows` are omitted from the rendered HTML.
+in `hidden_rows` are omitted from the rendered HTML. Needs no special-casing
+for vector rows — the loader pre-expands them to the same `row.points` list
+of cell keys that scalar rows use.
+
+**`components/matrix.html`** — Renders a `MatrixBlock` as an HTML `<table>`
+with both row and column headers derived from array indices, looking up
+each cell by its synthetic `"{point}.{row}.{col}"` key.
 
 **`components/grid.html`** — Renders a `GridBlock` as a CSS grid with
 label/value pairs.
