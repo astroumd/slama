@@ -19,16 +19,20 @@ Ideally we add SMAOP to the PATH environment
       SMAOP=/global/rrao/sma_obs_perl
       export PATH=$SMAOP:$PATH
       
-      perl -I$SMAOP my_sma_obs_script.pl -s -t "12 21 2024 04 00" > ./my_sma_obs_script.run
+      perl -I$SMAOP my_sma_obs_script.pl -s -t "12 21 2024 04 00"
+      > ./my_sma_obs_script.run
       perl -I$SMAOP timetable.pl my_sma_obs_script.run            > ./my_sma_obs_script.tt
+
+Note that the regression was done May 13, 2026, and there appears to be some skew.
+0.0001 deg in reported elevation)
 
 The python code would run as follows:
 
-      ./my_sma_obs_script.py --simulate
-      ./timetable.py my_sma_obs_script.run
-
-      ./my_sma_obs_script.py --simulate --time  "12 21 2024 04 00"  --max-loops 3 > test.run
+      ./my_sma_obs_script.py --simulate --time  "12 21 2024 14 00" > test.run
       ./timetable.py test.run      
+
+Note that the python script need HST, not UTC. This is a bug to be resolved. Another bug is
+that no pointing is done.
 
 
 ### Example Scripts
@@ -92,7 +96,9 @@ Please remember to stow the antennas safely if you are leaving.
 
 ## External programs
 
-### calfind
+The simulator depends on two programs: `calfind` and `lookup`.
+
+### 1. calfind
 
 ```
 calfind --help
@@ -118,7 +124,7 @@ Help options
   --usage                 Display brief usage message
 ```
 
-### lookup
+### 2. lookup
 
 ```
 lookup --help
@@ -155,3 +161,8 @@ Help options
   -?, --help                          Show this help message
   --usage                             Display brief usage message
 ```
+
+
+### Compiling calfind and lookup off-site
+
+Worked, after some hack re. casting const strings, but RPC tunnel not solved yet.
