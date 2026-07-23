@@ -34,7 +34,20 @@ class TableBlock:
           first, for a 2D array; None for a 1D vector) are also present so
           ``DataBridge`` can fetch and slice it. No shape is needed here —
           SMAX returns multi-dimensional array pulls already reshaped
-          according to its own dimensionality metadata.
+          according to its own dimensionality metadata, or
+        - an **indexed row**: like a scalar row, ``"points"`` is a list of
+          distinct (usually template-expanded) canonical names, one per
+          column, but each one is itself array-valued and gets reduced to
+          a scalar by a fixed ``"element_index"`` (list of int) applied to
+          every column identically — e.g. ``element_index: [0, 3]`` on a
+          row whose per-column points are 2x10 arrays picks band 0, time
+          bin 3 out of every column's array. Used when the per-column
+          axis (e.g. antenna) is a different canonical name per column,
+          but each of those names is itself multi-dimensional — the
+          reverse of a vector row, which has one canonical name and many
+          columns. ``"points"`` is pre-expanded to synthetic keys of the
+          form ``"{base_point}.{i0}.{i1}..."`` and the original
+          per-column base names are kept in ``"element_base_points"``.
 
         Every row dict also has optionally ``"format"`` (str or None), and
         optionally ``"display_min"`` / ``"display_max"`` (float or None).
@@ -364,6 +377,20 @@ def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock |
                     "vector_point": vector_point,
                     "vector_elements": elements,
                     "vector_index": row_def.get("vector_index"),
+                })
+            elif "element_index" in row_def:
+                element_index = [int(i) for i in row_def["element_index"]]
+                base_points = _expand_template(row_def["points"], var, values)
+                suffix = "." + ".".join(str(i) for i in element_index)
+                rows.append({
+                    "label": row_def["label"],
+                    "points": [f"{p}{suffix}" for p in base_points],
+                    "format": row_def.get("format"),
+                    "display_min": row_def.get("display_min"),
+                    "display_max": row_def.get("display_max"),
+                    "vector_point": None,
+                    "element_index": element_index,
+                    "element_base_points": base_points,
                 })
             else:
                 expanded = _expand_template(row_def["points"], var, values)

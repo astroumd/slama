@@ -216,6 +216,39 @@ blocks rendered top-to-bottom.
   raw index 0 and selects indices 1-8 (exclusive stop, so 9 is not
   included) — 8 values landing in the table's 8 columns.
 
+  A third row kind, an **indexed row**, is the mirror image of a vector
+  row: instead of one array-valued point spread across many columns, each
+  *column* is a different canonical name (via the usual `{ant}`-style
+  template), and each of those column points is itself array-valued and
+  gets reduced to a scalar by a fixed `element_index` (list of int,
+  applied identically to every column via successive indexing —
+  `arr[i0][i1]...`). Needed when the per-column axis (e.g. antenna) is a
+  different canonical name per column, but that name is itself
+  multi-dimensional, so plain column templating alone would leave each
+  cell an unreduced array. `allanvariance.json` uses this: each antenna's
+  `RM_SYNCDET2_ALLAN_VARIANCE_V2_V10_F` is its own 2x10 array (2 bands x
+  10 time bins), so band is fixed per table (0 for IF1, 1 for IF2) and
+  time bin varies per row:
+  ```json
+  {
+    "type": "table",
+    "title": "Low-frequency Receiver (IF1)",
+    "columns": {
+      "labels": ["Antenna 1", "Antenna 2", ...],
+      "var": "ant",
+      "values": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "rows": [
+      {"label": "0.1 s", "points": "RM:acc{ant}:RM_SYNCDET2_ALLAN_VARIANCE_V2_V10_F", "element_index": [0, 0]},
+      {"label": "0.2 s", "points": "RM:acc{ant}:RM_SYNCDET2_ALLAN_VARIANCE_V2_V10_F", "element_index": [0, 1]}
+    ]
+  }
+  ```
+  `points` is template-expanded exactly like a scalar row (one canonical
+  name per column), then each expanded name is pulled once and reduced by
+  `element_index` into a synthetic key `"{point}.{i0}.{i1}..."`. A second
+  `table` block with `element_index: [1, ...]` covers the IF2 band.
+
 - **`matrix`** — A standalone table where every cell comes from slicing one
   array-valued SMAX point along one or two axes (rather than many distinct
   canonical names, as in `table`). Used for multi-axis arrays such as a
@@ -306,12 +339,20 @@ numeric-only `display_min`/`display_max` suppression and history recording
 for them, matching how `fetch_cell()` already treats a scalar string pull.
 A string row can be mixed into the same table as numeric vector rows.
 
+An indexed row (see `allanvariance.json` above) is the reverse case: many
+distinct per-column canonical names, each reduced to one scalar cell.
+`fetch_indexed_cell()` pulls one column's array and applies `element_index`
+as successive indexing (`arr[i0][i1]...`) to reduce it to a scalar, keyed
+by `"{canonical_name}.{i0}.{i1}..."`; `fetch_all()` calls it once per
+column for an indexed row (same one-pull-per-point cost as an ordinary
+scalar row — no new N-pulls-per-cell overhead).
+
 **Key classes:**
 - `CellData` — Dataclass holding `canonical_name` (bare, or a synthetic
-  per-element key for vector/matrix cells), formatted `value` string,
-  `css_class`, and `cell_id` (HTML-safe ID for HTMX targeting).
+  per-element key for vector/matrix/indexed cells), formatted `value`
+  string, `css_class`, and `cell_id` (HTML-safe ID for HTMX targeting).
 - `DataBridge` — Stateful bridge with `fetch_cell()`, `fetch_vector_row_cells()`,
-  `fetch_matrix_cells()`, and `fetch_all()`.
+  `fetch_matrix_cells()`, `fetch_indexed_cell()`, and `fetch_all()`.
 
 ### `server.py` — FastAPI Application
 

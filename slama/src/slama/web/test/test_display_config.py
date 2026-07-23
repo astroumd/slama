@@ -154,6 +154,57 @@ class TestVectorTableRow:
 
 
 # ---------------------------------------------------------------------------
+# Indexed rows — many per-column array-valued points, reduced to a scalar
+# ---------------------------------------------------------------------------
+
+class TestIndexedTableRow:
+    def test_indexed_row_expands_and_reduces(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "table",
+            "title": "Allan Variance",
+            "columns": {"labels": ["Antenna 1", "Antenna 2"], "var": "ant", "values": [1, 2]},
+            "rows": [
+                {"label": "0.1 s", "points": "RM:acc{ant}:ALLAN_V2_V10_F", "element_index": [0, 0]},
+            ],
+        }])
+        config = load_display_config(path)
+        row = config.layout[0].rows[0]
+        assert row["element_index"] == [0, 0]
+        assert row["element_base_points"] == ["RM:acc1:ALLAN_V2_V10_F", "RM:acc2:ALLAN_V2_V10_F"]
+        assert row["points"] == [
+            "RM:acc1:ALLAN_V2_V10_F.0.0", "RM:acc2:ALLAN_V2_V10_F.0.0",
+        ]
+        assert row["vector_point"] is None
+
+    def test_indexed_row_varies_by_row(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "table",
+            "title": "Allan Variance",
+            "columns": {"labels": ["Antenna 1"], "var": "ant", "values": [1]},
+            "rows": [
+                {"label": "band0 bin3", "points": "RM:acc{ant}:ALLAN_V2_V10_F", "element_index": [0, 3]},
+                {"label": "band1 bin7", "points": "RM:acc{ant}:ALLAN_V2_V10_F", "element_index": [1, 7]},
+            ],
+        }])
+        config = load_display_config(path)
+        rows = config.layout[0].rows
+        assert rows[0]["points"] == ["RM:acc1:ALLAN_V2_V10_F.0.3"]
+        assert rows[1]["points"] == ["RM:acc1:ALLAN_V2_V10_F.1.7"]
+
+    def test_indexed_rows_all_canonical_names(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "table",
+            "title": "T",
+            "columns": {"labels": ["A1"], "var": "ant", "values": [1]},
+            "rows": [
+                {"label": "r", "points": "X:{ant}:Y", "element_index": [2]},
+            ],
+        }])
+        config = load_display_config(path)
+        assert config.all_canonical_names() == ["X:1:Y.2"]
+
+
+# ---------------------------------------------------------------------------
 # Loading a matrix block
 # ---------------------------------------------------------------------------
 

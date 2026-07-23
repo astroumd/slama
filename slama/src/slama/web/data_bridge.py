@@ -570,6 +570,54 @@ class DataBridge:
                 )
         return cells
 
+    def fetch_indexed_cell(self, canonical_name: str, element_index: list[int],
+                            fmt: str = None, display_min: float = None,
+                            display_max: float = None) -> CellData:
+        """Fetch an array-valued point and reduce it to one scalar cell.
+
+        Used for a table row where each column is a *different* canonical
+        name (e.g. one per antenna, via column templating) and each of
+        those is itself multi-dimensional — the reverse of a vector row,
+        which has one canonical name spread across many columns. Every
+        entry in ``element_index`` is applied as successive indexing
+        (``arr[i0][i1]...``) to reduce the pulled array to a scalar.
+
+        Parameters
+        ----------
+        canonical_name : str
+            SMAX canonical name of the array-valued monitor point.
+        element_index : list of int
+            Fixed indices to apply, one per array axis, in order.
+        fmt : str or None, optional
+            Python format string.
+        display_min : float or None, optional
+            If set, numeric values strictly below this are shown as
+            no-data.
+        display_max : float or None, optional
+            If set, numeric values strictly above this are shown as
+            no-data.
+
+        Returns
+        -------
+        CellData
+            Keyed by synthetic cell key
+            ``"{canonical_name}.{i0}.{i1}..."``.
+        """
+        key = f"{canonical_name}." + ".".join(str(i) for i in element_index)
+        pulled = self._pull_array(canonical_name)
+        if pulled is None:
+            return self._nodata_cell(key)
+
+        value = pulled
+        try:
+            for idx in element_index:
+                value = value[idx]
+            raw_value = self._normalize_element(value)
+        except (IndexError, TypeError, ValueError):
+            return self._nodata_cell(key)
+
+        return self._slice_cell(key, canonical_name, raw_value, fmt, display_min, display_max)
+
     def fetch_all(self, config) -> dict[str, CellData]:
         """Fetch all monitor point values for a display configuration.
 
@@ -602,6 +650,11 @@ class DataBridge:
                             row.get("vector_index"),
                             fmt, dmin, dmax,
                         ))
+                    elif row.get("element_index") is not None:
+                        for base_point, point in zip(row["element_base_points"], row["points"]):
+                            cells[point] = self.fetch_indexed_cell(
+                                base_point, row["element_index"], fmt, dmin, dmax
+                            )
                     else:
                         for point in row["points"]:
                             cells[point] = self.fetch_cell(point, fmt, dmin, dmax)

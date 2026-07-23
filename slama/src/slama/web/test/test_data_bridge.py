@@ -270,3 +270,44 @@ class TestFetchMatrixCells:
         cells = db.fetch_matrix_cells("test:mat", [0], [0, 1])
         assert cells["test:mat.0.0"].css_class == CSS_NODATA
         assert cells["test:mat.0.1"].css_class == CSS_NODATA
+
+
+# ---------------------------------------------------------------------------
+# fetch_indexed_cell — one array-valued point reduced to a scalar
+# ---------------------------------------------------------------------------
+
+class TestFetchIndexedCell:
+    def test_2d_reduction(self):
+        # e.g. RM_SYNCDET2_ALLAN_VARIANCE_V2_V10_F: 2 bands x 10 time bins
+        db = bridge_with_array([[13.3, 12.5, 10.9], [18.0, 16.6, 13.8]])
+        cell = db.fetch_indexed_cell("test:allan", [0, 2])
+        assert cell.canonical_name == "test:allan.0.2"
+        assert cell.value == "10.9000"
+        assert cell.is_numeric is True
+
+        cell2 = db.fetch_indexed_cell("test:allan", [1, 0])
+        assert cell2.value == "18.0000"
+
+    def test_single_axis_reduction(self):
+        db = bridge_with_array([10.0, 20.0, 30.0])
+        cell = db.fetch_indexed_cell("test:vec", [1])
+        assert cell.value == "20.0000"
+
+    def test_out_of_range_index_is_nodata(self):
+        db = bridge_with_array([[1.0, 2.0]])
+        cell = db.fetch_indexed_cell("test:mat", [5, 0])
+        assert cell.css_class == CSS_NODATA
+        assert cell.canonical_name == "test:mat.5.0"
+
+    def test_no_client_returns_nodata(self):
+        db = DataBridge()
+        db._get_client = lambda: None
+        cell = db.fetch_indexed_cell("test:vec", [0])
+        assert cell.css_class == CSS_NODATA
+        assert cell.canonical_name == "test:vec.0"
+
+    def test_uses_parent_thresholds(self):
+        db = bridge_with_thresholds(warn_high=15.0)
+        db._client = FakeSmaxClient([[10.0, 20.0]])
+        assert db.fetch_indexed_cell("test:point", [0, 0]).css_class == CSS_GOOD
+        assert db.fetch_indexed_cell("test:point", [0, 1]).css_class == CSS_WARNING
