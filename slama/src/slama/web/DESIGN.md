@@ -187,6 +187,35 @@ blocks rendered top-to-bottom.
   as long as every row selects the same number of elements as there are
   columns.
 
+  A common case is several *separate* 1D array points that should stack as
+  rows of one shared table — not one 2D point (that's what `matrix` is
+  for; see below). `aCmonitor.json`'s "Digital Rack" block has three
+  independent length-9 arrays (`DIGITAL_RACK_RETURN_AIR_TEMP_V9_F`,
+  `..._SMOKE_V9_B`, `..._VENT_SETTING_V9_F`) where index 0 is a dummy slot
+  and indices 1-8 are the 8 antennas:
+  ```json
+  {
+    "type": "table",
+    "title": "Digital Rack",
+    "columns": {
+      "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+      "var": "ant",
+      "values": [1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "rows": [
+      {"label": "Temp (F)", "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_RETURN_AIR_TEMP_V9_F",
+       "elements": {"start": 1, "stop": 9}},
+      {"label": "Smoke",    "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B",
+       "elements": {"start": 1, "stop": 9}, "format": "{:.0f}"},
+      {"label": "Vent",     "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_VENT_SETTING_V9_F",
+       "elements": {"start": 1, "stop": 9}}
+    ]
+  }
+  ```
+  Each row is its own point, each `elements: {"start": 1, "stop": 9}` skips
+  raw index 0 and selects indices 1-8 (exclusive stop, so 9 is not
+  included) — 8 values landing in the table's 8 columns.
+
 - **`matrix`** — A standalone table where every cell comes from slicing one
   array-valued SMAX point along one or two axes (rather than many distinct
   canonical names, as in `table`). Used for multi-axis arrays such as a
@@ -268,6 +297,14 @@ lookup and history recording still key off the parent canonical name for
 thresholds (one threshold set applies to every element) but off the
 synthetic per-element key for history, so each antenna/chassis element gets
 its own independent time series and plot.
+
+Elements are not required to be numeric — a string-valued array (e.g.
+`DSM_BDC_DO_V8_C16`, a vector of switch-position strings) works the same
+way, via `_normalize_element()`: string elements pass through unchanged
+instead of being forced through `float()`, and `_slice_cell()` skips the
+numeric-only `display_min`/`display_max` suppression and history recording
+for them, matching how `fetch_cell()` already treats a scalar string pull.
+A string row can be mixed into the same table as numeric vector rows.
 
 **Key classes:**
 - `CellData` — Dataclass holding `canonical_name` (bare, or a synthetic

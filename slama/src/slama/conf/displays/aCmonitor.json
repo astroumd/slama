@@ -4,12 +4,20 @@
   "update_interval": 30,
   "layout": [
     {
-      "type": "cells",
+      "type": "table",
       "title": "Digital Rack",
-      "cells": [
-        {"label": "Temp (F)",           "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_RETURN_AIR_TEMP_V9_F"},
-        {"label": "Smoke",              "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B"},
-        {"label": "Vent",               "point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_VENT_SETTING_V9_F"}
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Temp (F)", "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_RETURN_AIR_TEMP_V9_F",
+         "elements": {"start": 1, "stop": 9}},
+        {"label": "Smoke",    "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_SMOKE_V9_B",
+         "elements": {"start": 1, "stop": 9}, "format": "{:.0f}"},
+        {"label": "Vent",     "vector_point": "DSM:corcon:CORR_PACU_STATUS_X:DIGITAL_RACK_VENT_SETTING_V9_F",
+         "elements": {"start": 1, "stop": 9}}
       ]
     },
     {
