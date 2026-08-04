@@ -16,8 +16,14 @@
         {"label": "Cont2 Det1 (mV)",    "points": "RM:acc{ant}:RM_CONT2_DET1_F",             "format": "{:.1f}", "display_min": -32768, "display_max": 32767},
         {"label": "Cont1 pwr (uW)",     "points": "RM:acc{ant}:RM_CONT1_DET1_POWER_MUWATT_F","format": "{:.3f}", "display_min": 0,     "display_max": 1e6},
         {"label": "Cont2 pwr (uW)",     "points": "RM:acc{ant}:RM_CONT2_DET1_MUWATT_F",      "format": "{:.3f}", "display_min": 0,     "display_max": 1e6},
-        {"label": "SyncDet channels",   "points": "RM:acc{ant}:RM_SYNCDET2_CHANNELS_V2_F"},
-        {"label": "SyncDet stats [6]",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F"},
+        {"label": "SyncDet IF 1",   "points": "RM:acc{ant}:RM_SYNCDET2_CHANNELS_V2_F", "element_index":[0], "display_min":-1000, "display_max":1000},
+        {"label": "IF1 rms",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[0], "display_min":-1000, "display_max":1000},
+        {"label": "IF1 min",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[1], "display_min":-1000, "display_max":1000},
+        {"label": "IF1 max",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[2], "display_min":-1000, "display_max":1000},
+        {"label": "SyncDet IF 2",   "points": "RM:acc{ant}:RM_SYNCDET2_CHANNELS_V2_F", "element_index":[1], "display_min":-1000, "display_max":1000},
+        {"label": "IF2 rms",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[3], "display_min":-1000, "display_max":1000},
+        {"label": "IF2 min",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[4], "display_min":-1000, "display_max":1000},
+        {"label": "IF2 max",  "points": "RM:acc{ant}:RM_SYNCDET2_STATS_V6_F","element_index":[5], "display_min":-1000, "display_max":1000},
         {"label": "SyncDet timestamp",  "points": "RM:acc{ant}:RM_SYNCDET2_TIMESTAMP_L",     "display_min": 0,   "display_max": 2000000000}
       ]
     },
