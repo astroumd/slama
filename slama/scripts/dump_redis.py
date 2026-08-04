@@ -40,7 +40,7 @@ def filter_leaves(paths):
 
 
 if __name__ == "__main__":
-    progname = "SMA monitor system simulator"
+    progname = "SMA-X Redis database printer"
 
     parser = argparse.ArgumentParser(prog=progname, description="Dump the full keys and, optionally, values of the SMA database")
     parser.add_argument("--flat", "-f", action="store_true", help="write flat list of monitor points", default=False)
