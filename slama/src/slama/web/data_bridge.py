@@ -668,7 +668,13 @@ class DataBridge:
                     fmt = cell_def.get("format")
                     dmin = cell_def.get("display_min")
                     dmax = cell_def.get("display_max")
-                    cells[cell_def["point"]] = self.fetch_cell(
-                        cell_def["point"], fmt, dmin, dmax
-                    )
+                    element_index = cell_def.get("element_index")
+                    if element_index is not None:
+                        cells[cell_def["key"]] = self.fetch_indexed_cell(
+                            cell_def["point"], element_index, fmt, dmin, dmax
+                        )
+                    else:
+                        cells[cell_def["key"]] = self.fetch_cell(
+                            cell_def["point"], fmt, dmin, dmax
+                        )
         return cells

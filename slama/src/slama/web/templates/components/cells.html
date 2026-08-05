@@ -1,7 +1,7 @@
 <h3>{{ block.title }}</h3>
 <div class="mp-cells">
     {% for cell_def in block.cells %}
-    {% set cell = cells.get(cell_def.point) %}
+    {% set cell = cells.get(cell_def.key) %}
     <div class="standalone-cell">
         <span class="cell-label">{{ cell_def.label }}</span>
         <span id="{{ cell.cell_id if cell else '' }}"

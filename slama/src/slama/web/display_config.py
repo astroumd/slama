@@ -148,7 +148,15 @@ class GridBlock:
         Number of label-value column pairs in the grid layout.
     cells : list of dict
         Each dict has keys ``"label"`` (str), ``"point"`` (str canonical
-        name), and optionally ``"format"`` (str or None).
+        name), ``"key"`` (str, the cell key to look up rendered data by —
+        equal to ``"point"`` unless ``"element_index"`` is set), and
+        optionally ``"format"`` (str or None), ``"display_min"`` /
+        ``"display_max"`` (float or None), and ``"element_index"`` (list of
+        int or None). When ``"element_index"`` is set, ``"point"`` names an
+        array-valued monitor point that gets reduced to a scalar by
+        successive indexing (``arr[i0][i1]...``, mirroring a `TableBlock`
+        indexed row), and ``"key"`` is the synthetic
+        ``"{point}.{i0}.{i1}..."`` cell key.
     block_type : str
         Always ``"grid"``.
     """
@@ -168,7 +176,15 @@ class CellsBlock:
         Block heading displayed above the cells.
     cells : list of dict
         Each dict has keys ``"label"`` (str), ``"point"`` (str canonical
-        name), and optionally ``"format"`` (str or None).
+        name), ``"key"`` (str, the cell key to look up rendered data by —
+        equal to ``"point"`` unless ``"element_index"`` is set), and
+        optionally ``"format"`` (str or None), ``"display_min"`` /
+        ``"display_max"`` (float or None), and ``"element_index"`` (list of
+        int or None). When ``"element_index"`` is set, ``"point"`` names an
+        array-valued monitor point that gets reduced to a scalar by
+        successive indexing (``arr[i0][i1]...``, mirroring a `TableBlock`
+        indexed row), and ``"key"`` is the synthetic
+        ``"{point}.{i0}.{i1}..."`` cell key.
     block_type : str
         Always ``"cells"``.
     """
@@ -216,7 +232,7 @@ class DisplayConfig:
                     names.extend(row["points"])
             elif isinstance(block, (GridBlock, CellsBlock)):
                 for cell in block.cells:
-                    names.append(cell["point"])
+                    names.append(cell["key"])
             elif isinstance(block, MatrixBlock):
                 names.extend(block.cell_points)
         return names
@@ -327,6 +343,42 @@ def _resolve_labels(labels_def, elements: list[int]) -> list[str]:
     raise ValueError(f"Invalid label definition: {labels_def!r}")
 
 
+def _parse_cell_def(cell_def: dict) -> dict:
+    """Normalize one ``grid``/``cells`` cell dict, resolving its lookup key.
+
+    Both ``grid`` and ``cells`` blocks share an identical per-cell schema.
+    A cell either names a scalar canonical name directly (``"point"``), or
+    — when ``"element_index"`` is given — names an array-valued canonical
+    name that gets reduced to a scalar by successive indexing, mirroring a
+    `TableBlock` indexed row.
+
+    Parameters
+    ----------
+    cell_def : dict
+        Raw JSON cell dict with keys ``"label"``, ``"point"``, and
+        optionally ``"format"``, ``"display_min"``, ``"display_max"``, and
+        ``"element_index"`` (list of int).
+
+    Returns
+    -------
+    dict
+        A copy of ``cell_def`` with ``"element_index"`` normalized to a
+        list of int (or None) and a ``"key"`` field added: the synthetic
+        ``"{point}.{i0}.{i1}..."`` cell key when ``"element_index"`` is
+        set, otherwise equal to ``"point"``.
+    """
+    parsed = dict(cell_def)
+    element_index = cell_def.get("element_index")
+    if element_index is not None:
+        element_index = [int(i) for i in element_index]
+        suffix = "." + ".".join(str(i) for i in element_index)
+        parsed["key"] = f"{cell_def['point']}{suffix}"
+    else:
+        parsed["key"] = cell_def["point"]
+    parsed["element_index"] = element_index
+    return parsed
+
+
 def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock | MatrixBlock:
     """Parse a single layout block from a JSON config dict.
 
@@ -432,13 +484,13 @@ def _parse_block(raw: dict, index: int) -> TableBlock | GridBlock | CellsBlock |
         return GridBlock(
             title=raw.get("title", f"Grid {index}"),
             columns=raw.get("columns", 3),
-            cells=raw["cells"],
+            cells=[_parse_cell_def(c) for c in raw["cells"]],
         )
 
     elif block_type == "cells":
         return CellsBlock(
             title=raw.get("title", f"Cells {index}"),
-            cells=raw["cells"],
+            cells=[_parse_cell_def(c) for c in raw["cells"]],
         )
 
     else:

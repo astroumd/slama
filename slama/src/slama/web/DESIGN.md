@@ -280,6 +280,34 @@ blocks rendered top-to-bottom.
 - **`cells`** — Free-standing cells in a horizontal row. Used for singleton
   values like source name, LST, frequency.
 
+  `grid` and `cells` share an identical per-cell schema: `{"label":,
+  "point":, "format":, "display_min":, "display_max":}`. A cell can also
+  carry an `element_index` (list of int), the same mechanism as a table's
+  indexed row, to pull one scalar out of an otherwise array-valued point —
+  useful for a handful of unrelated singleton values that happen to live
+  packed together in one SMAX array. `croom_iflo.json`'s "Tracking
+  Parameters" `cells` block does this: `DSM_AS_IFLO_REST_FR_V2_D` is a
+  2-element array (`[issued_at, rest_freq]`), split into two cells:
+  ```json
+  {
+    "type": "cells",
+    "title": "Tracking Parameters",
+    "cells": [
+      {"label": "Issued at", "point": "DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element_index": [0]},
+      {"label": "Rest Freq", "point": "DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element_index": [1],
+       "format": "{:.4f}", "display_min": 0, "display_max": 1000}
+    ]
+  }
+  ```
+  Each cell reduces `point`'s array via `arr[i0][i1]...` (identical
+  reduction to a table indexed row's `fetch_indexed_cell()`) into a
+  synthetic key `"{point}.{i0}.{i1}..."`. Cells without `element_index`
+  keep a plain scalar `point` and use it directly as their key. This
+  distinction is transparent to templates: `_parse_cell_def()` normalizes
+  every cell dict at config-load time to always carry a `"key"` field
+  (either the synthetic index key or the original `point`), and both
+  `cells.html` and `grid.html` look values up by `cell_def.key`.
+
 **Key classes:**
 - `DisplayConfig` — Top-level config with `all_canonical_names()` helper.
 - `TableBlock`, `MatrixBlock`, `GridBlock`, `CellsBlock` — Dataclasses for

@@ -311,3 +311,40 @@ class TestFetchIndexedCell:
         db._client = FakeSmaxClient([[10.0, 20.0]])
         assert db.fetch_indexed_cell("test:point", [0, 0]).css_class == CSS_GOOD
         assert db.fetch_indexed_cell("test:point", [0, 1]).css_class == CSS_WARNING
+
+
+# ---------------------------------------------------------------------------
+# fetch_all — "cells"/"grid" blocks with an indexed cell
+# ---------------------------------------------------------------------------
+
+class TestFetchAllIndexedCells:
+    def test_indexed_cell_reduces_array_and_scalar_cell_still_works(self, tmp_path):
+        import json
+        from slama.web.display_config import load_display_config
+
+        path = tmp_path / "test_display.json"
+        path.write_text(json.dumps({
+            "name": "Test",
+            "description": "",
+            "update_interval": 2,
+            "layout": [{
+                "type": "cells",
+                "title": "T",
+                "cells": [
+                    {"label": "Issued at", "point": "test:rest_fr", "element_index": [0]},
+                    {"label": "Rest Freq", "point": "test:rest_fr", "element_index": [1]},
+                    {"label": "Tracking", "point": "test:tracking"},
+                ],
+            }],
+        }))
+        config = load_display_config(path)
+
+        db = bridge_with_array([12345.0, 230.538])
+        # "Tracking" pulls a different (scalar) point via the normal fetch_cell path —
+        # FakeSmaxClient ignores table/key and always returns the same fixed value,
+        # so here it also resolves against the same array; only the indexed cells matter.
+        cells = db.fetch_all(config)
+
+        assert cells["test:rest_fr.0"].value == "12345.0000"
+        assert cells["test:rest_fr.1"].value == "230.5380"
+        assert cells["test:rest_fr.0"].canonical_name == "test:rest_fr.0"

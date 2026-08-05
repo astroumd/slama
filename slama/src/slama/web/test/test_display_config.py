@@ -4,6 +4,8 @@ import json
 import pytest
 
 from slama.web.display_config import (
+    CellsBlock,
+    GridBlock,
     MatrixBlock,
     TableBlock,
     _resolve_elements,
@@ -258,3 +260,64 @@ class TestMatrixBlock:
             "DSM:x:TEMP_V2_V8_F.0.0", "DSM:x:TEMP_V2_V8_F.0.1",
             "DSM:x:TEMP_V2_V8_F.1.0", "DSM:x:TEMP_V2_V8_F.1.1",
         }
+
+
+# ---------------------------------------------------------------------------
+# Indexed cells — "cells"/"grid" blocks reducing an array-valued point
+# ---------------------------------------------------------------------------
+
+class TestIndexedCellsBlock:
+    def test_cells_block_scalar_point_key_equals_point(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "cells",
+            "title": "T",
+            "cells": [{"label": "Source", "point": "RM:acc1:RM_SOURCE_C34"}],
+        }])
+        config = load_display_config(path)
+        block = config.layout[0]
+        assert isinstance(block, CellsBlock)
+        assert block.cells[0]["key"] == "RM:acc1:RM_SOURCE_C34"
+        assert block.cells[0]["element_index"] is None
+
+    def test_cells_block_element_index_derives_synthetic_key(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "cells",
+            "title": "T",
+            "cells": [
+                {"label": "Issued at", "point": "DSM:x:REST_FR_V2_D", "element_index": [0]},
+                {"label": "Rest Freq", "point": "DSM:x:REST_FR_V2_D", "element_index": [1]},
+            ],
+        }])
+        config = load_display_config(path)
+        block = config.layout[0]
+        assert block.cells[0]["key"] == "DSM:x:REST_FR_V2_D.0"
+        assert block.cells[0]["point"] == "DSM:x:REST_FR_V2_D"
+        assert block.cells[1]["key"] == "DSM:x:REST_FR_V2_D.1"
+
+    def test_grid_block_element_index_derives_synthetic_key(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "grid",
+            "title": "T",
+            "columns": 2,
+            "cells": [
+                {"label": "Band 0 bin 0", "point": "DSM:x:V2_V10_F", "element_index": [0, 0]},
+            ],
+        }])
+        config = load_display_config(path)
+        block = config.layout[0]
+        assert isinstance(block, GridBlock)
+        assert block.cells[0]["key"] == "DSM:x:V2_V10_F.0.0"
+
+    def test_all_canonical_names_uses_key_for_indexed_cells(self, tmp_path):
+        path = _write_config(tmp_path, [{
+            "type": "cells",
+            "title": "T",
+            "cells": [
+                {"label": "Issued at", "point": "DSM:x:REST_FR_V2_D", "element_index": [0]},
+                {"label": "Source", "point": "RM:acc1:RM_SOURCE_C34"},
+            ],
+        }])
+        config = load_display_config(path)
+        assert config.all_canonical_names() == [
+            "DSM:x:REST_FR_V2_D.0", "RM:acc1:RM_SOURCE_C34",
+        ]
