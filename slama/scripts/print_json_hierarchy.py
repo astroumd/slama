@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
-"""
-Print out a sorted json hierarchy with or without final leaves.  Useful for visual understanding of smax.json and variants
-
-Usage
-   uv run scripts/print_json_hierarchy.py [--file JSON_FILE] [--leaves] 
-"""
 import argparse
 import json
+
 
 def sort_data_recursively(data):
     """
@@ -58,8 +53,9 @@ def print_hierarchy(data, indent=0, print_leaves=True):
                     print(f"{prefix}Index: {index} (Leaf)")
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--input", "-f", required=True, 
+    _cli_help = """ Print out a sorted json hierarchy with or without final leaves.  Useful for visual understanding of smax.json and variants """
+    parser = argparse.ArgumentParser(description=_cli_help, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--file", "-f", required=True, 
                         help="input JSON file path")
     parser.add_argument("--leaves", action="store_true",
                         help="Print leaves, default is don't print")
