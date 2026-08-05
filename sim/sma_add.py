@@ -304,6 +304,8 @@ def observe_transcal(state: State) -> None:
 
 def pointing_check(state: State, cal: str = "") -> None:
     """Perform a pointing if the interval since the last one has elapsed."""
+    if state.debug:
+        print(f"PJT pointing_check {cal}")
     now = state.unix_time if state.simulate_mode else time_mod.time()
     interval = (state.night_pointing_time if state.night_pointing
                 else state.day_pointing_time)
@@ -314,7 +316,7 @@ def pointing_check(state: State, cal: str = "") -> None:
     source = cal or state.pointing_cal
     if not source:
         state.stuff_pointing = ""
-        return
+        return                       # <-- always hits this, since nothing ever sets pointing_cal or passes cal
 
     print("Performing automatic pointing...")
     ipoint_opts = state.ipoint or "-i 10 -r 3 -8 -c 2.5 -w -n -Q"
