@@ -3,6 +3,20 @@
   "description": "iFLO integrated F-Engine LO lock status and IF power — DSM placeholders",
   "update_interval": 5,
   "layout": [
+      {
+          "type":"grid",
+          "title":"Tracking Parameters",
+          "columns":4,
+          "cells": [
+              {"label":"Doppler Track Parameters" , "point":"DSM:hal9000:DSM_LST_DOPPLERTRACK_C100"},
+              {"label":"Issued at" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element":[1], "format":"{.3f}"},
+              {"label":"Rest Freq" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element":[0], "format":"{.4f}", "display_max":1000, "display_min":0},
+              {"label":"Tracking" , "point":"DSM:hal9000:DSM_AS_IFLO_SOUR_C34"},
+              {"label":"RA" , "point":"DSM:hal9000:DSM_AS_IFLO_RA_D"},
+              {"label":"DEC" , "point":"DSM:hal9000:DSM_AS_IFLO_DEC_D"},
+              {"label":"Vel (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_VELO_D", "display_min":-300000000, "display_max":300000000}
+          ]
+      },
     {
       "type": "table",
       "title": "iFLO LO Lock and IF Power (DSM — placeholders)",
