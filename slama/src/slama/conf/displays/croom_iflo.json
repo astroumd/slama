@@ -4,13 +4,12 @@
   "update_interval": 5,
   "layout": [
       {
-          "type":"grid",
+          "type":"cells",
           "title":"Tracking Parameters",
-          "columns":4,
           "cells": [
               {"label":"Doppler Track Parameters" , "point":"DSM:hal9000:DSM_LST_DOPPLERTRACK_C100"},
-              {"label":"Issued at" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element":[1], "format":"{.3f}"},
-              {"label":"Rest Freq" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element":[0], "format":"{.4f}", "display_max":1000, "display_min":0},
+              {"label":"Issued at" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "element_index":[0]},
+              {"label":"Rest Freq" , "point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "format":"{.4f}", , "element_index":[1]"display_max":1000, "display_min":0},
               {"label":"Tracking" , "point":"DSM:hal9000:DSM_AS_IFLO_SOUR_C34"},
               {"label":"RA" , "point":"DSM:hal9000:DSM_AS_IFLO_RA_D"},
               {"label":"DEC" , "point":"DSM:hal9000:DSM_AS_IFLO_DEC_D"},
