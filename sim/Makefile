@@ -3,14 +3,16 @@
 
 .PHONY:  help install
 
+DEBUG = --debug
+
 ## help:     this help
 help: Makefile
 	@sed -n 's/^##//p' $<
 
 ## test1:    run the python test
 test1:
-	./my_sma_obs_script.py --simulate --time  "12 21 2024 14 00" > test1.run
-	./timetable.py test.run                                      > test1.tt
+	./my_sma_obs_script.py --simulate --time  "12 21 2024 14 00" $(DEBUG) > test1.run
+	./timetable.py test1.run                                     $(DEBUG) > test1.tt
 	@echo "Compare test1 files with corresponding test0 files"
 
 ## test0:    run the perl test
