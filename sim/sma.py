@@ -153,6 +153,8 @@ def parse_args(state: State) -> None:
                         help="Use receiver B for pointing")
     parser.add_argument("-k", action="store_true",
                         help="Add -k to ipoint commands")
+    parser.add_argument("--debug", action="store_true",
+                        help="Add extra debugging statements")
     parser.add_argument("--max-loops", type=int, default=200,
                         dest="max_loops",
                         help="Stop after this many obs loops (default 200)")
@@ -172,6 +174,7 @@ def parse_args(state: State) -> None:
     state.ant_list      = args.ant_list
     state.ipoint        = args.ipoint
     state.max_loops     = args.max_loops
+    state.debug         = args.debug
 
 
 _USAGE_EPILOG = """

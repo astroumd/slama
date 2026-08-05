@@ -7,12 +7,12 @@
       "type": "cells",
       "title": "MRG Status (DSM — placeholders)",
       "cells": [
-        {"label": "Lock status (DSM)",     "point": "dsm:placeholder:DSM_MRG_LOCK_STATUS"},
-        {"label": "Freq (GHz) (DSM)",      "point": "dsm:placeholder:DSM_MRG_FREQ_GHZ"},
-        {"label": "Tune word (DSM)",       "point": "dsm:placeholder:DSM_MRG_TUNE_WORD"},
-        {"label": "Phase err (DSM)",       "point": "dsm:placeholder:DSM_MRG_PHASE_ERROR"},
-        {"label": "Power (dBm) (DSM)",     "point": "dsm:placeholder:DSM_MRG_POWER_DBM"},
-        {"label": "Last update (DSM)",     "point": "dsm:placeholder:DSM_MRG_TIMESTAMP"}
+        {"label": "Lock status (DSM)",     "point": "DSM:m5:MRG_CONTROL_X:YIG_LOCKED_V2_S"},
+        {"label": "Freq (GHz) (DSM)",      "point": "DSM:m5:MRG_CONTROL_X:REQ_FREQ_V2_D"},
+        {"label": "Tune word (DSM)",       "point": "DSM:m5:MRG_CONTROL_X:CNTRL_VOLTAGE_V2_F"},
+        {"label": "Phase err (DSM)",       "point": "DSM:m5:MRG_CONTROL_X:QUAD_V2_F"},
+        {"label": "Power (dBm) (DSM)",     "point": "DSM:m5:MRG_CONTROL_X:LEVEL_V2_F"},
+        {"label": "Last update (DSM)",     "point": "DSM:m5:MRG_CONTROL_X:CMD_TIME_V2_L"}
       ]
     }
   ]

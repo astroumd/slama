@@ -19,28 +19,28 @@
       "type": "cells",
       "title": "Phase Monitor Baselines (DSM — placeholders)",
       "cells": [
-        {"label": "Baseline 1 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL1_RAW_PHASE"},
-        {"label": "Baseline 2 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL2_RAW_PHASE"},
-        {"label": "Baseline 3 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL3_RAW_PHASE"},
-        {"label": "Baseline 4 Raw Phase (deg) (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_BL4_RAW_PHASE"},
-        {"label": "Baseline 1 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL1_ATMOS"},
-        {"label": "Baseline 2 Atmos (deg) (DSM)",      "point": "dsm:placeholder:DSM_PHASEMON_BL2_ATMOS"},
-        {"label": "Baseline 1 RMS 1s (deg) (DSM)",     "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_1S"},
-        {"label": "Baseline 1 RMS 16s (deg) (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_16S"},
-        {"label": "Baseline 1 RMS 512s (deg) (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_BL1_RMS_512S"}
+        {"label": "Baseline 1 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 2 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 3 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 4 Raw Phase (deg) (DSM)",  "point": "DSM:phasemon:PHASEMON_DATA_X:RAW_PHASE_V10_D"},
+        {"label": "Baseline 1 Atmos (deg) (DSM)",      "point": "DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D"},
+        {"label": "Baseline 2 Atmos (deg) (DSM)",      "point": "DSM:phasemon:PHASEMON_DATA_X:ATMOSPHERIC_PHASE_V10_D"},
+        {"label": "Baseline 1 RMS 1s (deg) (DSM)",     "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"},
+        {"label": "Baseline 1 RMS 16s (deg) (DSM)",    "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"},
+        {"label": "Baseline 1 RMS 512s (deg) (DSM)",   "point": "DSM:phasemon:PHASEMON_DATA_X:RMS_PHASE_V10_V12_D"}
       ]
     },
     {
       "type": "cells",
       "title": "Vault Voltages (DSM — placeholders)",
       "cells": [
-        {"label": "+5V (DSM)",    "point": "dsm:placeholder:DSM_PHASEMON_VAULT_5V"},
-        {"label": "+12V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_12V"},
-        {"label": "+25V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_25V"},
-        {"label": "-15V (DSM)",   "point": "dsm:placeholder:DSM_PHASEMON_VAULT_M15V"},
-        {"label": "+15Va (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VA"},
-        {"label": "+15Vb (DSM)",  "point": "dsm:placeholder:DSM_PHASEMON_VAULT_15VB"},
-        {"label": "SynthLock (DSM)", "point": "dsm:placeholder:DSM_PHASEMON_SYNTH_LOCK"}
+        {"label": "+5V (DSM)",    "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_5V_RACK_F"},
+        {"label": "+12V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_12V_RACK_F"},
+        {"label": "+25V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_25V_RACK_F"},
+        {"label": "-15V (DSM)",   "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:NEG_15V_RACK_F"},
+        {"label": "+15Va (DSM)",  "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VA_RACK_F"},
+        {"label": "+15Vb (DSM)",  "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:POS_15VB_RACK_F"},
+        {"label": "SynthLock (DSM)", "point": "DSM:phasemon:PHASEMON_HRDWR_STAT_X:SYNTH_LOCK_B"}
       ]
     }
   ]

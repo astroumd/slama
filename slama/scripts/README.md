@@ -150,7 +150,7 @@ Quick sanity check that SMAX read/write is working.  Writes a random float to
 `weather:forecast:gfs:test_tau` and reads it back, printing the result.
 
 ```bash
-python scripts/simple_smax_check.py
+uv run scripts/simple_smax_check.py
 ```
 
 ---

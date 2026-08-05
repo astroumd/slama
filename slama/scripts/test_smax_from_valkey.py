@@ -77,6 +77,19 @@ class TestFilterInput:
         result = filter_input(["  DSM:acc1:FOO_F  "])
         assert result == ["DSM:acc1:FOO_F"]
 
+    def test_skips_summary_stat_lines_with_spaces(self):
+        # Lines like "  smax.json canonical names : 4723" must be rejected
+        lines = [
+            "  smax.json canonical names : 4723",
+            "  In Valkey, not smax.json  : 8542",
+            "  In both                   : 2144",
+        ]
+        assert filter_input(lines) == []
+
+    def test_keeps_paths_with_dots_in_segment(self):
+        # Some SMAX names use dots (e.g. weather.forecast)
+        assert filter_input(["weather.forecast:gfs:tau"]) == ["weather.forecast:gfs:tau"]
+
 
 # ---------------------------------------------------------------------------
 # detect_each_group
@@ -352,3 +365,20 @@ class TestDeepMerge:
         overlay = {"a": 1, "b": {"c": 2}}
         result = deep_merge({}, overlay)
         assert result == overlay
+
+    def test_overwrite_mode_overlay_wins_on_conflict(self):
+        # Simulate --overwrite: call deep_merge(result, existing) so Valkey wins
+        valkey  = {"DSM": {"TEMP_F": {"size": "1", "smax_type": "float64"}}}
+        smax    = {"DSM": {"TEMP_F": {"size": "1", "smax_type": "float32", "description": "old"}}}
+        result = deep_merge(valkey, smax)
+        # valkey is base so its smax_type wins; description from smax is added
+        assert result["DSM"]["TEMP_F"]["smax_type"] == "float64"
+        assert result["DSM"]["TEMP_F"]["description"] == "old"
+
+    def test_overwrite_mode_adds_smax_keys_missing_from_valkey(self):
+        # Keys only in smax.json (e.g. validated fields) are still carried through
+        valkey  = {"DSM": {"NEW_F": {"size": "4", "smax_type": "int32"}}}
+        smax    = {"DSM": {"OLD_F": {"size": "1", "smax_type": "float", "description": "legacy"}}}
+        result = deep_merge(valkey, smax)
+        assert "NEW_F" in result["DSM"]
+        assert "OLD_F" in result["DSM"]

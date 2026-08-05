@@ -1,26 +1,23 @@
 {
   "name": "Array Monitor",
-  "description": "Overall array status: project, weather, source, receiver — DSM rows are placeholders",
+  "description": "Overall array status: project, weather, source, receiver",
   "update_interval": 5,
   "layout": [
     {
       "type": "cells",
-      "title": "Project / Observation (DSM — placeholders)",
+      "title": "Project / Observation",
       "cells": [
-        {"label": "Project ID (DSM)",    "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
-        {"label": "Observer (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
-        {"label": "Location (DSM)",      "point": "dsm:placeholder:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
-        {"label": "Scans remain (DSM)",  "point": "dsm:placeholder:DSM_SCANS_REMAINING"},
-        {"label": "FullPol (DSM)",       "point": "dsm:placeholder:DSM_FULLPOL_STATUS"},
-        {"label": "SWARM status (DSM)",  "point": "dsm:placeholder:DSM_SWARM_STATUS"},
-        {"label": "DUT (DSM)",           "point": "dsm:placeholder:DSM_DUT"},
-        {"label": "Tau225 (DSM)",        "point": "dsm:placeholder:DSM_TAU225"},
-        {"label": "Tau350 (DSM)",        "point": "dsm:placeholder:DSM_TAU350"}
+        {"label": "Project ID",    "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L", "format":"{:d}", "display_min":0, "display_max":100000},
+        {"label": "Observer",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Location",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
+        {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L",  "format":"{:d}", "display_min":0, "display_max":1000},
+        {"label": "Tau225 (CSO)",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F", "format":"{:.3f}"},
+        {"label": "Tau225 (GFS)",        "point": "weather:forecast:gfs:tau225", "format":"{:.3f}"}
       ]
     },
     {
       "type": "cells",
-      "title": "Current Source (RM — live)",
+      "title": "Current Source",
       "cells": [
         {"label": "Source",         "point": "RM:acc1:RM_SOURCE_C34"},
         {"label": "RA (hr)",        "point": "RM:acc1:RM_RA_CAT_HOURS_D",  "format": "{:.4f}", "display_min": 0,    "display_max": 24},
@@ -32,7 +29,7 @@
     },
     {
       "type": "table",
-      "title": "Antenna Positions (RM — live)",
+      "title": "Antenna Positions",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -48,7 +45,7 @@
     },
     {
       "type": "table",
-      "title": "Safety / Operational Status (RM — live)",
+      "title": "Safety / Operational Status",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -69,7 +66,7 @@
     },
     {
       "type": "table",
-      "title": "Drive Status Detail (RM — live)",
+      "title": "Drive Status Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -94,7 +91,7 @@
     },
     {
       "type": "table",
-      "title": "Receiver / Optics Detail (RM — live)",
+      "title": "Receiver / Optics Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -122,7 +119,7 @@
     },
     {
       "type": "table",
-      "title": "Pointing / Deice / Dewar Detail (RM — live)",
+      "title": "Pointing / Deice / Dewar Detail",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
         "var": "ant",
@@ -143,35 +140,36 @@
     },
     {
       "type": "cells",
-      "title": "Ephemeris / Polar Motion (RM — live, from RM:acc1)",
+      "title": "Ephemeris / Polar Motion",
       "cells": [
         {"label": "RA apparent (hr)",      "point": "RM:acc1:RM_RA_APP_HR_D",  "format": "{:.4f}", "display_min": 0, "display_max": 24},
         {"label": "Dec apparent (deg)",    "point": "RM:acc1:RM_DEC_APP_DEG_D", "format": "{:.4f}", "display_min": -90, "display_max": 90},
         {"label": "Epoch",                 "point": "RM:acc1:RM_EPOCH_F", "format": "{:.1f}", "display_min": 1900, "display_max": 2100},
         {"label": "Refraction (asec)",     "point": "RM:acc1:RM_REFRACTION_ARCSEC_D", "format": "{:.2f}", "display_min": 0, "display_max": 3600},
         {"label": "Source velocity (km/s)","point": "RM:acc1:RM_SVEL_KMPS_D", "format": "{:.2f}", "display_min": -1000, "display_max": 1000},
-        {"label": "TJD",                   "point": "RM:acc1:RM_TJD_D", "format": "{:.5f}", "display_min": 0, "display_max": 100000},
+        {"label": "TJD",                   "point": "RM:acc1:RM_TJD_D", "format": "{:.2f}", "display_min": 0, "display_max": 100000000},
         {"label": "UTC (hr)",              "point": "RM:acc1:RM_UTC_HOURS_F", "format": "{:.4f}", "display_min": 0, "display_max": 24},
         {"label": "Planet diameter (asec)","point": "RM:acc1:RM_PLANET_DIAMETER_ARCSEC_D", "format": "{:.3f}", "display_min": 0, "display_max": 3600},
         {"label": "Planet distance (AU)",  "point": "RM:acc1:RM_PLANET_DISTANCE_AU_D", "format": "{:.4f}", "display_min": 0, "display_max": 100},
         {"label": "Polar DUT (s)",         "point": "RM:acc1:RM_POLAR_DUT_SEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
         {"label": "Polar Dx (asec)",       "point": "RM:acc1:RM_POLAR_DX_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
         {"label": "Polar Dy (asec)",       "point": "RM:acc1:RM_POLAR_DY_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
-        {"label": "Polar MJD",             "point": "RM:acc1:RM_POLAR_MJD_L", "display_min": 0, "display_max": 100000},
-        {"label": "Aux weather timestamp", "point": "RM:acc6:RM_AUX_WEATHER_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
-        {"label": "Aux weather timestamp2","point": "RM:acc6:RM_AUX_WEATHER_TIMESTAMP2_L", "display_min": 0, "display_max": 2000000000}
+        {"label": "Polar MJD",             "point": "RM:acc1:RM_POLAR_MJD_L", "format": "{:.4f}", "display_min": 0, "display_max": 1000000},
+        {"label": "Aux weather timestamp", "point": "RM:acc6:RM_GETWEATHER_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
       ]
     },
     {
       "type": "grid",
-      "title": "Weather (RM — live)",
+      "title": "Weather",
       "columns": 3,
       "cells": [
-        {"label": "T(amb) (F)",     "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
+
+        {"label": "T(amb) (C)",     "point": "RM:acc1:RM_WEATHER_TEMP_F",      "format": "{:.1f}", "display_min": -50,  "display_max": 150},
         {"label": "RH%",            "point": "RM:acc1:RM_WEATHER_HUMIDITY_F",  "format": "{:.1f}", "display_min": 0,    "display_max": 100},
-        {"label": "Wind (mph)",     "point": "RM:acc1:RM_WEATHER_WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
-        {"label": "Wind dir (deg)", "point": "RM:acc1:RM_WEATHER_WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360},
-        {"label": "P(atm) (mbar)",  "point": "RM:acc1:RM_WEATHER_MBAR_F",     "format": "{:.1f}", "display_min": 400,  "display_max": 900}
+        {"label": "P(atm) (mbar)",  "point": "RM:acc1:RM_WEATHER_MBAR_F",     "format": "{:.1f}", "display_min": 100,  "display_max": 1900},
+        {"label": "Wind Server",     "point": "DSM:colossus:DSM_WIND_SERVER_C7"},
+        {"label": "Wind (m/s)",     "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
+        {"label": "Wind dir (deg)", "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360}
       ]
     }
   ]

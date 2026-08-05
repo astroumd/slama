@@ -82,11 +82,12 @@ def _get_clock_html() -> str:
     now_hst = now_utc.astimezone(_HST)
     now_local = datetime.now().astimezone()
     local_abbr = now_local.strftime("%Z")
+    # todo if local_abbr == "HST" don't even show it?
     return (
         f'<span id="clock" hx-swap-oob="innerHTML">'
         f'UTC {now_utc.strftime("%H:%M:%S")} &nbsp; '
         f'HST {now_hst.strftime("%H:%M:%S")} &nbsp; '
-        f'{local_abbr} {now_local.strftime("%H:%M:%S")}'
+        f'Local ({local_abbr}) {now_local.strftime("%H:%M:%S")}'
         f'</span>'
     )
 

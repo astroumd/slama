@@ -7,11 +7,11 @@
       "type": "cells",
       "title": "Current Project (DSM — placeholders)",
       "cells": [
-        {"label": "Project ID (DSM)",          "point": "dsm:placeholder:DSM_AS_PROJECT_ID_L"},
-        {"label": "Description (DSM)",         "point": "dsm:placeholder:DSM_AS_PROJECT_DESCRIPTION_C256"},
-        {"label": "PI (DSM)",                  "point": "dsm:placeholder:DSM_AS_PROJECT_PI_C30"},
-        {"label": "Observer (DSM)",            "point": "dsm:placeholder:DSM_AS_PROJECT_OBSERVER_C30"},
-        {"label": "Hangar Light (DSM)",        "point": "dsm:placeholder:DSM_HANGAR_LIGHT_L"}
+        {"label": "Project ID (DSM)",          "point": "DSM:hal9000:DSM_AS_PROJECT_ID_L"},
+        {"label": "Description (DSM)",         "point": "DSM:hal9000:DSM_AS_PROJECT_DESCRIPTION_C256"},
+        {"label": "PI (DSM)",                  "point": "DSM:hal9000:DSM_AS_PROJECT_PI_C30"},
+        {"label": "Observer (DSM)",            "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
+        {"label": "Hangar Light (DSM)",        "point": "DSM:colossus:DSM_HANGAR_LIGHT_L"}
       ]
     },
     {

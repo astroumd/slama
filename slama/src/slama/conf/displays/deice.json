@@ -23,7 +23,7 @@
       "type": "cells",
       "title": "Antenna 5 Structural Temps (DSM — placeholder)",
       "cells": [
-        {"label": "Ant5 structural temps (DSM)", "point": "dsm:placeholder:DSM_ANTENNA5_TEMPS_X"}
+        {"label": "Ant5 structural temps (DSM)", "point": "DSM:hal9000:DSM_ANTENNA5_TEMPS_X"}
       ]
     }
   ]
