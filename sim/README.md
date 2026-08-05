@@ -162,6 +162,16 @@ Help options
   --usage                             Display brief usage message
 ```
 
+### 3. value
+
+Not used in simulation mode. Finds legacy reflective memory data
+
+
+### 4. getAntList
+
+Not used in simulation mode. 
+
+
 
 ### Compiling calfind and lookup off-site
 
