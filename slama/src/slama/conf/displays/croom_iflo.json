@@ -13,23 +13,39 @@
               {"label":"Tracking" , "point":"DSM:hal9000:DSM_AS_IFLO_SOUR_C34"},
               {"label":"RA" , "point":"DSM:hal9000:DSM_AS_IFLO_RA_D"},
               {"label":"DEC" , "point":"DSM:hal9000:DSM_AS_IFLO_DEC_D"},
-              {"label":"Vel (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_VELO_D", "display_min":-300000000, "display_max":300000000}
+              {"label":"Vel (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_VELO_D", "display_min":-300000000, "display_max":300000000},
+              {"label":"Radial Vel (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_VRADIAL_D", "display_min":-300000000, "display_max":300000000},
+              {"label":"Earth Orbit (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_EORBIT_D", "display_min":-300000000, "display_max":300000000},
+              {"label":"Earth Motion (m/s)" , "point":"DSM:hal9000:DSM_AS_IFLO_EROTAT_D", "display_min":-300000000, "display_max":300000000}
           ]
       },
     {
-      "type": "table",
-      "title": "iFLO LO Lock and IF Power (DSM — placeholders)",
-      "columns": {
-        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
-        "var": "ant",
-        "values": [1, 2, 3, 4, 5, 6, 7, 8]
-      },
-      "rows": [
-        {"label": "LO lock status (DSM)",  "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_LO_LOCK"},
-        {"label": "IF power (DSM)",        "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_IF_POWER"},
-        {"label": "LO freq (GHz) (DSM)",   "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_LO_FREQ"},
-        {"label": "Last update (DSM)",     "points": "dsm:placeholder:DSM_ANT{ant}_IFLO_TIMESTAMP"}
+      "type": "grid",
+      "title": "iFLO LO Lock and IF Power",
+      "columns": 2,
+      "cells": [
+        {"label": "YIG1 Freq (GHz)", "point":"DSM:hal9000:DSM_AS_IFLO_MRG_V2_D", "element_index":[0], "display_min":0, "display_max":1000, "format":"{:.9f}"},
+        {"label": "YIG2 Freq (GHz)", "point":"DSM:hal9000:DSM_AS_IFLO_MRG_V2_D", "element_index":[1], "display_min":0, "display_max":1000, "format":"{:.9f}"},
+        {"label": "Residual (Hz)", "point":"DSM:hal9000:DSM_AS_IFLO_RESIDUALS_V2_D", "element_index":[0], "display_min":-100, "display_max":100, "format":"{:.9f}"},
+        {"label": "Residual (Hz)", "point":"DSM:hal9000:DSM_AS_IFLO_RESIDUALS_V2_D", "element_index":[1], "display_min":-100, "display_max":100, "format":"{:.9f}"},
+        {"label": "Gunn 1 Mult", "point":"DSM:hal9000:DSM_AS_IFLO_GUNN_N_V2_S", "element_index":[0], "display_min":0, "display_max":100, "format":"{:.0f}"},
+        {"label": "Gunn 2 Mult", "point":"DSM:hal9000:DSM_AS_IFLO_GUNN_N_V2_S", "element_index":[1], "display_min":0, "display_max":100, "format":"{:.0f}"},
+        {"label": "Gunn 1 PLL Harmonic", "point":"DSM:hal9000:DSM_AS_IFLO_GPLL_N_V2_S", "element_index":[0], "display_min":0, "display_max":100, "format":"{:.0f}"},
+        {"label": "Gunn 2 PLL Harmonic", "point":"DSM:hal9000:DSM_AS_IFLO_GPLL_N_V2_S", "element_index":[1], "display_min":0, "display_max":100, "format":"{:.0f}"},
+        {"label": "Antennas (raw)", "point":"DSM:hal9000:DSM_AS_IFLO_ANT2YIG_V2_V11_B"}
       ]
+    },
+    {
+	"type":"table",
+	"title":"Receiver Info",
+	"columns": {
+	    "labels":["RxA","RxB"],
+	    "var":"foo",
+	    "values":[1,2]
+	},
+	"rows": [
+	{"label":"Rest Freq (GHz)" , "vector_point":"DSM:hal9000:DSM_AS_IFLO_REST_FR_V2_D", "elements": {"start":0, "stop":2}, "format":"{:.4f}", "display_min":0, "display_max":1000}
+	]
     }
   ]
 }
