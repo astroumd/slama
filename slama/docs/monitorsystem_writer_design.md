@@ -152,7 +152,59 @@ Uniform rule, engine-enforced (computations don't hand-roll it):
   `"propagate"` (output becomes `INVALID_NO_DATA` — right for physics
   formulas where every term is required).
 
-### 3.5 Computed-on-computed dependencies
+### 3.5 String and sequence semantics
+
+Some string points represent a **state machine**, e.g. a receiver tuning
+sequence: intermediate states mean `VALID_WARNING` ("proceeding, but you
+can't use the receiver yet"), and terminal states mean `VALID_GOOD`
+(tuned) or `VALID_ERROR` (failed). This splits into two orthogonal
+requirements that land in different layers:
+
+**(1) Classification — static state → validity mapping.** "What does
+this state mean?" is a per-point property, exactly like numeric
+thresholds, so it belongs in the point's declaration in `smax.json` and
+is evaluated by `MonitorPoint.validity` — shared by both designs. The
+*current* `_string_validity()` implementation is inadequate for this:
+
+- It reuses `err_low`/`err_high`/`warn_low`/`warn_high` as string
+  collections and returns `VALID_WARNING_LOW`/`_HIGH` — "low"/"high"
+  are meaningless for states, and plain `VALID_WARNING` is unreachable
+  for strings today.
+- With `valid_strings` set, any state not listed anywhere falls through
+  to `VALID_ERROR`, so one forgotten intermediate state turns a healthy
+  sequence into a reported error.
+
+Proposed schema extension (implementation phase), legacy fields kept as
+a fallback path:
+
+```json
+"tuning_state": {
+  "smax_type": "string",
+  "state_validity": {
+    "idle": "GOOD",
+    "setting_lo": "WARNING",
+    "locking": "WARNING",
+    "tuned": "GOOD",
+    "failed": "ERROR"
+  },
+  "unknown_state": "ERROR"
+}
+```
+
+`_string_validity()` consults `state_validity` first; the explicit
+`unknown_state` policy makes never-seen states a per-point decision
+instead of an accident.
+
+**(2) Trajectory — sequence-aware validity.** Order and time matter:
+"stuck in `locking` for 90 s is no longer WARNING, it's ERROR", or
+"jumped from `setting_lo` straight to `tuned` — suspicious". This needs
+**memory across ticks**, and it is the one place the two designs
+genuinely differ (see §4.1's `ctx.state` and §5.3). Trajectory checks
+are computations producing a derived point (e.g.
+`monitorsystem:rx:H:tuning_status`); classification stays on the source
+point itself.
+
+### 3.6 Computed-on-computed dependencies
 
 Aggregates will feed higher aggregates (per-antenna status → array
 status). The engine builds a dependency graph from declared
@@ -212,6 +264,20 @@ output through a **named function**:
         "elevation": "RM:acc1:RM_TRACK_EL_F"
       },
       "invalid_inputs": "propagate"
+    },
+    {
+      "__each__": {
+        "over": "H,V", "as": "rx",
+        "template": {
+          "output": "monitorsystem:rx:{rx}:tuning_status",
+          "function": "sequence_validity",
+          "inputs": { "state": "rx:{rx}:tuning_state" },
+          "params": {
+            "stuck_timeout_s": 90,
+            "expected_order": ["idle", "setting_lo", "locking", "tuned"]
+          }
+        }
+      }
     }
   ]
 }
@@ -228,10 +294,21 @@ output through a **named function**:
   Python function with a `@msw_function("refraction_correction")`
   decorator — while its *wiring* (which points feed it, where the result
   goes) stays in config.
+- `params` (optional) passes static configuration — lookup tables,
+  timeouts, expected state orders — to the function. This stays inside
+  the "no logic in JSON" rule: `params` values are *data*; the logic
+  that interprets them lives once, in the registered function.
 - Function contract (uniform): `f(inputs, ctx) -> value` — the engine
   derives the output's validity from the declared thresholds in
   `smax.json`; a function may instead return `(value, Validity)` when it
   must assert validity directly (e.g. `worst_validity`).
+- **Persistent per-entry state**: the engine owns a `ctx.state` dict,
+  created per config entry, that survives across ticks (cleared on
+  config reload). This is what makes sequence/trajectory computations
+  (§3.5) possible in a stateless-function design: `sequence_validity`
+  keeps `state_entered_t` in `ctx.state` and applies `stuck_timeout_s`
+  against `ctx.clock` — one generic, fake-clock-testable function
+  covering every receiver via `__each__`.
 
 ### 4.2 Scaling story
 
@@ -333,7 +410,10 @@ list); no engine changes.
 
 - **Full Python everywhere.** Physics, multi-output computations,
   intermediate state (e.g. a computation that needs the previous tick's
-  value for a rate) are all natural. No config vocabulary to outgrow.
+  value for a rate) are all natural. Cross-tick memory is free —
+  sequence/trajectory checks (§3.5) are just instance attributes
+  (`self.state_entered_t`) on a long-lived `Computation` object. No
+  config vocabulary to outgrow.
 - **One place per computation.** The recipe lives in exactly one class;
   debugging is "read this class". Multi-output computations are
   first-class (`outputs` is a list; `compute` returns a dict).
@@ -375,6 +455,7 @@ list); no engine changes.
 | Add a standard rollup/aggregate | config stanza only | new subclass (code) |
 | Add arbitrary physics | registered function + config stanza | new subclass |
 | Multi-output computations | awkward (needs multi-output entry form) | natural |
+| Sequence/state-machine checks (§3.5) | generic function + `ctx.state` + `params` | instance attributes |
 | Operator tuning / runtime reload | yes (config reload) | effectively no |
 | Debugging a value | config + function (two hops) | one class |
 | Cross-cutting guarantees (staleness, policy) | enforced by engine | by convention |
@@ -392,6 +473,11 @@ first-class citizen. Rationale:
   plain functions — as testable as Design B's classes), so B's main
   advantage is reduced to multi-output ergonomics, which A can add later
   with a `"outputs": {...}` entry form if needed.
+- The sequence use case (§3.5) repeats across receivers and likely
+  future sequences (antenna slewing, correlator setup) — exactly where
+  one generic `sequence_validity` function plus `__each__` wiring beats
+  a family of near-identical subclasses. With `ctx.state`, A handles it
+  without giving up statelessness where it isn't needed.
 - It keeps the project's established idiom: JSON config with `__each__`
   templates, engine validates references at load, `reload_config` for
   operators — the fault system already trained everyone on this shape.
@@ -414,3 +500,7 @@ flag, it becomes a registered Python function.
 4. Should `monitorsystem:` computed points be eligible as fault-system
    inputs (e.g. fault on `array:antennas_online`)? Nothing prevents it —
    they're ordinary points — but it affects fault-config review.
+5. The `state_validity` / `unknown_state` schema extension (§3.5) lives
+   in the shared `monitor` package and benefits displays and the fault
+   system independently of this writer. Should it land first as its own
+   small change, ahead of the writer implementation?
