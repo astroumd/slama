@@ -21,6 +21,11 @@ test0:
 	perl -I$(SMAOP) timetable.pl test0.run                        > test0.tt
 	@echo "Compare test0 files with corresponding my_sma_obs_script files"
 
+## test2:     script generator comparison
+test2:
+	./make_obs_script.py --name GRB --ra 21:01:11.22 --dec +42:13:13.7 -o test2.pl
+	@echo "Compare: diff test2.pl GRB.pl"
+
 ## time:     display current unix time and current local time
 time:
 	date +"%s - %c"
