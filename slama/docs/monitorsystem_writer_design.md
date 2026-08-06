@@ -59,7 +59,7 @@ These decisions hold regardless of which design is chosen.
 
 ### 3.1 Process model
 
-A standalone daemon (`python -m slama.msw` or similar), peer to the
+A standalone daemon (`python -m slama.monitor.compute`), peer to the
 fault system's `fault/__main__.py`. It owns one `SmaxRedisClient` and a
 `MonitorSystem` built from `smax.json`. Poll-based `tick()` at a
 configurable interval (default ~2 s, matching the display cadence), with
@@ -134,10 +134,12 @@ reader model; the only cost is that validity and value are written in
 two operations (acceptable: both carry SMAX timestamps, and readers
 tolerate one-tick skew).
 
-An open sub-question for implementation phase: whether to also push
-validity metadata for *source* (hardware) points as a byproduct, since
-the writer computes them anyway for rollups. Deferred — not required by
-the current goal.
+**Decided (2026-08-05):** the first deliverable writes validities only
+for derived points. Publishing validity metadata for *source* (hardware)
+points — which the writer computes anyway for rollups — is deferred, but
+the design keeps the hook so it can be added later without rework
+(centralizing validity for `DataBridge` and the fault system, which each
+recompute it today).
 
 ### 3.4 Missing/stale input policy
 
@@ -223,14 +225,15 @@ Python functions.**
 
 ### 4.1 Shape
 
-New package `src/slama/msw/` (monitor subsystem writer):
+New subpackage `src/slama/monitor/compute/` (beside `monitorpoint.py`
+and `monitorsystem.py` — "the compute engine of the monitor system"):
 
 ```
-msw/
+monitor/compute/
   __main__.py      # CLI: --config, --smax-config, --interval, --once
-  engine.py        # MswEngine: tick loop (FaultSystem pattern), DAG ordering
-  mswconfig.py     # MswConfig: load/validate computations.json (FaultConfig pattern)
-  functions.py     # registry: @msw_function("median"), worst_validity, count_valid, ...
+  engine.py        # ComputeEngine: tick loop (FaultSystem pattern), DAG ordering
+  computeconfig.py # ComputeConfig: load/validate computations.json (FaultConfig pattern)
+  functions.py     # registry: @compute_function("median"), worst_validity, count_valid, ...
 ```
 
 New config `conf/computations.json` — each entry wires inputs to an
@@ -366,9 +369,9 @@ orchestrator.**
 ### 5.1 Shape
 
 ```
-msw/
+monitor/compute/
   __main__.py        # CLI, as in Design A
-  engine.py          # MswEngine: discovery, DAG ordering, tick loop
+  engine.py          # ComputeEngine: discovery, DAG ordering, tick loop
   computation.py     # ABC + shared helpers (worst_validity etc. as functions)
   plugins/
     antenna.py       # AntennaStatus(Computation), TsysMedian(Computation)
@@ -486,21 +489,39 @@ The main discipline required if A is chosen: **no logic in JSON** —
 the moment a computation needs more than input wiring and a policy
 flag, it becomes a registered Python function.
 
-## 7. Open questions for Marc
+## 7. Decisions (resolved with Marc, 2026-08-05)
 
-1. Should the writer also publish validity metadata for *source*
-   (hardware) points as a byproduct of computing rollups (§3.3), or is
-   that a later, separate deliverable?
-2. Naming: `slama.msw` vs `slama.monitorsystem` vs `slama.writer` for
-   the package, and `computations.json` vs `monitorsystem.json` for the
-   config?
-3. Is one global tick interval acceptable initially, or do some
-   computations need per-entry intervals from day one (§3.4 defaults
-   include the hook either way)?
-4. Should `monitorsystem:` computed points be eligible as fault-system
-   inputs (e.g. fault on `array:antennas_online`)? Nothing prevents it —
-   they're ordinary points — but it affects fault-config review.
-5. The `state_validity` / `unknown_state` schema extension (§3.5) lives
-   in the shared `monitor` package and benefits displays and the fault
-   system independently of this writer. Should it land first as its own
-   small change, ahead of the writer implementation?
+1. **Source-point validities: defer, keep the hook.** The first
+   deliverable writes validities only for derived points (§3.3).
+   Publishing validity metadata for hardware points — centralizing what
+   `DataBridge` and the fault system each recompute today — is a later,
+   separate deliverable the design must not preclude.
+2. **Naming: `slama.monitor.compute` + `conf/computations.json`.**
+   Nesting under the existing `monitor` package keeps the "computing
+   monitor points" semantics without creating a near-collision between a
+   top-level `slama.monitorsystem` package and the existing
+   `slama.monitor.monitorsystem` module. The config name follows the
+   plural-noun `faults.json` precedent.
+3. **Intervals: global only, reserve the hook.** One tick interval
+   (default ~2 s) for all computations, as in `FaultSystem`, so every
+   tick is a consistent snapshot for DAG ordering (§3.6). The config
+   schema reserves a per-entry `interval_s` key for later; per-entry
+   scheduling is out of scope for the first deliverable.
+4. **Fault system may consume `monitorsystem:` points — with
+   guidance.** Computed points are ordinary points and may appear in
+   `faults.json` (enabling aggregate faults like "antennas_online < 4";
+   a dead compute daemon shows up as stale → `INVALID_NO_DATA`, a free
+   watchdog). Documented rule: when a fault watches a derived point
+   whose feeding source points are also watched, declare the sources as
+   causal `parents` of the derived fault so one hardware failure reports
+   once, at the root.
+5. **`state_validity` schema extension lands first, separately.** The
+   `state_validity` / `unknown_state` extension to
+   `MonitorPoint._string_validity()` (§3.5) ships as its own small
+   branch/PR ahead of the writer — with tests and updated `smax.json`
+   string-point entries — since displays and the fault system benefit
+   immediately and independently.
+
+**Still open: the Design A vs Design B choice (§6).** The
+recommendation stands (A), but Marc has not yet decided; no
+implementation until this is settled.
