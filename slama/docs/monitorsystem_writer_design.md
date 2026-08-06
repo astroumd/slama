@@ -489,6 +489,142 @@ The main discipline required if A is chosen: **no logic in JSON** —
 the moment a computation needs more than input wiring and a policy
 flag, it becomes a registered Python function.
 
+### 6.1 Side-by-side sketch: the same two computations both ways
+
+To judge day-to-day feel rather than abstract pros/cons, here are the
+same two computations written out in each design: (1) per-antenna
+status rollup (worst validity over each antenna's points, antennas
+1–8) and (2) the receiver tuning-sequence trajectory check (§3.5).
+Sketches, not implementation — signatures are illustrative.
+
+In **both** designs, the outputs are declared identically in
+`smax.json`'s `monitorsystem` subtree; that half of the work never
+differs.
+
+#### Design A: two config stanzas + one shared function
+
+`conf/computations.json`:
+
+```json
+{
+  "computations": [
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:status",
+          "function": "worst_validity",
+          "inputs": ["antenna:{i}:*"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "H,V", "as": "rx",
+        "template": {
+          "output": "monitorsystem:rx:{rx}:tuning_status",
+          "function": "sequence_validity",
+          "inputs": { "state": "rx:{rx}:tuning_state" },
+          "params": {
+            "stuck_timeout_s": 90,
+            "expected_order": ["idle", "setting_lo", "locking", "tuned"]
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+`compute/functions.py` — `worst_validity` is a built-in; the sequence
+check is one generic function shared by every receiver (and any future
+sequence point):
+
+```python
+@compute_function("worst_validity")
+def worst_validity(inputs, ctx):
+    """Value and validity are the worst Validity over the input set."""
+    worst = max(item.validity for item in inputs)   # Validity is an IntEnum
+    return int(worst), worst
+
+
+@compute_function("sequence_validity")
+def sequence_validity(inputs, ctx):
+    """Trajectory check for a state-machine string point.
+
+    Classification (state -> validity) comes from the source point's
+    state_validity map (§3.5); this function only adds the
+    time/order-aware layer, using engine-owned per-entry state.
+    """
+    state = inputs["state"].value
+    now = ctx.clock()
+    if state != ctx.state.get("last_state"):        # state transition
+        ctx.state["last_state"] = state
+        ctx.state["entered_t"] = now
+
+    validity = inputs["state"].validity             # from state_validity map
+    stuck = (now - ctx.state["entered_t"]) > ctx.params["stuck_timeout_s"]
+    if validity == Validity.VALID_WARNING and stuck:
+        validity = Validity.VALID_ERROR             # in-progress too long
+    return state, validity
+```
+
+#### Design B: two plugin classes
+
+`compute/plugins/antenna.py` and `compute/plugins/rx.py`:
+
+```python
+class AntennaStatus(Computation):
+    over = "1-8"                                    # engine instantiates per index
+
+    def __init__(self, i):
+        self.inputs = [f"antenna:{i}:*"]
+        self.outputs = [f"monitorsystem:antenna:{i}:status"]
+
+    def compute(self, inputs):
+        worst = max(item.validity for item in inputs)
+        return {self.outputs[0]: (int(worst), worst)}
+
+
+class TuningStatus(Computation):
+    over = "H,V"
+    STUCK_TIMEOUT_S = 90.0
+    EXPECTED_ORDER = ["idle", "setting_lo", "locking", "tuned"]
+
+    def __init__(self, rx):
+        self.inputs = {"state": f"rx:{rx}:tuning_state"}
+        self.outputs = [f"monitorsystem:rx:{rx}:tuning_status"]
+        self._last_state = None                     # cross-tick memory is just
+        self._entered_t = None                      # instance attributes
+
+    def compute(self, inputs):
+        state = inputs["state"].value
+        now = self.clock()
+        if state != self._last_state:
+            self._last_state, self._entered_t = state, now
+
+        validity = inputs["state"].validity
+        if (validity == Validity.VALID_WARNING
+                and (now - self._entered_t) > self.STUCK_TIMEOUT_S):
+            validity = Validity.VALID_ERROR
+        return {self.outputs[0]: (state, validity)}
+```
+
+#### What routine changes cost in each
+
+| Change | Design A | Design B |
+|---|---|---|
+| Add antenna 9 to the rollup | edit `"over"` in JSON; runtime reload | edit `over` in class; redeploy |
+| Add a median-Tsys point per antenna | new config stanza (built-in `median`) | new subclass |
+| Tune stuck timeout 90 s → 120 s | config edit; runtime reload | code edit; redeploy |
+| Add a second sequence point (e.g. antenna slewing) | new stanza reusing `sequence_validity` | new subclass (or refactor a shared base) |
+| Add genuinely new physics | new registered function **and** stanza | new subclass |
+| Unit test the tuning check | call `sequence_validity()` with fake `ctx` (fake clock/state dict) | instantiate `TuningStatus`, inject fake clock |
+
+The sketch shows the trade concretely: the *logic* is nearly identical
+Python either way; what differs is where the **wiring** lives (data vs
+code) and therefore who can change it, and when.
+
 ## 7. Decisions (resolved with Marc, 2026-08-05)
 
 1. **Source-point validities: defer, keep the hook.** The first
