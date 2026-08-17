@@ -12311,5 +12311,16 @@
     "ref_10_mhz": {
       "description": "10 MHz frequency reference"
     }
+  },
+  "monitorsystem": {
+    "array": {
+      "antennas_online": {
+        "description": "Count of antennas with is_online true, from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "integer",
+        "warn_low": 6,
+        "err_low": 4
+      }
+    }
   }
 }

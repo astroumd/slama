@@ -1,0 +1,20 @@
+{
+  "_note": [
+    "See docs/monitorsystem_writer_design.md for the full design.",
+    "Each entry writes 'output' (declared under the 'monitorsystem' subtree",
+    "in smax.json) by applying 'function' (registered in",
+    "slama.monitor.compute.functions) to 'inputs'."
+  ],
+  "defaults": {
+    "interval_s": 2,
+    "staleness_s": 30,
+    "invalid_inputs": "skip"
+  },
+  "computations": [
+    {
+      "output": "monitorsystem:array:antennas_online",
+      "function": "count_true",
+      "inputs": ["antenna:1-8:is_online"]
+    }
+  ]
+}
