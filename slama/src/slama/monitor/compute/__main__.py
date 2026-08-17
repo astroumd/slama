@@ -49,11 +49,11 @@ def main(argv: list[str] | None = None) -> int:
     and exit — useful for manual verification without a long-running
     process).
     """
-    parser = argparse.ArgumentParser(prog="python -m slama.monitor.compute")
+    parser = argparse.ArgumentParser(prog="[uv run] python -m slama.monitor.compute")
     parser.add_argument(
         "config",
         type=Path,
-        help="Path to the compute config (e.g. conf/computations.json)",
+        help="Path to the compute config (e.g., conf/computations.json)",
     )
     parser.add_argument(
         "--smax-json",
