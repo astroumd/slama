@@ -219,6 +219,66 @@ class TestStringValidity:
 
 
 # ---------------------------------------------------------------------------
+# State-machine string validity (state_validity / unknown_state)
+# ---------------------------------------------------------------------------
+
+class TestStateValidity:
+    TUNING_STATES = {
+        "idle": "GOOD",
+        "setting_lo": "WARNING",
+        "locking": "WARNING",
+        "tuned": "GOOD",
+        "failed": "ERROR",
+    }
+
+    def test_listed_state_good(self):
+        mp = make_mp(smax_type="str", state_validity=self.TUNING_STATES)
+        mp.update("tuned")
+        assert mp.validity == Validity.VALID_GOOD
+
+    def test_listed_state_warning(self):
+        mp = make_mp(smax_type="str", state_validity=self.TUNING_STATES)
+        mp.update("locking")
+        assert mp.validity == Validity.VALID_WARNING
+
+    def test_listed_state_error(self):
+        mp = make_mp(smax_type="str", state_validity=self.TUNING_STATES)
+        mp.update("failed")
+        assert mp.validity == Validity.VALID_ERROR
+
+    def test_unlisted_state_defaults_to_error(self):
+        mp = make_mp(smax_type="str", state_validity=self.TUNING_STATES)
+        mp.update("some_new_firmware_state")
+        assert mp.validity == Validity.VALID_ERROR
+
+    def test_unlisted_state_honors_custom_unknown_state(self):
+        mp = make_mp(
+            smax_type="str",
+            state_validity=self.TUNING_STATES,
+            unknown_state="WARNING",
+        )
+        mp.update("some_new_firmware_state")
+        assert mp.validity == Validity.VALID_WARNING
+
+    def test_full_validity_member_name_accepted(self):
+        mp = make_mp(
+            smax_type="str",
+            state_validity={"overheat": "VALID_ERROR_HIGH"},
+        )
+        mp.update("overheat")
+        assert mp.validity == Validity.VALID_ERROR_HIGH
+
+    def test_legacy_valid_strings_path_unaffected_when_state_validity_absent(self):
+        # Regression: without state_validity, behavior matches
+        # TestStringValidity exactly (legacy err/warn-membership path).
+        mp = make_mp(smax_type="str", valid_strings=["running", "idle"])
+        mp.update("running")
+        assert mp.validity == Validity.VALID_GOOD
+        mp.update("bogus")
+        assert mp.validity == Validity.VALID_ERROR
+
+
+# ---------------------------------------------------------------------------
 # Bool validity
 # ---------------------------------------------------------------------------
 
