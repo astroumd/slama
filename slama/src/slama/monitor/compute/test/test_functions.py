@@ -3,6 +3,7 @@ import pytest
 
 from slama.monitor.compute.computenode import ComputeContext, ResolvedInput
 from slama.monitor.compute.functions import (
+    _severity_score,
     count_true,
     count_valid,
     get_function,
@@ -61,7 +62,18 @@ class TestWorstValidity:
         inputs = [ri("a", 1, Validity.VALID_GOOD), ri("b", 2, Validity.VALID_ERROR)]
         value, validity = worst_validity(inputs, ctx())
         assert validity == Validity.VALID_ERROR
-        assert value == int(Validity.VALID_ERROR)
+        assert value == _severity_score(Validity.VALID_ERROR)
+
+    def test_severity_score_increases_with_severity_not_enum_ordinal(self):
+        # Regression: Validity's own IntEnum ordinal is declaration
+        # order, not severity -- INVALID_NO_DATA has a LOWER ordinal
+        # than VALID_GOOD. The score must not just be int(validity).
+        good = _severity_score(Validity.VALID_GOOD)
+        warning = _severity_score(Validity.VALID_WARNING)
+        error = _severity_score(Validity.VALID_ERROR)
+        invalid = _severity_score(Validity.INVALID_NO_DATA)
+        assert good < warning < error < invalid
+        assert good == 0
 
     def test_invalid_no_data_beats_error(self):
         # INVALID_NO_DATA has a LOWER int value than VALID_ERROR, so a

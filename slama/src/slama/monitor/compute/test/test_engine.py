@@ -3,8 +3,10 @@ policy, writes, and same-tick DAG ordering (no live SMAX/Valkey required —
 see feedback_valkey_test_heads_up)."""
 from datetime import datetime, timezone
 
+import pytest
+
 from slama.monitor.compute.computeconfig import ComputeConfig
-from slama.monitor.compute.engine import ComputeEngine
+from slama.monitor.compute.engine import ComputeEngine, _wrap
 from slama.monitor.monitorpoint import MonitorPoint, Validity
 
 
@@ -90,6 +92,26 @@ class _FakeSmaxResult:
 
     def __repr__(self):
         return repr(self._value)
+
+
+# ---------------------------------------------------------------------------
+# _wrap() must produce something MonitorPoint.time can read back
+# ---------------------------------------------------------------------------
+
+class TestWrap:
+    def test_wrapped_value_has_a_readable_time(self):
+        # Regression: _wrap used to pass the float wall-clock straight
+        # through as `timestamp`, but SmaxVarBase.timestamp is typed
+        # datetime | None and MonitorPoint.time does
+        # Time(self._smax_result.timestamp) -- astropy.time.Time
+        # rejects a bare float, so any later staleness check
+        # (mp.time.unix) on an engine-computed value would raise and
+        # get silently swallowed into a permanent INVALID_NO_DATA.
+        mp = make_mp("monitorsystem:array:antennas_online", smax_type="integer")
+        mp.update(_wrap(5, 1_700_000_000.0))
+        assert mp.value == 5
+        assert mp.time is not None
+        assert mp.time.unix == pytest.approx(1_700_000_000.0)
 
 
 # ---------------------------------------------------------------------------

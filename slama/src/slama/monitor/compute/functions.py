@@ -113,16 +113,31 @@ this module.
 _SEVERITY_RANK: dict[Validity, int] = {v: i for i, v in enumerate(_SEVERITY_ORDER)}
 
 
+def _severity_score(v: Validity) -> int:
+    """0 (``VALID_GOOD``) .. len(_SEVERITY_ORDER)-1 (``INVALID_NO_DATA``): higher is worse.
+
+    Deliberately *not* ``int(v)`` — ``Validity``'s own ordinal is
+    declaration order, not severity (see :data:`_SEVERITY_ORDER`), so
+    writing the raw ordinal as a status point's value would scramble
+    any later numeric comparison or ``err_high``/``warn_high``
+    threshold placed on that point.
+    """
+    rank = _SEVERITY_RANK.get(v, 0)  # unranked -> most severe -> highest score
+    return len(_SEVERITY_ORDER) - 1 - rank
+
+
 @compute_function("worst_validity")
 def worst_validity(inputs: list[ResolvedInput], ctx: ComputeContext):
     """Value and validity are both the most-severe validity among ``inputs``.
 
     Ties (e.g. two inputs both ``VALID_ERROR``) resolve to that shared
-    validity. The numeric value written is ``int(worst)`` — a status
-    code consumers can compare or display.
+    validity. The numeric value written is :func:`_severity_score` —
+    0 for ``VALID_GOOD``, increasing with severity — so a threshold
+    like ``err_high: 9`` on the output point means something stable,
+    unlike the raw (non-severity-ordered) ``Validity`` ordinal would.
     """
     worst = min(inputs, key=lambda r: _SEVERITY_RANK.get(r.validity, -1)).validity
-    return int(worst), worst
+    return _severity_score(worst), worst
 
 
 @compute_function("count_true")

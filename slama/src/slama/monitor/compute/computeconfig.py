@@ -19,6 +19,7 @@ import copy
 import fnmatch
 import itertools
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -26,6 +27,9 @@ from slama.monitor.monitorsystem import MonitorSystem, _parse_index_set
 
 from .computenode import ComputeNode
 from .functions import get_function
+
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_PLACEHOLDER_VAR: str = "i"
@@ -137,6 +141,15 @@ class ComputeConfig:
                 raise ValueError(f"computation {output!r} missing 'inputs'")
             inputs = _resolve_inputs_spec(output, raw_inputs, monitor_system)
 
+            if "interval_s" in entry:
+                logger.warning(
+                    "computation %r sets 'interval_s' (%r), but ComputeEngine "
+                    "does not yet consult per-node intervals (design doc §7 "
+                    "decision 3) -- it will run on the engine's single global "
+                    "interval instead",
+                    output, entry["interval_s"],
+                )
+
             nodes.append(ComputeNode(
                 output=output,
                 function=function,
@@ -220,13 +233,26 @@ def _resolve_pattern(pattern: str, monitor_system: MonitorSystem) -> list[str]:
     Cartesian product of all segments' expansions gives the candidate
     paths.
 
+    A segment containing ``-`` that is *not* a valid numeric range
+    (e.g. ``"4K-plate"``, ``"a1-a2"`` — real segment names in
+    ``smax.json``) makes ``_parse_index_set`` raise; here that is
+    caught and the segment is treated as a single literal instead.
+    ``_parse_index_set`` itself is left raising for its other caller
+    (``__each__`` expansion, shared with ``slama.fault``), where a
+    malformed range is more likely a config typo than a literal name.
+
     Any candidate containing ``*`` is then resolved against every
     canonical name in ``monitor_system`` via ``fnmatch``; any
     candidate without ``*`` is checked for exact existence. Every
     pattern must resolve to at least one point, or loading fails fast.
     """
     segments = pattern.split(":")
-    per_segment = [_parse_index_set(seg) for seg in segments]
+    per_segment = []
+    for seg in segments:
+        try:
+            per_segment.append(_parse_index_set(seg))
+        except ValueError:
+            per_segment.append([seg])
     candidates = [":".join(combo) for combo in itertools.product(*per_segment)]
 
     resolved: list[str] = []

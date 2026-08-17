@@ -37,6 +37,7 @@ HARDWARE_POINTS = [
     "antenna:1:is_online", "antenna:2:is_online",
     "antenna:1:air:temperature", "antenna:2:air:temperature",
     "rx:H:tuning_state", "rx:V:tuning_state",
+    "antenna:1:cryostat:heaters:4K-plate",
 ]
 COMPUTED_POINTS = [
     "monitorsystem:array:antennas_online",
@@ -120,8 +121,24 @@ class TestInputResolution:
             }],
         }, make_ms())
         assert sorted(cfg.nodes[0].inputs) == [
-            "antenna:1:air:temperature", "antenna:1:is_online",
+            "antenna:1:air:temperature",
+            "antenna:1:cryostat:heaters:4K-plate",
+            "antenna:1:is_online",
         ]
+
+    def test_hyphenated_literal_segment_is_not_treated_as_a_range(self):
+        # "4K-plate" is a real segment name in smax.json, not a range
+        # spec -- _parse_index_set would raise ValueError trying to
+        # int("4K"); _resolve_pattern must catch that and treat the
+        # whole segment as a literal instead.
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": "monitorsystem:array:antennas_online",
+                "function": "count_true",
+                "inputs": ["antenna:1:cryostat:heaters:4K-plate"],
+            }],
+        }, make_ms())
+        assert cfg.nodes[0].inputs == ["antenna:1:cryostat:heaters:4K-plate"]
 
     def test_dict_input_resolves_single_names(self):
         cfg = ComputeConfig.from_dict({

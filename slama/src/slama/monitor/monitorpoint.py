@@ -197,8 +197,15 @@ class MonitorPoint(SmaxVarBase):
         unrecognized state resolves ``self._unknown_state`` instead
         (default ``"ERROR"``), so a schema gap is a deliberate policy
         rather than a silent false alarm.
+
+        ``self.value`` is coerced to ``str`` before the lookup: a real
+        ``smax_pull()`` result is a ``smax.smax_data_types.SmaxStr``,
+        which — being a dataclass with the default ``eq=True`` — has
+        ``__hash__`` set to ``None`` and so cannot be used as a dict
+        key directly, even though it compares equal to the plain
+        ``str`` values used as keys in ``state_validity``.
         """
-        name = self._state_validity.get(self.value, self._unknown_state)
+        name = self._state_validity.get(str(self.value), self._unknown_state)
         return _STATE_VALIDITY_NAMES.get(name) or Validity[name]
 
     def _bool_validity(self) -> Validity:

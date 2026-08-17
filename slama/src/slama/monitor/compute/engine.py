@@ -13,6 +13,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -64,7 +65,7 @@ Order matters: ``bool`` must be checked before ``int`` since Python's
 """
 
 
-def _wrap(value: Any, timestamp: float):
+def _wrap(value: Any, wall_clock_s: float):
     """Wrap a plain Python value in the matching ``smax.smax_data_types`` class.
 
     The wrapped object behaves as the value itself (it subclasses
@@ -72,7 +73,17 @@ def _wrap(value: Any, timestamp: float):
     ``.timestamp``, which is what :attr:`MonitorPoint.value` and
     :attr:`MonitorPoint.time` expect from anything passed to
     :meth:`MonitorPoint.update`.
+
+    ``wall_clock_s`` is a float epoch (what ``time.time()``/the
+    engine's ``wall_clock`` return); ``SmaxVarBase.timestamp`` is
+    typed as ``datetime | None``, so it is converted here rather than
+    passed through — passing the float directly type-checks (the
+    field has no runtime type enforcement) but breaks the first thing
+    that reads ``.time`` (``MonitorPoint.time`` does
+    ``Time(self._smax_result.timestamp)``, and ``astropy.time.Time``
+    rejects a bare float).
     """
+    timestamp = datetime.fromtimestamp(wall_clock_s, tz=timezone.utc)
     for py_type, wrapper in _WRAPPERS:
         if isinstance(value, py_type):
             return wrapper(value, timestamp=timestamp)
@@ -281,7 +292,13 @@ class ComputeEngine:
 
         try:
             stale = (now_wall - mp.time.unix) > staleness_s
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
+            # mp.time is None (never updated), or the underlying
+            # result has no usable .timestamp -- narrowed
+            # deliberately: a bare `except Exception` here would also
+            # swallow bugs in _wrap()/mp.time itself as silent,
+            # permanent INVALID_NO_DATA, the worst failure shape for
+            # a monitoring system.
             stale = True
         if stale:
             return value, Validity.INVALID_NO_DATA

@@ -268,6 +268,16 @@ class TestStateValidity:
         mp.update("overheat")
         assert mp.validity == Validity.VALID_ERROR_HIGH
 
+    def test_real_smax_result_type_is_hashable_for_lookup(self):
+        # A real smax_pull() result is a SmaxStr, not a plain str.
+        # SmaxStr is an @dataclass (default eq=True -> __hash__ is
+        # None), so a naive dict lookup on self.value would raise
+        # TypeError: unhashable type. Regression test for that.
+        from smax.smax_data_types import SmaxStr
+        mp = make_mp(smax_type="str", state_validity=self.TUNING_STATES)
+        mp.update(SmaxStr("locking"))
+        assert mp.validity == Validity.VALID_WARNING
+
     def test_legacy_valid_strings_path_unaffected_when_state_validity_absent(self):
         # Regression: without state_validity, behavior matches
         # TestStringValidity exactly (legacy err/warn-membership path).
