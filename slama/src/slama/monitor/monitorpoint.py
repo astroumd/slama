@@ -37,20 +37,6 @@ accepted, via a fallback to ``Validity[name]``, so a state can be mapped to
 any validity, not just these three common ones.
 """
 
-
-class AMonitorPoint:
-    """Represents a collection of primitive (leaf) values or a list."""
-    def __init__(self, name, values):
-        self.name = name
-        self.values = values  # dict (for key/values) or list (for arrays)
-
-    def __repr__(self):
-        if isinstance(self.values, dict):
-            return f"<MonitorPoint {self.name}: {len(self.values)} values>"
-        else:
-            return f"<MonitorPoint {self.name}: list of {len(self.values)} items>"
-
-
 class MonitorPoint(SmaxVarBase):
     def __init__(
         self,
