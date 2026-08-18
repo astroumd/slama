@@ -23,19 +23,19 @@ class Validity(IntEnum):
     VALID_ERROR_LOW = auto()
     VALID_ERROR_HIGH = auto()
     MAX_VALIDITY = auto()
-    
-class AMonitorPoint:
-    """Represents a collection of primitive (leaf) values or a list."""
-    def __init__(self, name, values):
-        self.name = name
-        self.values = values  # dict (for key/values) or list (for arrays)
 
-    def __repr__(self):
-        if isinstance(self.values, dict):
-            return f"<MonitorPoint {self.name}: {len(self.values)} values>"
-        else:
-            return f"<MonitorPoint {self.name}: list of {len(self.values)} items>"
 
+_STATE_VALIDITY_NAMES: dict[str, Validity] = {
+    "GOOD": Validity.VALID_GOOD,
+    "WARNING": Validity.VALID_WARNING,
+    "ERROR": Validity.VALID_ERROR,
+}
+"""Short aliases accepted in a MonitorPoint's ``state_validity`` map.
+
+Full :class:`Validity` member names (e.g. ``"VALID_ERROR_HIGH"``) are also
+accepted, via a fallback to ``Validity[name]``, so a state can be mapped to
+any validity, not just these three common ones.
+"""
 
 class MonitorPoint(SmaxVarBase):
     def __init__(
@@ -54,6 +54,8 @@ class MonitorPoint(SmaxVarBase):
         warn_low: Any = None,
         warn_high: Any = None,
         valid_strings: list = None,
+        state_validity: dict = None,
+        unknown_state: str = "ERROR",
         **kwargs
     ):
         if unit is None and units is not None:
@@ -76,6 +78,8 @@ class MonitorPoint(SmaxVarBase):
         self._warn_high = warn_high
         self._valid = True
         self._valid_strings = valid_strings  # used only for string type MPs
+        self._state_validity = state_validity  # used only for string type MPs
+        self._unknown_state = unknown_state
         self._smax_result = None  # stores result from smax_pull()
 
     @property
@@ -169,6 +173,8 @@ class MonitorPoint(SmaxVarBase):
         return Validity.VALID_GOOD
 
     def _string_validity(self) -> Validity:
+        if self._state_validity is not None:
+            return self._state_machine_validity()
         v = self.value
         if self.err_high is not None and v in self.err_high:
             return Validity.VALID_ERROR_HIGH
@@ -183,6 +189,17 @@ class MonitorPoint(SmaxVarBase):
         if self._valid_strings is None:
             return Validity.VALID_GOOD
         return Validity.VALID_ERROR
+
+    def _state_machine_validity(self) -> Validity:
+        """Validity for a string point whose values are named states.
+
+        Looks ``self.value`` up in ``self._state_validity``; an
+        unrecognized state resolves ``self._unknown_state`` instead
+        (default ``"ERROR"``), so a schema gap is a deliberate policy
+        rather than a silent false alarm.
+        """
+        name = self._state_validity.get(self.value, self._unknown_state)
+        return _STATE_VALIDITY_NAMES.get(name) or Validity[name]
 
     def _bool_validity(self) -> Validity:
         return Validity.VALID_NOT_CHECKED
