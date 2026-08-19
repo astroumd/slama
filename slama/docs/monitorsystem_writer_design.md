@@ -788,3 +788,4 @@ tick rather than silently reading a stale tree value.
 
 Fully backward compatible: every existing entry has `output: str`, hits
 the unchanged single-output path, zero behavior change.
+
