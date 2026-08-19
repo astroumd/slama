@@ -179,6 +179,27 @@ def _expand_entry(entry: dict) -> list[dict]:
     :func:`slama.fault.faultconfig._expand_entry` — duplicated rather
     than imported so ``slama.monitor.compute`` does not depend on the
     ``slama.fault`` package for a generic templating helper.
+
+    Parameters
+    ----------
+    entry : dict
+        One raw entry from ``computations.json``'s ``"computations"``
+        list — either an ordinary entry (returned unchanged) or a
+        single-key ``{"__each__": {"over": ..., "template": ...,
+        "as": ...}}`` block.
+
+    Returns
+    -------
+    list of dict
+        ``[entry]`` unchanged if there is no ``__each__`` key;
+        otherwise one substituted copy of ``__each__["template"]`` per
+        index in ``__each__["over"]``.
+
+    Raises
+    ------
+    ValueError
+        If ``__each__`` has sibling keys, is not a dict, is missing
+        ``"over"`` or ``"template"``, or ``"template"`` is not a dict.
     """
     if "__each__" in entry:
         if set(entry.keys()) != {"__each__"}:
@@ -200,7 +221,27 @@ def _expand_entry(entry: dict) -> list[dict]:
 
 
 def _substitute(obj, var: str, value: str):
-    """Recursively replace ``{var}`` with ``value`` in every string."""
+    """Recursively replace ``{var}`` with ``value`` in every string.
+
+    Parameters
+    ----------
+    obj : str, list, dict, or any
+        The object to substitute into. Strings are scanned for the
+        placeholder; lists and dicts are walked recursively (values
+        only, for dicts — keys are returned unchanged); any other type
+        is returned as a deep copy, untouched.
+    var : str
+        The placeholder variable name, without braces (e.g. ``"i"``
+        for the literal placeholder ``"{i}"``).
+    value : str
+        The string to substitute in place of ``{var}``.
+
+    Returns
+    -------
+    str, list, dict, or any
+        A new object of the same shape as ``obj`` with every
+        occurrence of ``{var}`` replaced by ``value``.
+    """
     placeholder = f"{{{var}}}"
     if isinstance(obj, str):
         return obj.replace(placeholder, value)
@@ -224,6 +265,24 @@ def _output_names_for(output) -> list[str]:
     ``ValueError`` on any other shape, including an empty dict (a
     multi-output entry that produces nothing is a config mistake, not
     a valid zero-output entry).
+
+    Parameters
+    ----------
+    output : str or dict of str to str
+        The raw ``"output"`` value from one ``computations.json``
+        entry, before any type validation.
+
+    Returns
+    -------
+    list of str
+        ``[output]`` for the single-output case, or
+        ``list(output.values())`` for the multi-output case.
+
+    Raises
+    ------
+    ValueError
+        If ``output`` is not a str or dict, the dict is empty, or any
+        dict key/value is not a str.
     """
     if isinstance(output, str):
         return [output]
@@ -241,6 +300,23 @@ def _output_names_for(output) -> list[str]:
 
 
 def _point_exists(canonical_name: str, monitor_system: MonitorSystem) -> bool:
+    """Check whether a canonical name is a declared point in ``monitor_system``.
+
+    Parameters
+    ----------
+    canonical_name : str
+        The exact canonical name to look up (no ranges, globs, or
+        ``__each__`` placeholders — those are already resolved by the
+        time this is called).
+    monitor_system : MonitorSystem
+        Tree to check against.
+
+    Returns
+    -------
+    bool
+        ``True`` if :meth:`MonitorSystem.get_monitor_point` succeeds
+        for ``canonical_name``, ``False`` if it raises ``KeyError``.
+    """
     try:
         monitor_system.get_monitor_point(canonical_name)
         return True
@@ -273,6 +349,29 @@ def _resolve_pattern(pattern: str, monitor_system: MonitorSystem) -> list[str]:
     canonical name in ``monitor_system`` via ``fnmatch``; any
     candidate without ``*`` is checked for exact existence. Every
     pattern must resolve to at least one point, or loading fails fast.
+
+    Parameters
+    ----------
+    pattern : str
+        One colon-separated input pattern from a ``computations.json``
+        entry's ``inputs`` (e.g. ``"antenna:1-8:is_online"``,
+        ``"antenna:1:*"``).
+    monitor_system : MonitorSystem
+        Tree used both for exact-existence checks and, if a glob
+        segment appears, as the source of every candidate canonical
+        name to match against.
+
+    Returns
+    -------
+    list of str
+        Every concrete canonical name ``pattern`` resolves to (one or
+        more).
+
+    Raises
+    ------
+    ValueError
+        If any expanded candidate is a literal name not declared in
+        ``monitor_system``, or a glob candidate matches no points.
     """
     segments = pattern.split(":")
     per_segment = []
@@ -312,6 +411,29 @@ def _resolve_inputs_spec(output: str, raw_inputs, monitor_system: MonitorSystem)
     globs); the results are concatenated in order into a single flat
     list. Dict form: each named pattern must resolve to exactly one
     name (dict inputs are meant to be one point per name).
+
+    Parameters
+    ----------
+    output : str or dict of str to str
+        The owning entry's raw ``"output"`` — used only to identify
+        the entry in error messages, not interpreted here.
+    raw_inputs : list of str or dict of str to str
+        The entry's raw ``"inputs"`` value, before resolution.
+    monitor_system : MonitorSystem
+        Tree used by :func:`_resolve_pattern` to resolve each pattern.
+
+    Returns
+    -------
+    list of str or dict of str to str
+        Resolved canonical names, in the same shape (list or dict) as
+        ``raw_inputs``.
+
+    Raises
+    ------
+    ValueError
+        If ``raw_inputs`` is neither a list nor a dict, a list form
+        resolves to no names at all, or a dict-form pattern resolves
+        to anything other than exactly one name.
     """
     if isinstance(raw_inputs, list):
         names: list[str] = []
@@ -341,6 +463,21 @@ def _resolve_inputs_spec(output: str, raw_inputs, monitor_system: MonitorSystem)
 # ---------------------------------------------------------------------------
 
 def _input_names(node: ComputeNode) -> list[str]:
+    """Flatten a node's resolved ``inputs`` to a plain list of canonical names.
+
+    Parameters
+    ----------
+    node : ComputeNode
+        Node whose :attr:`ComputeNode.inputs` (list or dict form,
+        already resolved to concrete canonical names) is flattened.
+
+    Returns
+    -------
+    list of str
+        ``list(node.inputs.values())`` for dict-form inputs, or
+        ``list(node.inputs)`` for list-form inputs — either way, every
+        canonical name ``node`` reads from, order-preserved.
+    """
     if isinstance(node.inputs, dict):
         return list(node.inputs.values())
     return list(node.inputs)
@@ -357,6 +494,22 @@ def _build_dependency_order(nodes: list[ComputeNode]) -> list[ComputeNode]:
     node, every one of its output names maps back to the same node —
     depending on *any* one of its results is a dependency on the whole
     entry, since they share one function call.
+
+    Parameters
+    ----------
+    nodes : list of ComputeNode
+        Fully-resolved nodes (every ``output``/``inputs`` already
+        expanded to concrete canonical names), in no particular order.
+
+    Returns
+    -------
+    list of ComputeNode
+        The same nodes, reordered via Kahn's algorithm so every node
+        appears after all the nodes it depends on. This is the order
+        :meth:`ComputeConfig.from_dict` stores as
+        :attr:`ComputeConfig.nodes`, and the order
+        :meth:`slama.monitor.compute.engine.ComputeEngine.tick`
+        iterates each tick.
 
     Raises
     ------

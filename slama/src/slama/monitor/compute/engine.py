@@ -86,6 +86,26 @@ def _wrap(value: Any, wall_clock_s: float):
     that reads ``.time`` (``MonitorPoint.time`` does
     ``Time(self._smax_result.timestamp)``, and ``astropy.time.Time``
     rejects a bare float).
+
+    Parameters
+    ----------
+    value : bool, int, float, or str
+        The plain Python value a compute function returned.
+    wall_clock_s : float
+        Wall-clock epoch seconds (e.g. from :func:`time.time`) to
+        attach as the wrapped value's ``.timestamp``.
+
+    Returns
+    -------
+    SmaxBool, SmaxInt, SmaxFloat, or SmaxStr
+        ``value`` wrapped in the ``smax.smax_data_types`` class
+        matching its Python type, carrying ``timestamp``.
+
+    Raises
+    ------
+    TypeError
+        If ``value``'s type doesn't match any entry in
+        :data:`_WRAPPERS`.
     """
     timestamp = datetime.fromtimestamp(wall_clock_s, tz=timezone.utc)
     for py_type, wrapper in _WRAPPERS:
@@ -180,7 +200,19 @@ class ComputeEngine:
         self._stop_event.set()
 
     def set_interval(self, seconds: float) -> None:
-        """Change the polling interval used by :meth:`run_forever`."""
+        """Change the polling interval used by :meth:`run_forever`.
+
+        Parameters
+        ----------
+        seconds : float
+            New interval in seconds. Takes effect starting with the
+            wait after the currently in-flight tick (if any).
+
+        Raises
+        ------
+        ValueError
+            If ``seconds`` is not positive.
+        """
         if seconds <= 0:
             raise ValueError(f"interval must be positive, got {seconds!r}")
         with self._lock:
@@ -194,6 +226,19 @@ class ComputeEngine:
         fresh — trajectory checks like ``sequence_validity`` forget
         prior ticks across a reload, same as
         :meth:`FaultSystem.reload_config` resets fault debounce state.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            Path to the new ``computations.json`` to load.
+
+        Raises
+        ------
+        FileNotFoundError, json.JSONDecodeError, ValueError
+            See :meth:`ComputeConfig.from_file` for the validation
+            failures; a failed reload leaves the engine's current
+            node list untouched (the exception propagates before
+            :meth:`_apply_config` is called).
         """
         new_config = ComputeConfig.from_file(path, self._monitor_system)
         with self._lock:
@@ -202,12 +247,27 @@ class ComputeEngine:
 
     @property
     def interval_s(self) -> float:
+        """The current polling interval in seconds, read under lock.
+
+        Returns
+        -------
+        float
+            The interval :meth:`run_forever` waits between ticks,
+            as last set by config load or :meth:`set_interval`.
+        """
         with self._lock:
             return self._interval_s
 
     @property
     def nodes(self) -> list[ComputeNode]:
-        """The current, topologically ordered node list (read-only view)."""
+        """The current, topologically ordered node list (read-only view).
+
+        Returns
+        -------
+        list of ComputeNode
+            The same list :meth:`tick` iterates each cycle — reflects
+            the most recent successful config load or reload.
+        """
         return self._nodes
 
     def tick(self) -> list[ComputeResult]:
@@ -264,6 +324,16 @@ class ComputeEngine:
     # ------------------------------------------------------------------
 
     def _apply_config(self, config: ComputeConfig) -> None:
+        """Swap in a new node list and interval; caller holds ``self._lock``.
+
+        Parameters
+        ----------
+        config : ComputeConfig
+            Already-validated, topologically ordered config to adopt.
+            Called from :meth:`__init__` (no lock needed yet, nothing
+            else can be running) and from :meth:`reload_config` (which
+            holds ``self._lock`` around the call).
+        """
         self._nodes = config.nodes
         self._interval_s = config.default_interval_s
 
@@ -277,6 +347,27 @@ class ComputeEngine:
         ``staleness_s`` all resolve to ``INVALID_NO_DATA`` — this
         engine-level policy is what lets compute functions assume
         every input they see is fresh (design doc §3.4).
+
+        Parameters
+        ----------
+        name : str
+            Canonical name of the input to resolve.
+        now_wall : float
+            Current wall-clock epoch seconds, used for the staleness
+            comparison against the point's own timestamp.
+        staleness_s : float
+            The owning node's :attr:`ComputeNode.staleness_s` — an
+            input older than this is treated as invalid regardless of
+            its own validity.
+
+        Returns
+        -------
+        tuple of (Any or None, Validity)
+            ``(value, effective_validity)``. ``value`` is ``None`` iff
+            ``effective_validity`` is ``INVALID_NO_DATA`` and the
+            point was missing/never updated (a stale-but-present point
+            still returns its last real value alongside
+            ``INVALID_NO_DATA``).
         """
         if name in self._tick_outputs:
             return self._tick_outputs[name]
@@ -315,6 +406,23 @@ class ComputeEngine:
         inputs, ``"propagate"`` does this on any invalid input, and
         both policies do this if *every* input turns out invalid
         (nothing left to compute over).
+
+        Parameters
+        ----------
+        node : ComputeNode
+            Node whose ``inputs``/``invalid_inputs``/``staleness_s``
+            drive resolution.
+        now_wall : float
+            Current wall-clock epoch seconds, passed through to
+            :meth:`_resolve_one`.
+
+        Returns
+        -------
+        dict of str to ResolvedInput, list of ResolvedInput, or None
+            Dict form for dict-form ``node.inputs``, list form for
+            list-form ``node.inputs``, or ``None`` if the node should
+            short-circuit to ``INVALID_NO_DATA`` without calling its
+            function.
         """
         if isinstance(node.inputs, dict):
             resolved: dict[str, ResolvedInput] = {}
@@ -345,6 +453,24 @@ class ComputeEngine:
         reuses whatever thresholds (or, per Phase 1, ``state_validity``
         map) are declared for that point in ``smax.json``, exactly as
         for any ordinary point.
+
+        Parameters
+        ----------
+        output : str
+            Canonical name of the output point whose own declared
+            thresholds/``state_validity`` map should be consulted.
+        value : Any
+            The value to write into that point before reading validity
+            back.
+        now_wall : float
+            Wall-clock epoch seconds to attach as the value's
+            timestamp (via :func:`_wrap`).
+
+        Returns
+        -------
+        Validity
+            ``output``'s own ``MonitorPoint.validity`` after the
+            update.
         """
         mp = self._monitor_system.get_monitor_point(output)
         mp.update(_wrap(value, now_wall))
@@ -365,6 +491,20 @@ class ComputeEngine:
         §8.2). Per §8.3, none of these abort the tick for other nodes:
         the exception is caught here, logged, and only this node's
         outputs are marked invalid.
+
+        Parameters
+        ----------
+        node : ComputeNode
+            Node to resolve, call, and validate.
+        now_wall : float
+            Current wall-clock epoch seconds, passed through to
+            :meth:`_resolve_inputs` and :meth:`_derive_validity`.
+
+        Returns
+        -------
+        dict of str to (Any or None, Validity)
+            Every canonical name in ``node.output_names`` mapped to
+            its ``(value, Validity)`` result for this tick.
         """
         resolved = self._resolve_inputs(node, now_wall)
         if resolved is None:
@@ -417,6 +557,19 @@ class ComputeEngine:
         no benefit — but its validity metadata is still pushed, and
         the tree's :class:`MonitorPoint` is left untouched so a later,
         unrelated read of it isn't corrupted.
+
+        Parameters
+        ----------
+        canonical_name : str
+            The point to write.
+        value : Any or None
+            The computed value, or ``None`` for a short-circuited
+            ``INVALID_NO_DATA`` result (no value write in that case).
+        validity : Validity
+            Validity metadata to push regardless of ``value``.
+        now_wall : float
+            Wall-clock epoch seconds to attach as the value's
+            timestamp (via :func:`_wrap`), when a value is written.
         """
         mp = self._monitor_system.get_monitor_point(canonical_name)
         if value is not None:
