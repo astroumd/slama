@@ -10557,13 +10557,13 @@
                   "ave_amp": {
                     "description": "pseudo continuum amplitude",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   },
                   "ave_phase": {
                     "description": "pseudo continuum phase",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "rad"
                   },
                   "is_valid": {
@@ -10574,13 +10574,13 @@
                   "max": {
                     "description": "maximum amplitude in spectral band",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   },
                   "rms": {
                     "description": "rms amplitude in spectral band",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   }
                 },
