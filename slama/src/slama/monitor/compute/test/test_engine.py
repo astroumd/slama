@@ -7,7 +7,20 @@ import pytest
 
 from slama.monitor.compute.computeconfig import ComputeConfig
 from slama.monitor.compute.engine import ComputeEngine, _wrap
+from slama.monitor.compute.functions import compute_function
 from slama.monitor.monitorpoint import MonitorPoint, Validity
+
+
+@compute_function("_test_bad_multi_output")
+def _test_bad_multi_output(inputs, ctx):
+    """Test-only function returning the wrong key set (design doc §8.2)."""
+    return {"only_one_key": 1.0}
+
+
+@compute_function("_test_always_raises")
+def _test_always_raises(inputs, ctx):
+    """Test-only function that always raises, for §8.3 error-isolation tests."""
+    raise RuntimeError("boom")
 
 
 # ---------------------------------------------------------------------------
@@ -300,3 +313,148 @@ class TestSameTickOrdering:
         by_output = {r.canonical_name: r for r in results}
         assert by_output["monitorsystem:array:antennas_online"].value == 0
         assert by_output["monitorsystem:array:status"].validity == Validity.VALID_ERROR_LOW
+
+
+# ---------------------------------------------------------------------------
+# Multi-output entries (design doc §8)
+# ---------------------------------------------------------------------------
+
+class TestMultiOutputTick:
+    def test_min_max_value_writes_both_canonical_names(self):
+        stations = [make_mp(f"weather:station:{i}:temperature", smax_type="float") for i in (1, 2)]
+        for i, mp in zip((1, 2), stations):
+            set_value(mp, float(i * 10))  # 10.0, 20.0
+        tmin = make_mp("monitorsystem:weather:temp_min", smax_type="float")
+        tmax = make_mp("monitorsystem:weather:temp_max", smax_type="float")
+        ms = FakeMonitorSystem(stations + [tmin, tmax])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": {
+                    "min": "monitorsystem:weather:temp_min",
+                    "max": "monitorsystem:weather:temp_max",
+                },
+                "function": "min_max_value",
+                "inputs": ["weather:station:1-2:temperature"],
+            }],
+        }, ms)
+        client = FakeSmaxClient()
+        engine = ComputeEngine(cfg, ms, client=client, wall_clock=lambda: 1_700_000_000.0)
+
+        results = engine.tick()
+        by_name = {r.canonical_name: r for r in results}
+
+        assert by_name["monitorsystem:weather:temp_min"].value == 10.0
+        assert by_name["monitorsystem:weather:temp_max"].value == 20.0
+        assert set(client.shared) == {
+            ("monitorsystem:weather", "temp_min", 10.0),
+            ("monitorsystem:weather", "temp_max", 20.0),
+        }
+        assert tmin.value == 10.0 and tmax.value == 20.0  # tree updated in place too
+
+    def test_short_circuited_input_marks_every_role_invalid(self):
+        # station never updated -> value is None -> resolution short-circuits
+        # -> every declared role must come back INVALID_NO_DATA, not just one.
+        station = make_mp("weather:station:1:temperature", smax_type="float")
+        tmin = make_mp("monitorsystem:weather:temp_min", smax_type="float")
+        tmax = make_mp("monitorsystem:weather:temp_max", smax_type="float")
+        ms = FakeMonitorSystem([station, tmin, tmax])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": {
+                    "min": "monitorsystem:weather:temp_min",
+                    "max": "monitorsystem:weather:temp_max",
+                },
+                "function": "min_max_value",
+                "inputs": ["weather:station:1:temperature"],
+                "invalid_inputs": "propagate",
+            }],
+        }, ms)
+        engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: 1_700_000_000.0)
+
+        results = engine.tick()
+        assert {r.canonical_name for r in results} == {
+            "monitorsystem:weather:temp_min", "monitorsystem:weather:temp_max",
+        }
+        assert all(r.value is None and r.validity == Validity.INVALID_NO_DATA for r in results)
+
+    def test_key_mismatch_isolates_only_that_node(self):
+        station = make_mp("weather:station:1:temperature", smax_type="float")
+        set_value(station, 5.0)
+        tmin = make_mp("monitorsystem:weather:temp_min", smax_type="float")
+        tmax = make_mp("monitorsystem:weather:temp_max", smax_type="float")
+        ants = [make_mp(f"antenna:{i}:is_online", smax_type="boolean") for i in (1, 2)]
+        for mp in ants:
+            set_value(mp, True)
+        out = make_mp("monitorsystem:array:antennas_online", smax_type="integer")
+        ms = FakeMonitorSystem([station, tmin, tmax] + ants + [out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [
+                {
+                    "output": {
+                        "min": "monitorsystem:weather:temp_min",
+                        "max": "monitorsystem:weather:temp_max",
+                    },
+                    "function": "_test_bad_multi_output",  # returns wrong keys
+                    "inputs": ["weather:station:1:temperature"],
+                },
+                {
+                    "output": "monitorsystem:array:antennas_online",
+                    "function": "count_true",
+                    "inputs": ["antenna:1-2:is_online"],
+                },
+            ],
+        }, ms)
+        engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: 1_700_000_000.0)
+
+        results = engine.tick()
+        by_name = {r.canonical_name: r for r in results}
+
+        assert by_name["monitorsystem:weather:temp_min"].validity == Validity.INVALID_NO_DATA
+        assert by_name["monitorsystem:weather:temp_max"].validity == Validity.INVALID_NO_DATA
+        # the unrelated node still ran fine -- one node's error didn't
+        # abort the tick for the rest of the DAG (design doc §8.3).
+        assert by_name["monitorsystem:array:antennas_online"].value == 2
+
+
+# ---------------------------------------------------------------------------
+# Per-node error isolation, single-output case (design doc §8.3 --
+# applies to every node, not just multi-output ones)
+# ---------------------------------------------------------------------------
+
+class TestErrorIsolation:
+    def test_raising_function_isolates_only_that_node(self):
+        ants = [make_mp(f"antenna:{i}:is_online", smax_type="boolean") for i in (1, 2)]
+        for mp in ants:
+            set_value(mp, True)
+        broken = make_mp("monitorsystem:weather:temp_min", smax_type="float")
+        station = make_mp("weather:station:1:temperature", smax_type="float")
+        set_value(station, 5.0)
+        out = make_mp("monitorsystem:array:antennas_online", smax_type="integer")
+        ms = FakeMonitorSystem(ants + [broken, station, out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [
+                {
+                    "output": "monitorsystem:weather:temp_min",
+                    "function": "_test_always_raises",
+                    "inputs": ["weather:station:1:temperature"],
+                },
+                {
+                    "output": "monitorsystem:array:antennas_online",
+                    "function": "count_true",
+                    "inputs": ["antenna:1-2:is_online"],
+                },
+            ],
+        }, ms)
+        client = FakeSmaxClient()
+        engine = ComputeEngine(cfg, ms, client=client, wall_clock=lambda: 1_700_000_000.0)
+
+        results = engine.tick()
+        by_name = {r.canonical_name: r for r in results}
+
+        assert by_name["monitorsystem:weather:temp_min"].value is None
+        assert by_name["monitorsystem:weather:temp_min"].validity == Validity.INVALID_NO_DATA
+        assert by_name["monitorsystem:array:antennas_online"].value == 2
+        # no value written for the broken node, but validity metadata still is
+        assert ("monitorsystem:weather", "temp_min", 5.0) not in client.shared
+        assert ("validity", "monitorsystem:weather:temp_min",
+                str(int(Validity.INVALID_NO_DATA))) in client.meta

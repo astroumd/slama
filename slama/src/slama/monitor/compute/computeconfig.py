@@ -121,15 +121,18 @@ class ComputeConfig:
             if "output" not in entry:
                 raise ValueError(f"computation entry missing 'output': {entry!r}")
             output = entry["output"]
-            if output in seen_outputs:
-                raise ValueError(f"duplicate computation output {output!r}")
-            seen_outputs.add(output)
+            output_names = _output_names_for(output)
 
-            if not _point_exists(output, monitor_system):
-                raise ValueError(
-                    f"computation output {output!r} is not declared in the "
-                    f"MonitorSystem tree (add it under 'monitorsystem' in smax.json)"
-                )
+            for name in output_names:
+                if name in seen_outputs:
+                    raise ValueError(f"duplicate computation output {name!r}")
+                seen_outputs.add(name)
+
+                if not _point_exists(name, monitor_system):
+                    raise ValueError(
+                        f"computation output {name!r} is not declared in the "
+                        f"MonitorSystem tree (add it under 'monitorsystem' in smax.json)"
+                    )
 
             function = entry.get("function")
             if function is None:
@@ -211,6 +214,31 @@ def _substitute(obj, var: str, value: str):
 # ---------------------------------------------------------------------------
 # Input-pattern resolution
 # ---------------------------------------------------------------------------
+
+def _output_names_for(output) -> list[str]:
+    """Validate and flatten an entry's ``output`` to its canonical names.
+
+    ``output`` is either a plain string (single-output) or a non-empty
+    dict of role name -> canonical name (multi-output, design doc §8).
+    Role names and canonical names must both be strings. Raises
+    ``ValueError`` on any other shape, including an empty dict (a
+    multi-output entry that produces nothing is a config mistake, not
+    a valid zero-output entry).
+    """
+    if isinstance(output, str):
+        return [output]
+    if isinstance(output, dict):
+        if not output:
+            raise ValueError(f"computation 'output' dict must not be empty: {output!r}")
+        for role, name in output.items():
+            if not isinstance(role, str) or not isinstance(name, str):
+                raise ValueError(
+                    f"computation 'output' dict must map str role -> str "
+                    f"canonical name, got {output!r}"
+                )
+        return list(output.values())
+    raise ValueError(f"computation 'output' must be a str or dict, got {output!r}")
+
 
 def _point_exists(canonical_name: str, monitor_system: MonitorSystem) -> bool:
     try:
@@ -322,10 +350,13 @@ def _build_dependency_order(nodes: list[ComputeNode]) -> list[ComputeNode]:
     """Topologically sort ``nodes`` so a node's dependencies precede it.
 
     A node ``A`` depends on node ``B`` iff one of ``A``'s resolved
-    input names literally equals ``B.output`` (a glob input that
-    happens to match a computed output is not detected as a
-    dependency — see design doc §6.1's comparison table; this is a
-    documented limitation, not a bug).
+    input names literally equals one of ``B``'s :attr:`ComputeNode.output_names`
+    (a glob input that happens to match a computed output is not
+    detected as a dependency — see design doc §6.1's comparison table;
+    this is a documented limitation, not a bug). For a multi-output
+    node, every one of its output names maps back to the same node —
+    depending on *any* one of its results is a dependency on the whole
+    entry, since they share one function call.
 
     Raises
     ------
@@ -333,21 +364,35 @@ def _build_dependency_order(nodes: list[ComputeNode]) -> list[ComputeNode]:
         If the dependency graph contains a cycle; the message lists
         every node still unresolved when Kahn's algorithm stalls.
     """
-    by_output = {n.output: n for n in nodes}
+    by_output: dict[str, ComputeNode] = {}
+    for n in nodes:
+        for name in n.output_names:
+            by_output[name] = n
+
+    # Kahn's algorithm operates on nodes, keyed by their *first* output
+    # name (arbitrary but stable, since output_names is never empty) —
+    # every other output name for a multi-output node just aliases back
+    # to the same node via by_output.
+    key_of = {id(n): n.output_names[0] for n in nodes}
     depends_on: dict[str, set[str]] = {
-        n.output: {name for name in _input_names(n) if name in by_output and name != n.output}
+        key_of[id(n)]: {
+            key_of[id(by_output[name])]
+            for name in _input_names(n)
+            if name in by_output and by_output[name] is not n
+        }
         for n in nodes
     }
 
     ordered: list[ComputeNode] = []
-    remaining = set(by_output)
+    by_key = {key_of[id(n)]: n for n in nodes}
+    remaining = set(by_key)
     while remaining:
-        ready = sorted(name for name in remaining if not (depends_on[name] & remaining))
+        ready = sorted(key for key in remaining if not (depends_on[key] & remaining))
         if not ready:
             raise ValueError(
                 f"dependency cycle among computation outputs: {sorted(remaining)}"
             )
-        for name in ready:
-            ordered.append(by_output[name])
-            remaining.discard(name)
+        for key in ready:
+            ordered.append(by_key[key])
+            remaining.discard(key)
     return ordered

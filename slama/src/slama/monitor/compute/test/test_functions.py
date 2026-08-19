@@ -10,6 +10,7 @@ from slama.monitor.compute.functions import (
     max_value,
     mean_value,
     median_value,
+    min_max_value,
     min_value,
     sequence_validity,
     worst_validity,
@@ -130,6 +131,12 @@ class TestAggregates:
 
     def test_median_value(self):
         assert median_value(self.inputs, ctx()) == 3.0
+
+    def test_min_max_value_single_pass(self):
+        # design doc §8: pairs with a multi-output entry's
+        # "output": {"min": ..., "max": ...} -- role keys, not
+        # canonical names.
+        assert min_max_value(self.inputs, ctx()) == {"min": 1.0, "max": 5.0}
 
 
 # ---------------------------------------------------------------------------

@@ -38,12 +38,17 @@ HARDWARE_POINTS = [
     "antenna:1:air:temperature", "antenna:2:air:temperature",
     "rx:H:tuning_state", "rx:V:tuning_state",
     "antenna:1:cryostat:heaters:4K-plate",
+    "weather:station:1:temperature", "weather:station:2:temperature",
+    "antenna:1:receiver:tsys", "antenna:2:receiver:tsys",
 ]
 COMPUTED_POINTS = [
     "monitorsystem:array:antennas_online",
     "monitorsystem:array:worst_status",
     "monitorsystem:rx:H:tuning_status",
     "monitorsystem:rx:V:tuning_status",
+    "monitorsystem:weather:temp_min", "monitorsystem:weather:temp_max",
+    "monitorsystem:antenna:1:tsys_min", "monitorsystem:antenna:1:tsys_max",
+    "monitorsystem:antenna:2:tsys_min", "monitorsystem:antenna:2:tsys_max",
 ]
 
 
@@ -124,6 +129,7 @@ class TestInputResolution:
             "antenna:1:air:temperature",
             "antenna:1:cryostat:heaters:4K-plate",
             "antenna:1:is_online",
+            "antenna:1:receiver:tsys",
         ]
 
     def test_hyphenated_literal_segment_is_not_treated_as_a_range(self):
@@ -272,3 +278,130 @@ class TestDependencyOrder:
                     },
                 ],
             }, make_ms())
+
+
+# ---------------------------------------------------------------------------
+# Multi-output entries (design doc §8)
+# ---------------------------------------------------------------------------
+
+class TestMultiOutput:
+    def test_dict_output_parses(self):
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": {
+                    "min": "monitorsystem:weather:temp_min",
+                    "max": "monitorsystem:weather:temp_max",
+                },
+                "function": "min_max_value",
+                "inputs": ["weather:station:1:temperature", "weather:station:2:temperature"],
+            }],
+        }, make_ms())
+        node = cfg.nodes[0]
+        assert node.output == {
+            "min": "monitorsystem:weather:temp_min",
+            "max": "monitorsystem:weather:temp_max",
+        }
+        assert sorted(node.output_names) == [
+            "monitorsystem:weather:temp_max", "monitorsystem:weather:temp_min",
+        ]
+
+    def test_empty_output_dict_raises(self):
+        with pytest.raises(ValueError, match="must not be empty"):
+            ComputeConfig.from_dict({
+                "computations": [{
+                    "output": {},
+                    "function": "min_max_value",
+                    "inputs": ["weather:station:1:temperature"],
+                }],
+            }, make_ms())
+
+    def test_output_wrong_type_raises(self):
+        with pytest.raises(ValueError, match="must be a str or dict"):
+            ComputeConfig.from_dict({
+                "computations": [{
+                    "output": 123,
+                    "function": "min_max_value",
+                    "inputs": ["weather:station:1:temperature"],
+                }],
+            }, make_ms())
+
+    def test_undeclared_canonical_name_in_output_dict_raises(self):
+        with pytest.raises(ValueError, match="not declared"):
+            ComputeConfig.from_dict({
+                "computations": [{
+                    "output": {
+                        "min": "monitorsystem:weather:temp_min",
+                        "max": "monitorsystem:does:not:exist",
+                    },
+                    "function": "min_max_value",
+                    "inputs": ["weather:station:1:temperature"],
+                }],
+            }, make_ms())
+
+    def test_output_dict_canonical_name_colliding_with_another_entry_raises(self):
+        with pytest.raises(ValueError, match="duplicate computation output"):
+            ComputeConfig.from_dict({
+                "computations": [
+                    {
+                        "output": "monitorsystem:weather:temp_min",
+                        "function": "min_value",
+                        "inputs": ["weather:station:1:temperature"],
+                    },
+                    {
+                        "output": {
+                            "min": "monitorsystem:weather:temp_min",
+                            "max": "monitorsystem:weather:temp_max",
+                        },
+                        "function": "min_max_value",
+                        "inputs": ["weather:station:1:temperature"],
+                    },
+                ],
+            }, make_ms())
+
+    def test_each_expansion_combined_with_dict_output(self):
+        # __each__'s per-index substitution already recurses into nested
+        # dicts (_substitute), so role keys ("min"/"max") stay constant
+        # across the expansion while only the canonical-name values vary.
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "__each__": {
+                    "over": "1-2", "as": "i",
+                    "template": {
+                        "output": {
+                            "min": "monitorsystem:antenna:{i}:tsys_min",
+                            "max": "monitorsystem:antenna:{i}:tsys_max",
+                        },
+                        "function": "min_max_value",
+                        "inputs": ["antenna:{i}:receiver:tsys"],
+                    },
+                },
+            }],
+        }, make_ms())
+        assert [n.output for n in cfg.nodes] == [
+            {"min": "monitorsystem:antenna:1:tsys_min", "max": "monitorsystem:antenna:1:tsys_max"},
+            {"min": "monitorsystem:antenna:2:tsys_min", "max": "monitorsystem:antenna:2:tsys_max"},
+        ]
+
+    def test_downstream_node_may_depend_on_either_multi_output_name(self):
+        cfg = ComputeConfig.from_dict({
+            "computations": [
+                {
+                    "output": "monitorsystem:array:worst_status",
+                    "function": "worst_validity",
+                    "inputs": ["monitorsystem:weather:temp_max"],
+                },
+                {
+                    "output": {
+                        "min": "monitorsystem:weather:temp_min",
+                        "max": "monitorsystem:weather:temp_max",
+                    },
+                    "function": "min_max_value",
+                    "inputs": ["weather:station:1:temperature"],
+                },
+            ],
+        }, make_ms())
+        node_positions = {tuple(sorted(n.output_names)) if isinstance(n.output, dict)
+                          else n.output: i for i, n in enumerate(cfg.nodes)}
+        multi_pos = node_positions[("monitorsystem:weather:temp_max", "monitorsystem:weather:temp_min")]
+        downstream_pos = node_positions["monitorsystem:array:worst_status"]
+        assert multi_pos < downstream_pos

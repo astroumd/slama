@@ -4,6 +4,8 @@ A compute function has the uniform signature::
 
     f(inputs, ctx) -> value
     f(inputs, ctx) -> (value, Validity)
+    f(inputs, ctx) -> {role: value, ...}
+    f(inputs, ctx) -> {role: (value, Validity), ...}
 
 ``inputs`` is a ``list[ResolvedInput]`` (list-form config entry) or
 ``dict[str, ResolvedInput]`` (dict-form entry); the engine has already
@@ -18,6 +20,18 @@ case — reuses :attr:`MonitorPoint.validity` exactly as any ordinary
 point would). Returning ``(value, Validity)`` lets a function assert
 validity directly, needed when the function's entire job *is* the
 validity computation (``worst_validity``, ``sequence_validity``).
+
+The two dict-returning shapes are for a **multi-output** entry (design
+doc §8, config ``"output"`` is a dict of role name -> canonical name):
+the function returns a dict keyed by those same role names, each value
+either bare or a ``(value, Validity)`` tuple, mixed as needed per role.
+The returned dict's keys must exactly match the entry's declared roles
+— a mismatch fails that node for the tick (see
+:meth:`slama.monitor.compute.engine.ComputeEngine._evaluate_node`).
+Role names are function-local, not canonical names, which is what lets
+one multi-output function stay reusable under ``__each__`` expansion
+(e.g. ``min_max_value`` below, called once per antenna with the same
+``{"min": ..., "max": ...}`` shape every time).
 
 Per the design doc's one hard rule for Design A: **no logic in JSON**.
 Anything beyond input wiring and a policy flag belongs here as a
@@ -171,6 +185,21 @@ def mean_value(inputs: list[ResolvedInput], ctx: ComputeContext) -> float:
 @compute_function("median_value")
 def median_value(inputs: list[ResolvedInput], ctx: ComputeContext) -> float:
     return statistics.median(float(r.value) for r in inputs)
+
+
+@compute_function("min_max_value")
+def min_max_value(inputs: list[ResolvedInput], ctx: ComputeContext) -> dict[str, float]:
+    """Min and max over the same input set, in one pass (design doc §8).
+
+    A multi-output entry pairs this with ``"output": {"min": ...,
+    "max": ...}``; the two role names here (``"min"``/``"max"``) must
+    match those config keys exactly. Written as one function rather
+    than reusing :func:`min_value`/:func:`max_value` from two separate
+    config entries specifically to avoid iterating (and re-resolving)
+    the same input set twice per tick.
+    """
+    values = [float(r.value) for r in inputs]
+    return {"min": min(values), "max": max(values)}
 
 
 @compute_function("sequence_validity")

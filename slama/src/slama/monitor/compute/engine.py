@@ -33,12 +33,16 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ComputeResult:
-    """One node's outcome for a single tick.
+    """One canonical name's outcome for a single tick.
+
+    A single-output node (``ComputeNode.output`` is a str) produces
+    exactly one ``ComputeResult``; a multi-output node (``output`` is a
+    dict, design doc §8) produces one per declared role.
 
     Attributes
     ----------
     canonical_name : str
-        The computed point's canonical name (``ComputeNode.output``).
+        The computed point's canonical name.
     value : Any or None
         The computed value, or ``None`` if the node short-circuited to
         ``INVALID_NO_DATA`` (no value was written to SMAX in that
@@ -212,14 +216,19 @@ class ComputeEngine:
         1. If a client was provided, refresh source values via
            :meth:`MonitorSystem.read_all`.
         2. For each node, in topological order: resolve its inputs
-           (see :meth:`_resolve_inputs`), call its registered
-           function (unless resolution short-circuited to
-           ``INVALID_NO_DATA``), and determine the final
-           ``(value, Validity)``.
-        3. Record the result in ``self._tick_outputs`` so any later
-           node in this same tick that depends on this node's output
-           sees it immediately (:meth:`_resolve_one` checks this
-           before falling back to the tree).
+           (see :meth:`_resolve_inputs`), call its registered function
+           and validate its result (see :meth:`_evaluate_node`), unless
+           resolution already short-circuited to ``INVALID_NO_DATA``.
+           The function call and result validation are wrapped in
+           try/except (design doc §8.3): any exception — including a
+           multi-output function returning a mismatched key set — logs
+           and resolves every one of *this node's*
+           :attr:`ComputeNode.output_names` to ``INVALID_NO_DATA``,
+           without aborting the tick for the remaining nodes.
+        3. Record each canonical name's result in ``self._tick_outputs``
+           so any later node in this same tick that depends on it sees
+           it immediately (:meth:`_resolve_one` checks this before
+           falling back to the tree).
         4. If a value was produced, write it to SMAX
            (``smax_share``) and update the tree's own
            :class:`MonitorPoint` in place; always push the validity
@@ -230,7 +239,9 @@ class ComputeEngine:
         Returns
         -------
         list of ComputeResult
-            One entry per node, in the same topological order.
+            One entry per canonical name written (one per node for a
+            single-output entry, one per role for a multi-output entry —
+            see design doc §8), in topological order of the owning node.
         """
         if self._client is not None:
             self._monitor_system.read_all(self._client)
@@ -240,22 +251,11 @@ class ComputeEngine:
         results: list[ComputeResult] = []
 
         for node in self._nodes:
-            resolved = self._resolve_inputs(node, now_wall)
-            if resolved is None:
-                value, validity = None, Validity.INVALID_NO_DATA
-            else:
-                ctx = ComputeContext(clock=self._clock, state=node.state, params=node.params)
-                fn = get_function(node.function)
-                outcome = fn(resolved, ctx)
-                if isinstance(outcome, tuple):
-                    value, validity = outcome
-                else:
-                    value = outcome
-                    validity = self._derive_validity(node.output, value, now_wall)
-
-            self._tick_outputs[node.output] = (value, validity)
-            self._write(node, value, validity, now_wall)
-            results.append(ComputeResult(node.output, value, validity))
+            per_output = self._evaluate_node(node, now_wall)
+            for name, (value, validity) in per_output.items():
+                self._tick_outputs[name] = (value, validity)
+                self._write_one(name, value, validity, now_wall)
+                results.append(ComputeResult(name, value, validity))
 
         return results
 
@@ -350,8 +350,66 @@ class ComputeEngine:
         mp.update(_wrap(value, now_wall))
         return mp.validity
 
-    def _write(self, node: ComputeNode, value: Any, validity: Validity, now_wall: float) -> None:
-        """Write one node's result: value (if any) to SMAX, validity always.
+    def _evaluate_node(
+        self, node: ComputeNode, now_wall: float
+    ) -> dict[str, tuple[Any, Validity]]:
+        """Resolve, call, and validate one node; never raises.
+
+        Returns a mapping of every one of ``node``'s
+        :attr:`ComputeNode.output_names` to its ``(value, Validity)``
+        result. Three ways a node ends up with ``INVALID_NO_DATA`` for
+        every one of its outputs: input resolution short-circuited
+        (:meth:`_resolve_inputs` returned ``None``), the function call
+        raised, or — for a multi-output node — the function's returned
+        dict didn't have exactly the declared role names (design doc
+        §8.2). Per §8.3, none of these abort the tick for other nodes:
+        the exception is caught here, logged, and only this node's
+        outputs are marked invalid.
+        """
+        resolved = self._resolve_inputs(node, now_wall)
+        if resolved is None:
+            return {name: (None, Validity.INVALID_NO_DATA) for name in node.output_names}
+
+        try:
+            ctx = ComputeContext(clock=self._clock, state=node.state, params=node.params)
+            fn = get_function(node.function)
+            outcome = fn(resolved, ctx)
+
+            if isinstance(node.output, dict):
+                if not isinstance(outcome, dict) or set(outcome) != set(node.output):
+                    got = sorted(outcome) if isinstance(outcome, dict) else type(outcome).__name__
+                    raise ValueError(
+                        f"multi-output computation {node.output!r}: function "
+                        f"{node.function!r} must return a dict with exactly the "
+                        f"declared role keys {sorted(node.output)}, got {got!r}"
+                    )
+                per_output: dict[str, tuple[Any, Validity]] = {}
+                for role, name in node.output.items():
+                    role_outcome = outcome[role]
+                    if isinstance(role_outcome, tuple):
+                        value, validity = role_outcome
+                    else:
+                        value = role_outcome
+                        validity = self._derive_validity(name, value, now_wall)
+                    per_output[name] = (value, validity)
+                return per_output
+
+            if isinstance(outcome, tuple):
+                value, validity = outcome
+            else:
+                value = outcome
+                validity = self._derive_validity(node.output, value, now_wall)
+            return {node.output: (value, validity)}
+
+        except Exception:
+            logger.exception(
+                "computation %r (function %r) failed; marking INVALID_NO_DATA",
+                node.output, node.function,
+            )
+            return {name: (None, Validity.INVALID_NO_DATA) for name in node.output_names}
+
+    def _write_one(self, canonical_name: str, value: Any, validity: Validity, now_wall: float) -> None:
+        """Write one canonical name's result: value (if any) to SMAX, validity always.
 
         A short-circuited ``INVALID_NO_DATA`` result (``value is
         None``) is not written as a value — overwriting the last
@@ -360,7 +418,7 @@ class ComputeEngine:
         the tree's :class:`MonitorPoint` is left untouched so a later,
         unrelated read of it isn't corrupted.
         """
-        mp = self._monitor_system.get_monitor_point(node.output)
+        mp = self._monitor_system.get_monitor_point(canonical_name)
         if value is not None:
             # Idempotent for the bare-value-return path, where
             # _derive_validity() already called mp.update() with the
@@ -370,4 +428,4 @@ class ComputeEngine:
             if self._client is not None:
                 self._client.smax_share(mp.table, mp.key, value)
         if self._client is not None:
-            self._client.smax_push_meta("validity", node.output, str(int(validity)))
+            self._client.smax_push_meta("validity", canonical_name, str(int(validity)))

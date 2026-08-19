@@ -31,10 +31,18 @@ class ComputeNode:
 
     Attributes
     ----------
-    output : str
-        Canonical name of the point this entry writes. Must already
-        exist in the ``MonitorSystem`` tree (declared under
-        ``monitorsystem`` in ``smax.json``) — checked at load time by
+    output : str or dict of str to str
+        Canonical name(s) of the point(s) this entry writes. A plain
+        string is the single-output case (unchanged since Phase 2). A
+        dict maps function-local **role names** to canonical names for
+        a multi-output entry (design doc §8) — the role names are never
+        written to SMAX, only used to match the function's returned
+        dict back to the right canonical name; this is what keeps a
+        multi-output function reusable under ``__each__`` expansion
+        (same roles, different resolved canonical names per index).
+        Every canonical name in :attr:`output_names` must already exist
+        in the ``MonitorSystem`` tree (declared under ``monitorsystem``
+        in ``smax.json``) — checked at load time by
         :meth:`ComputeConfig.from_dict`.
     function : str
         Name of a function registered in
@@ -72,7 +80,7 @@ class ComputeNode:
         on :meth:`ComputeEngine.reload_config`).
     """
 
-    output: str
+    output: str | dict[str, str]
     function: str
     inputs: list[str] | dict[str, str]
     params: dict = field(default_factory=dict)
@@ -81,6 +89,20 @@ class ComputeNode:
     interval_s: float | None = None
 
     state: dict = field(default_factory=dict)
+
+    @property
+    def output_names(self) -> list[str]:
+        """Every canonical name this entry writes, in a uniform list.
+
+        ``[output]`` for the single-output (str) case, or
+        ``list(output.values())`` for the multi-output (dict) case —
+        the one place config/engine code should look when it needs
+        "every point this entry produces" rather than caring which
+        shape ``output`` is.
+        """
+        if isinstance(self.output, dict):
+            return list(self.output.values())
+        return [self.output]
 
 
 @dataclass
