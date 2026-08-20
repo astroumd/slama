@@ -6,10 +6,11 @@ Core functions/classes for spatial and velocity coordinates and reference frames
 # substantially stolen from dysh
 
 import astropy.coordinates as coord
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, Angle
+from astropy.units import Quantity
 import astropy.units as u
 import numpy as np
 from astropy.time import Time
-from astropy.units.quantity import Quantity
 
 
 MPS = u.m / u.s
@@ -171,11 +172,28 @@ def sma_location():
     sma: `~astropy.coordinates.EarthLocation`
         astropy EarthLocation for the SMA
     """
-    sma_lat = 19.8620556
-    sma_lon = -155.4795556
+    sma_lat = 19.8620556*u.degree
+    sma_lon = -155.4795556*u.degree
     sma_height = 4080*u.m
-    sma = coord.EarthLocation.from_geodetic(lon=sma_lon, lat=sma_lat, height=sma_height)
+    sma = EarthLocation.from_geodetic(lon=sma_lon, lat=sma_lat, height=sma_height)
     return sma  
+
+def fake_sma_antpos():
+    """
+    used for testing.  Creates an EarthLocation with 8 antenna positions randomly distributed
+    about the array center
+
+    Returns
+    -------
+    antpos: `~astropy.coordinates.EarthLocation`
+        astropy EarthLocations for 8 SMA antennas
+    """
+    s = SMA()
+    # 0.005 degrees is 550 meters at the equator, ~typical baseline size
+    lat = s.lat+np.random.rand(8)*0.005*u.degree
+    lon = s.lon+np.random.rand(8)*0.005*u.degree
+    h = s.height+np.random.rand(8)*2*u.m
+    return EarthLocation.from_geodetic(lon=lon,lat=lat,height=h)
 
 
 class SMA:
@@ -215,8 +233,8 @@ def eq2hor(lon, lat, frame, date_obs, unit="deg", location=SMA()):  # noqa: B008
 
     """
 
-    lonlat = coord.SkyCoord(lon, lat, unit=unit, frame=frame, obstime=Time(date_obs))
-    return lonlat.transform_to(coord.AltAz(location=location))
+    lonlat = SkyCoord(lon, lat, unit=unit, frame=frame, obstime=Time(date_obs))
+    return lonlat.transform_to(AltAz(location=location))
 
 
 def hor2eq(az, alt, frame, date_obs, unit="deg", location=SMA()):  # noqa: B008
@@ -245,7 +263,7 @@ def hor2eq(az, alt, frame, date_obs, unit="deg", location=SMA()):  # noqa: B008
 
     """
 
-    altaz = coord.SkyCoord(az=az, alt=alt, unit=unit, frame="altaz", obstime=Time(date_obs), location=location)
+    altaz = SkyCoord(az=az, alt=alt, unit=unit, frame="altaz", obstime=Time(date_obs), location=location)
     return altaz.transform_to(astropy_frame_dict[frame])
 
 
@@ -326,3 +344,58 @@ def solar_coordinate(time:Time=None, frame:str|coord.BaseCoordinateFrame=coord.G
         return coord_gcrs
     else:
         return coord_gcrs.transform_to(frame)
+
+def sun_altaz(solar_coordinate:SkyCoord, location:EarthLocation) -> SkyCoord:
+    """
+    Transform a solar coordinate in a coordinate frame, e.g. GCRS, to altitude-azimuth. Note
+    that `~astropy.coordinates.SkyCoord` and `~astropy.coordinates.EarthLocation` can contain more than
+    one coordinate, so if the location input EarthLocation has N coordinates (e.g. antenna positions), then 
+    the returned `~astropy.coordinates.SkyCoord` will contain N coords. Neato.
+
+    Parameters
+    ----------
+    solar_coordinate : ~astropy.coordinates.SkyCoord
+        The position of the Sun on the sky.  See :meth:`solar_coordinate`.
+    location : ~astropy.coordinates.EarthLocation
+        The position(s) on the ground.
+
+    Returns
+    -------
+    sun_altaz : ~astropy.coordinates.SkyCoord
+        The AltAz coordinates for the input EarthLocation(s)
+    """
+    # if location is an array, add a new axis for AltAz so arrays can be broadcast correctly.
+    if location.lat.isscalar:
+        altaz_frame = AltAz(location=location,obstime=solar_coordinate.obstime)
+    else:
+        altaz_frame = AltAz(location=location[:,np.newaxis],obstime=solar_coordinate.obstime)
+    return solar_coordinate.transform_to(altaz_frame)
+
+def sun_distance(solar_altaz:SkyCoord, antaz:np.ndarray|Angle|Quantity, antel:np.ndarray|Angle|Quantity) -> Angle:
+    """
+    Compute the sun distance(s) in degrees for a collection of antennas
+
+    Parameters
+    ----------
+    solar_coordinate : ~astropy.coordinates.SkyCoord
+        The AltAz position(s) of the Sun on the sky.  Length must match lenght of antenna azimuth and elevation 
+        arrays `antaz`, `antel`. See :meth:`solar_altaz`.
+    antaz : ~np.ndarray or ~astropy.coordinates.Angle or ~astropy.units.Quantity 
+        The azimuths of the antennas.  If input is `~np.ndarray`, units are assumed to be degrees
+    antel : ~np.ndarray or ~astropy.coordinates.Angle or ~astropy.units.Quantity 
+        The elevations of the antennas.  If input is `~np.ndarray`, units are assumed to be degrees
+        The azimuths of the antennas.  If input is `~np.ndarray`, units are assumed to be degrees
+    """
+    if ( len(antaz) != len(antel) ) or (len(antaz) != len(solar_altaz.location)):
+        raise ValueError(f"Input arrays must be the same length {len(solar_altaz)=} {len(antaz)=} {len(antel)=}")
+    if not hasattr(antaz,"unit"):
+        antaz = antaz*u.degree
+    if not hasattr(antel,"unit"):
+        antel = antel*u.degree
+    antenna_altaz = AltAz(az=antaz,alt=antel,obstime=solar_altaz.obstime, location=solar_altaz.location)
+    # separation() will return NxN but we just want 1xN, e.g. all sun positions vs all antenna positions.  
+    # The desired values are along the diagonal.  Note we assume that the ordering in solar_altaz is
+    # the same as in the azel arrays.
+    angles = solar_altaz.separation(antenna_altaz)
+    return Angle(np.diag(angles.value)*angles.unit)
+
