@@ -28,6 +28,7 @@ from slama.coordinates.core import (
     solar_coordinate,
     sun_altaz,
     sun_distance,
+    sun_distance_from_coord,
 )
 
 
@@ -267,7 +268,12 @@ class TestSunAltaz:
 # sun_distance
 # ---------------------------------------------------------------------------
 
-class TestSunDistance:
+class TestSunDistanceFromCoord:
+    """sun_distance_from_coord(solar_altaz, antaz, antel) -- the original
+    SkyCoord/EarthLocation-based path (renamed from sun_distance when
+    the simpler 4-angle sun_distance() was added; see
+    docs/monitorsystem_writer_design.md and conf/computations.json)."""
+
     FIXED_TIME = Time("2025-06-21T20:00:00")
 
     def _sun_altaz_for_antennas(self):
@@ -279,28 +285,60 @@ class TestSunDistance:
         solar_altaz = self._sun_altaz_for_antennas()
         antaz = solar_altaz.az.deg
         antel = solar_altaz.alt.deg
-        distances = sun_distance(solar_altaz, antaz, antel)
+        distances = sun_distance_from_coord(solar_altaz, antaz, antel)
         assert np.allclose(distances.deg, 0.0, atol=1e-6)
 
     def test_mismatched_lengths_raise(self):
         solar_altaz = self._sun_altaz_for_antennas()
         with pytest.raises(ValueError):
-            sun_distance(solar_altaz, np.zeros(3), np.zeros(3))
+            sun_distance_from_coord(solar_altaz, np.zeros(3), np.zeros(3))
 
     def test_plain_ndarray_assumed_degrees(self):
         solar_altaz = self._sun_altaz_for_antennas()
         antaz_deg = solar_altaz.az.deg
         antel_deg = solar_altaz.alt.deg
-        as_array = sun_distance(solar_altaz, antaz_deg, antel_deg)
-        as_quantity = sun_distance(solar_altaz, antaz_deg * u.degree, antel_deg * u.degree)
+        as_array = sun_distance_from_coord(solar_altaz, antaz_deg, antel_deg)
+        as_quantity = sun_distance_from_coord(solar_altaz, antaz_deg * u.degree, antel_deg * u.degree)
         assert np.allclose(as_array.deg, as_quantity.deg)
 
     def test_offset_pointing_gives_nonzero_distance(self):
         solar_altaz = self._sun_altaz_for_antennas()
         antaz = solar_altaz.az.deg + 10.0
         antel = solar_altaz.alt.deg
-        distances = sun_distance(solar_altaz, antaz, antel)
+        distances = sun_distance_from_coord(solar_altaz, antaz, antel)
         assert np.all(distances.deg > 0.0)
+
+
+class TestSunDistance:
+    """sun_distance(sunaz, sunel, antaz, antel) -- angular separation
+    between two (az, el) pairs directly, no EarthLocation/SkyCoord
+    needed. Used by the monitor.compute 'sun_distance' function, one
+    antenna per call (see conf/computations.json)."""
+
+    def test_elevation_only_offset(self):
+        d = sun_distance(100.0, 30.0, 100.0, 35.0)
+        assert d.deg == pytest.approx(5.0)
+
+    def test_pointing_directly_at_the_sun_is_zero(self):
+        d = sun_distance(210.0, 42.0, 210.0, 42.0)
+        assert d.deg == pytest.approx(0.0, abs=1e-9)
+
+    def test_mismatched_lengths_raise(self):
+        with pytest.raises(ValueError):
+            sun_distance(np.zeros(3), np.zeros(3), np.zeros(4), np.zeros(4))
+
+    def test_plain_float_assumed_degrees(self):
+        as_plain = sun_distance(100.0, 30.0, 100.0, 35.0)
+        as_quantity = sun_distance(100.0 * u.degree, 30.0 * u.degree, 100.0 * u.degree, 35.0 * u.degree)
+        assert as_plain.deg == pytest.approx(as_quantity.deg)
+
+    def test_array_inputs(self):
+        sunaz = np.array([100.0, 200.0])
+        sunel = np.array([30.0, 40.0])
+        antaz = np.array([100.0, 200.0])
+        antel = np.array([35.0, 40.0])
+        d = sun_distance(sunaz, sunel, antaz, antel)
+        assert np.allclose(d.deg, [5.0, 0.0])
 
 
 # ---------------------------------------------------------------------------
