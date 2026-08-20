@@ -15,6 +15,21 @@
       "output": "monitorsystem:array:antennas_online",
       "function": "count_true",
       "inputs": ["antenna:1-8:is_online"]
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:sun_distance",
+          "function": "sun_distance",
+          "inputs": {
+            "sunaz": "RM:acc{i}:RM_SUN_AZ_DEG_F",
+            "sunel": "RM:acc{i}:RM_SUN_EL_DEG_F",
+            "antaz": "RM:acc{i}:RM_ACTUAL_AZ_DEG_F",
+            "antel": "RM:acc{i}:RM_ACTUAL_EL_DEG_F"
+          }
+        }
+      }
     }
   ]
 }

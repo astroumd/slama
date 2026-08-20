@@ -13,6 +13,7 @@ from slama.monitor.compute.functions import (
     min_max_value,
     min_value,
     sequence_validity,
+    sun_distance_degrees,
     worst_validity,
 )
 from slama.monitor.monitorpoint import Validity
@@ -188,3 +189,44 @@ class TestSequenceValidity:
         inputs = {"state": ri("rx:H:tuning_state", "failed", Validity.VALID_ERROR)}
         _, validity = sequence_validity(inputs, ctx(params={"stuck_timeout_s": 90}))
         assert validity == Validity.VALID_ERROR
+
+
+# ---------------------------------------------------------------------------
+# sun_distance -- one antenna per call, paired with a __each__-expanded
+# entry per antenna rather than a single 32-in/8-out multi-output entry
+# (see docs/monitorsystem_writer_design.md and conf/computations.json).
+# ---------------------------------------------------------------------------
+
+class TestSunDistance:
+    def test_elevation_only_offset(self):
+        inputs = {
+            "sunaz": ri("RM:acc1:RM_SUN_AZ_DEG_F", 100.0),
+            "sunel": ri("RM:acc1:RM_SUN_EL_DEG_F", 30.0),
+            "antaz": ri("RM:acc1:RM_ACTUAL_AZ_DEG_F", 100.0),
+            "antel": ri("RM:acc1:RM_ACTUAL_EL_DEG_F", 35.0),
+        }
+        distance = sun_distance_degrees(inputs, ctx())
+        assert distance == pytest.approx(5.0)
+
+    def test_pointing_directly_at_the_sun_is_zero(self):
+        inputs = {
+            "sunaz": ri("RM:acc1:RM_SUN_AZ_DEG_F", 210.0),
+            "sunel": ri("RM:acc1:RM_SUN_EL_DEG_F", 42.0),
+            "antaz": ri("RM:acc1:RM_ACTUAL_AZ_DEG_F", 210.0),
+            "antel": ri("RM:acc1:RM_ACTUAL_EL_DEG_F", 42.0),
+        }
+        distance = sun_distance_degrees(inputs, ctx())
+        assert distance == pytest.approx(0.0, abs=1e-9)
+
+    def test_returns_plain_float(self):
+        # Bare-value return (not a tuple/dict) -- the engine derives
+        # validity from the output point's own warn_low/err_low
+        # thresholds (design doc §8's single-output path).
+        inputs = {
+            "sunaz": ri("RM:acc1:RM_SUN_AZ_DEG_F", 0.0),
+            "sunel": ri("RM:acc1:RM_SUN_EL_DEG_F", 0.0),
+            "antaz": ri("RM:acc1:RM_ACTUAL_AZ_DEG_F", 10.0),
+            "antel": ri("RM:acc1:RM_ACTUAL_EL_DEG_F", 0.0),
+        }
+        distance = sun_distance_degrees(inputs, ctx())
+        assert isinstance(distance, float)

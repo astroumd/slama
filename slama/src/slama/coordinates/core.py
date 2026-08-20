@@ -371,14 +371,64 @@ def sun_altaz(solar_coordinate:SkyCoord, location:EarthLocation) -> SkyCoord:
         altaz_frame = AltAz(location=location[:,np.newaxis],obstime=solar_coordinate.obstime)
     return solar_coordinate.transform_to(altaz_frame)
 
-def sun_distance(solar_altaz:SkyCoord, antaz:np.ndarray|Angle|Quantity, antel:np.ndarray|Angle|Quantity) -> Angle:
+def sun_distance(sunaz:np.ndarray|Angle|Quantity, 
+                 sunel:np.ndarray|Angle|Quantity, 
+                 antaz:np.ndarray|Angle|Quantity, 
+                 antel:np.ndarray|Angle|Quantity) -> Angle:
+    """
+    Calculates the angular separation from where the (AZ,EL) antenna 
+    is pointed to the (AZ,EL) of the Sun with respect to that antenna.
+
+    Parameters
+    ----------
+    sunaz : ~np.ndarray or Angle or Quanity
+      The azimuth of the Sun with respect to each antenna
+    sunel : ~np.ndarray or Angle or Quanity
+      The elevation of the Sun with respect to each antenna
+    antaz : ~np.ndarray or Angle or Quanity
+      The azimuth where each antenna is pointed
+    antel : ~np.ndarray or Angle or Quanity
+      The elevation where each antenna is pointed
+
+    Returns
+    -------
+
+    sun_distance : Angle
+
+    The angular separations in an Angle instance.
+    """
+    arrays = [sunaz,sunel,antaz,antel]
+    # np.size() (not len()) so this also accepts plain scalars (a
+    # single antenna's values), not just arrays of several antennas.
+    all_same_length = all(np.size(a) == np.size(arrays[0]) for a in arrays)
+    if not all_same_length:
+        raise ValueError("Input arrays must be the same length")
+    # isinstance(x, u.Quantity), not hasattr(x, "unit"): a real SMAX
+    # value (e.g. smax.smax_data_types.SmaxFloat) also carries its own
+    # .unit metadata attribute (SMAX's own concept, usually None),
+    # unrelated to astropy units -- hasattr() would always be True for
+    # it, silently skipping the degree conversion below and leaving
+    # angular_separation() operating on unitless numbers.
+    if not isinstance(sunaz, u.Quantity):
+        sunaz = sunaz*u.degree
+    if not isinstance(sunel, u.Quantity):
+        sunel = sunel*u.degree
+    if not isinstance(antaz, u.Quantity):
+        antaz = antaz*u.degree
+    if not isinstance(antel, u.Quantity):
+        antel = antel*u.degree
+    # angular_separation() is defined via a vector/haversine formula
+    # that is inherently non-negative, so no np.abs() needed.
+    return Angle(coord.angular_separation(sunaz,sunel,antaz,antel))
+
+def sun_distance_from_coord(solar_altaz:SkyCoord, antaz:np.ndarray|Angle|Quantity, antel:np.ndarray|Angle|Quantity) -> Angle:
     """
     Compute the sun distance(s) in degrees for a collection of antennas
 
     Parameters
     ----------
     solar_coordinate : ~astropy.coordinates.SkyCoord
-        The AltAz position(s) of the Sun on the sky.  Length must match lenght of antenna azimuth and elevation 
+        The AltAz position(s) of the Sun on the sky.  Length must match length of antenna azimuth and elevation 
         arrays `antaz`, `antel`. See :meth:`solar_altaz`.
     antaz : ~np.ndarray or ~astropy.coordinates.Angle or ~astropy.units.Quantity 
         The azimuths of the antennas.  If input is `~np.ndarray`, units are assumed to be degrees
@@ -388,9 +438,9 @@ def sun_distance(solar_altaz:SkyCoord, antaz:np.ndarray|Angle|Quantity, antel:np
     """
     if ( len(antaz) != len(antel) ) or (len(antaz) != len(solar_altaz.location)):
         raise ValueError(f"Input arrays must be the same length {len(solar_altaz)=} {len(antaz)=} {len(antel)=}")
-    if not hasattr(antaz,"unit"):
+    if not isinstance(antaz, u.Quantity):
         antaz = antaz*u.degree
-    if not hasattr(antel,"unit"):
+    if not isinstance(antel, u.Quantity):
         antel = antel*u.degree
     antenna_altaz = AltAz(az=antaz,alt=antel,obstime=solar_altaz.obstime, location=solar_altaz.location)
     # separation() will return NxN but we just want 1xN, e.g. all sun positions vs all antenna positions.  

@@ -42,7 +42,9 @@ from __future__ import annotations
 import statistics
 from typing import Callable
 
+import astropy.units as u
 from slama.monitor.monitorpoint import Validity
+from slama.coordinates import sun_distance
 
 from .computenode import ComputeContext, ResolvedInput
 
@@ -234,3 +236,34 @@ def sequence_validity(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     if validity == Validity.VALID_WARNING and (now - ctx.state["entered_t"]) > stuck_timeout_s:
         validity = Validity.VALID_ERROR
     return state, validity
+
+
+@compute_function("sun_distance")
+def sun_distance_degrees(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> float:
+    """Angular distance in degrees from one antenna's pointing to the Sun.
+
+    One antenna per call -- paired with a ``__each__``-expanded entry
+    per antenna (design doc §3.6/§8's discussion of ``__each__``),
+    rather than a single multi-output entry, so there is no positional
+    slicing/ordering to get wrong between antennas.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        Must contain ``"sunaz"``, ``"sunel"`` (the Sun's azimuth/
+        elevation as seen from this antenna) and ``"antaz"``,
+        ``"antel"`` (this antenna's actual pointing), all in degrees.
+    ctx : ComputeContext
+        Unused by this function.
+
+    Returns
+    -------
+    float
+        The angular separation in degrees, via
+        :func:`slama.coordinates.core.sun_distance`.
+    """
+    sd = sun_distance(
+        inputs["sunaz"].value, inputs["sunel"].value,
+        inputs["antaz"].value, inputs["antel"].value,
+    )
+    return float(sd.to(u.degree).value)

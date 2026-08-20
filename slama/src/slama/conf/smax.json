@@ -12321,6 +12321,21 @@
         "warn_low": 6,
         "err_low": 4
       }
+    },
+    "antenna": {
+      "__each__": {
+        "over": "1-8",
+        "template": {
+          "sun_distance": {
+            "description": "Angular distance from antenna {i}'s pointing to the Sun, from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "deg",
+            "warn_low": 45,
+            "err_low": 40
+          }
+        }
+      }
     }
   }
 }
