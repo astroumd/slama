@@ -57,7 +57,7 @@ def main() -> None:
         except Exception as exc:
             print(f"monitor point {args.mpname} does not exist {exc}")
             sys.exit()
-        print(f"monitor point {args.mpname} exists with value={sw._mp.value}")
+        print(f"monitor point {args.mpname} exists with value={sw._mp.value} with {sw._mp.metadata}")
     sw.write()
 
     
