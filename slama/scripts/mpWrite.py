@@ -32,7 +32,8 @@ class MpWrite:
         self._value=value
 
     def write(self):
-        self._mpw.write(self._value)
+        self._mpw.write(self._value, meta=True)
+
     def update(self):
         self._mpu.update()
 
