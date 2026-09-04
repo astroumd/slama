@@ -172,13 +172,22 @@ def count_true(inputs: list[ResolvedInput], ctx: ComputeContext) -> int:
     summed element-wise rather than tested with a bare ``if r.value``,
     which raises ``ValueError`` ("truth value of an array with more
     than one element is ambiguous") for any multi-element array.
+
+    An optional ``ctx.params["indices"]`` -- a list of positions --
+    restricts counting, for any array-valued input, to just those
+    positions. Needed for e.g. a "V11" SMA bit-vector: index 0 is
+    always a placeholder, indices 1-8 are the standard antennas, and
+    9/10 are only meaningful when JCMT/CSO are patched into the array
+    (a rare, deliberately-configured case). Scalar inputs are
+    unaffected -- ``indices`` only ever selects within an array.
     """
+    indices = ctx.params.get("indices")
     total = 0
     for r in inputs:
         v = r.value
-        if isinstance(v, np.ndarray):
-            total += int(np.count_nonzero(v))
-        elif isinstance(v, (list, tuple)):
+        if isinstance(v, (np.ndarray, list, tuple)):
+            if indices is not None:
+                v = [v[i] for i in indices]
             total += sum(1 for x in v if x)
         else:
             total += 1 if v else 0

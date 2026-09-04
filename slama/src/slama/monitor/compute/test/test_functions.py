@@ -114,6 +114,23 @@ class TestCounts:
         inputs = [ri("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", vector)]
         assert count_true(inputs, ctx()) == 3
 
+    def test_count_true_vector_input_with_indices_param(self):
+        # V11 vector: index 0 is a placeholder (here truthy, but must
+        # be excluded), 1-8 are the standard antennas, 9/10 (JCMT/CSO)
+        # are excluded here too since this entry isn't configured for
+        # them.
+        vector = np.array([1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1], dtype=np.int8)
+        inputs = [ri("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", vector)]
+        params = {"indices": [1, 2, 3, 4, 5, 6, 7, 8]}
+        assert count_true(inputs, ctx(params=params)) == 3
+
+    def test_count_true_indices_param_ignored_for_scalar_inputs(self):
+        # indices only ever selects within an array-valued input --
+        # a scalar input (one point per antenna) is counted as-is.
+        inputs = [ri("a", True), ri("b", False)]
+        params = {"indices": [0]}
+        assert count_true(inputs, ctx(params=params)) == 1
+
     def test_count_valid_excludes_invalid_family(self):
         inputs = [
             ri("a", 1, Validity.VALID_GOOD),

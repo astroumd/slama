@@ -15,6 +15,10 @@
       "output": "monitorsystem:array:antennas_online",
       "function": "count_true",
       "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
+      "params": {
+        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9/10 (JCMT/CSO) are omitted unless patched into the array.",
+        "indices": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
       "staleness_s": 3600
     },
     {
