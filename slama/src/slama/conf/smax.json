@@ -12315,7 +12315,7 @@
   "monitorsystem": {
     "array": {
       "antennas_online": {
-        "description": "Count of antennas with is_online true, from slama.monitor.compute",
+        "description": "Count of online antennas, derived from DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B, from slama.monitor.compute",
         "size": "1",
         "smax_type": "integer",
         "warn_low": 6,

@@ -1,4 +1,5 @@
 """Unit tests for the built-in compute functions (no engine/config needed)."""
+import numpy as np
 import pytest
 
 from slama.monitor.compute.computenode import ComputeContext, ResolvedInput
@@ -103,6 +104,15 @@ class TestCounts:
     def test_count_true(self):
         inputs = [ri("a", True), ri("b", False), ri("c", True)]
         assert count_true(inputs, ctx()) == 2
+
+    def test_count_true_single_vector_input(self):
+        # Real deployed shape: one input resolving to an array-valued
+        # point (e.g. DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B, size 11)
+        # rather than one scalar point per antenna. A bare `if r.value`
+        # would raise ValueError on a multi-element numpy array.
+        vector = np.array([1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0], dtype=np.int8)
+        inputs = [ri("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", vector)]
+        assert count_true(inputs, ctx()) == 3
 
     def test_count_valid_excludes_invalid_family(self):
         inputs = [
