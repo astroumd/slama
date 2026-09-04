@@ -1,7 +1,7 @@
 {
   "name": "Test Monitor Page",
   "description": "Use this page to check out new monitor points or display styles",
-  "update_interval": 30,
+  "update_interval": 5,
   "layout": [
     {
       "type": "table",
@@ -13,6 +13,13 @@
       },
       "rows": [
         {"label": "Sun distance (degrees)",      "points": "monitorsystem:antenna:{ant}:sun_distance"}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Additional cells",
+      "cells": [
+	      {"label": "# Antennas online", "point":"monitorsystem:array:antennas_online"}
       ]
     }
   ]
