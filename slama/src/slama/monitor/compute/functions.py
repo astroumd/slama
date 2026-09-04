@@ -173,7 +173,6 @@ def count_true(inputs: list[ResolvedInput], ctx: ComputeContext) -> int:
     which raises ``ValueError`` ("truth value of an array with more
     than one element is ambiguous") for any multi-element array.
     """
-    print(f"################### Counting true for {inputs=} in context {ctx=} ###############")
     total = 0
     for r in inputs:
         v = r.value

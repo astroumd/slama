@@ -14,7 +14,8 @@
     {
       "output": "monitorsystem:array:antennas_online",
       "function": "count_true",
-      "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"]
+      "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
+      "staleness_s": 3600
     },
     {
       "__each__": {
