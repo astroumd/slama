@@ -173,6 +173,7 @@ def count_true(inputs: list[ResolvedInput], ctx: ComputeContext) -> int:
     which raises ``ValueError`` ("truth value of an array with more
     than one element is ambiguous") for any multi-element array.
     """
+    print(f"################### Counting true for {inputs=} in context {ctx=} ###############")
     total = 0
     for r in inputs:
         v = r.value
@@ -285,6 +286,7 @@ def sun_distance_degrees(inputs: dict[str, ResolvedInput], ctx: ComputeContext) 
         The angular separation in degrees, via
         :func:`slama.coordinates.core.sun_distance`.
     """
+    #print(f"computing sun distance for {inputs=} with context {ctx=}")
     sd = sun_distance(
         inputs["sunaz"].value, inputs["sunel"].value,
         inputs["antaz"].value, inputs["antel"].value,
