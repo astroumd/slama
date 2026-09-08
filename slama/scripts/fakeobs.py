@@ -31,11 +31,9 @@ from slama.monitor import (
     MonitorPointUpdater,
     MonitorPointWriter,
 )
-# from CARMA's Observatory.cat 
-# sma        -155:28:46.4    19:49:33.8       4080       reference      none
+from slama.coordinates import SMA
+SMALOC = SMA()
 
-SMALOC = EarthLocation.from_geodetic(-155.47955558*u.degree,
-                                     19.826055555*u.degree, 4080*u.m)
 class FakeObs:
     def __init__(self, conf: Path = None, catalog: Path = "tables/SystemSource.cat", catformat=None,
                  host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT):

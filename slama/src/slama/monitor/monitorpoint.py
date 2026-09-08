@@ -197,8 +197,15 @@ class MonitorPoint(SmaxVarBase):
         unrecognized state resolves ``self._unknown_state`` instead
         (default ``"ERROR"``), so a schema gap is a deliberate policy
         rather than a silent false alarm.
+
+        ``self.value`` is coerced to ``str`` before the lookup: a real
+        ``smax_pull()`` result is a ``smax.smax_data_types.SmaxStr``,
+        which — being a dataclass with the default ``eq=True`` — has
+        ``__hash__`` set to ``None`` and so cannot be used as a dict
+        key directly, even though it compares equal to the plain
+        ``str`` values used as keys in ``state_validity``.
         """
-        name = self._state_validity.get(self.value, self._unknown_state)
+        name = self._state_validity.get(str(self.value), self._unknown_state)
         return _STATE_VALIDITY_NAMES.get(name) or Validity[name]
 
     def _bool_validity(self) -> Validity:
@@ -223,7 +230,7 @@ class MonitorPointUpdater:
         return self._mp
 
     def update(self) -> None:
-        """read from self.client and write data to mp"""
+        """Read from self.client and write data to mp"""
         result = self._client.smax_pull(self.mp.table, self.mp.key)
         self._mp.update(result)
 
@@ -254,6 +261,11 @@ class MonitorPointWriter:
         # valkey server
         self._client = client
 
-    def write(self, value) -> None:
-        """read from self.client and write data to mp"""
-        self._client.smax_share(self._mp.table, self._mp.key, value)
+    def write(self, value, meta=False) -> None:
+        """Write data from mp to SMAX database through `client`,  optionally write metadata"""
+        self._client.smax_share(table=self._mp.table, key=self._mp.key, value=value, smax_type=self._mp.type)
+        if meta:
+            if self._mp.description is not None:
+                self._client.smax_set_description(table=self._mp.canonical_name, description=self._mp.description)
+            if self._mp.unit is not None:
+                self._client.smax_set_units(table=self._mp.canonical_name, unit=self._mp.unit)

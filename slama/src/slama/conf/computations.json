@@ -1,0 +1,40 @@
+{
+  "_note": [
+    "See docs/monitorsystem_writer_design.md for the full design.",
+    "Each entry writes 'output' (declared under the 'monitorsystem' subtree",
+    "in smax.json) by applying 'function' (registered in",
+    "slama.monitor.compute.functions) to 'inputs'."
+  ],
+  "defaults": {
+    "interval_s": 2,
+    "staleness_s": 30,
+    "invalid_inputs": "skip"
+  },
+  "computations": [
+    {
+      "output": "monitorsystem:array:antennas_online",
+      "function": "count_true",
+      "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
+      "params": {
+        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9/10 (JCMT/CSO) are omitted unless patched into the array.",
+        "indices": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "staleness_s": 3600
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:sun_distance",
+          "function": "sun_distance",
+          "inputs": {
+            "sunaz": "RM:acc{i}:RM_SUN_AZ_DEG_F",
+            "sunel": "RM:acc{i}:RM_SUN_EL_DEG_F",
+            "antaz": "RM:acc{i}:RM_ACTUAL_AZ_DEG_F",
+            "antel": "RM:acc{i}:RM_ACTUAL_EL_DEG_F"
+          }
+        }
+      }
+    }
+  ]
+}

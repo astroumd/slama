@@ -8924,7 +8924,7 @@
                 "compressor_control": {
                   "description": "",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "coolant_in": {
                   "description": "Operator p2",
@@ -8945,7 +8945,7 @@
                 "enabled": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "error_code": {
                   "description": "Error",
@@ -9044,29 +9044,29 @@
               "heater_control": {
                 "description": "Control key used to turn the cryostat heaters on and off via `lakeshore_smax_daemon`",
                 "size": "1",
-                "smax_type": "int (bool)"
+                "smax_type": "boolean"
               },
               "heaters": {
                 "4K-plate": {
                   "description": "Eng",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "50K-bottom": {
                   "description": "Eng",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "50K-top": {
                   "description": "Eng",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "description": "wSMA cryostat internal heater status readouts",
                 "heater_enabled": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 }
               },
               "selector": {
@@ -9129,7 +9129,7 @@
                 "status": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 }
               },
               "temperatures": {
@@ -9212,7 +9212,7 @@
                 "backing_control": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "description": "wSMA cryostat vacuum system",
                 "error_code": {
@@ -9228,7 +9228,7 @@
                 "gate_valve_control": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "gauge_<1": {
                   "3>": {
@@ -9276,7 +9276,7 @@
                 "system_control": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "turbo": {
                   "cycle_time": {
@@ -9288,7 +9288,7 @@
                   "normal": {
                     "description": "Operator p2",
                     "size": "1",
-                    "smax_type": "int(bool)"
+                    "smax_type": "boolean"
                   },
                   "power": {
                     "description": "Operator p2",
@@ -9303,7 +9303,7 @@
                   "standby": {
                     "description": "Operator p2",
                     "size": "1",
-                    "smax_type": "int(bool)"
+                    "smax_type": "boolean"
                   },
                   "state": {
                     "description": "",
@@ -9319,7 +9319,7 @@
                 "turbo_control": {
                   "description": "Operator",
                   "size": "1",
-                  "smax_type": "int (bool)"
+                  "smax_type": "boolean"
                 },
                 "warning_code": {
                   "description": "Warning",
@@ -10557,13 +10557,13 @@
                   "ave_amp": {
                     "description": "pseudo continuum amplitude",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   },
                   "ave_phase": {
                     "description": "pseudo continuum phase",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "rad"
                   },
                   "is_valid": {
@@ -10574,13 +10574,13 @@
                   "max": {
                     "description": "maximum amplitude in spectral band",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   },
                   "rms": {
                     "description": "rms amplitude in spectral band",
                     "size": "1",
-                    "smax_type": "float32+",
+                    "smax_type": "float",
                     "unit": "arb.u"
                   }
                 },
@@ -12310,6 +12310,32 @@
     },
     "ref_10_mhz": {
       "description": "10 MHz frequency reference"
+    }
+  },
+  "monitorsystem": {
+    "array": {
+      "antennas_online": {
+        "description": "Count of online antennas, derived from DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B, from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "integer",
+        "warn_low": 6,
+        "err_low": 4
+      }
+    },
+    "antenna": {
+      "__each__": {
+        "over": "1-8",
+        "template": {
+          "sun_distance": {
+            "description": "Angular distance from antenna {i}'s pointing to the Sun, from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "deg",
+            "warn_low": 45,
+            "err_low": 40
+          }
+        }
+      }
     }
   }
 }

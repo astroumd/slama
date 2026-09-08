@@ -164,7 +164,11 @@ class MonitorSystem(treelib.Tree):
     def read_all(self, client: SmaxRedisClient) -> None:
         """Pull current values from SMAX for every MonitorPoint in the tree."""
         for mp in self.all_monitor_points():
-            result = client.smax_pull(mp.table, mp.key)
+            try:
+                result = client.smax_pull(mp.table, mp.key)
+            except Exception as exc:
+                print(f"Failed to read {mp.table}:{mp.key} because {exc}")
+                continue
             mp.update(result)
 
     def write(self, canonical_name: str, value, client: SmaxRedisClient) -> None:

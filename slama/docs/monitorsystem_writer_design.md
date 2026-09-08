@@ -658,6 +658,134 @@ code) and therefore who can change it, and when.
    string-point entries — since displays and the fault system benefit
    immediately and independently.
 
-**Still open: the Design A vs Design B choice (§6).** The
-recommendation stands (A), but Marc has not yet decided; no
-implementation until this is settled.
+**Design A vs Design B (§6): resolved.** Marc chose Design A. Implemented
+on `feature/monitor-compute-engine` (built on
+`feature/monitorpoint-state-validity` for decision 5); see that branch's
+history and `src/slama/monitor/compute/` for the realized package.
+
+## 8. Addendum: multi-output computation entries (2026-08-19)
+
+§4.4 flagged this as Design A's sharpest limitation: "one entry, one
+output" fits awkwardly when two related quantities are naturally computed
+together in a single pass (e.g. min-and-max of the same input set,
+az-and-el pointing error from the same formula). Splitting them into two
+config entries sharing a `function` name works today, but calls the
+function twice per tick — wasteful when the shared computation is
+nontrivial — and forces the function to accept a `params` flag just to
+know which half of its own result to return.
+
+### 8.1 Config: `output` grows a second shape
+
+`output` keeps accepting a plain string (single-output, unchanged
+behavior) or now also a **dict of role name → canonical name**
+(multi-output):
+
+```json
+{
+  "output": {
+    "min": "monitorsystem:weather:temp_min",
+    "max": "monitorsystem:weather:temp_max"
+  },
+  "function": "min_max_value",
+  "inputs": ["weather:station:*:temperature"]
+}
+```
+
+Reusing `output` rather than adding a separate `outputs` key keeps one
+field, two shapes — the same pattern `inputs` already uses (list vs
+dict form).
+
+Role names (`"min"`, `"max"`) are local to the entry, never written to
+SMAX — only the dict *values* (canonical names) are real points. This is
+what keeps the function reusable under `__each__` expansion: `_substitute()`
+already recurses into nested dicts, so a template's `output` dict
+expands per-index with the same role keys and different canonical names:
+
+```json
+"__each__": {
+  "over": "1-8", "as": "i",
+  "template": {
+    "output": {
+      "min": "monitorsystem:antenna:{i}:tsys_min",
+      "max": "monitorsystem:antenna:{i}:tsys_max"
+    },
+    "function": "min_max_value",
+    "inputs": ["antenna:{i}:receiver:*:tsys"]
+  }
+}
+```
+
+`min_max_value` is called once per antenna and returns the same
+`{"min": ..., "max": ...}` shape every time — it never needs to know
+which antenna it's running for. If the dict were keyed by canonical name
+instead, the function body would need the antenna index just to
+reconstruct the name it's about to overwrite, defeating the point of
+`__each__` reuse.
+
+### 8.2 Function contract: a third return shape
+
+`functions.py`'s docstring already documents two shapes
+(`f(inputs, ctx) -> value` and `-> (value, Validity)`); multi-output
+entries add a third:
+
+```
+f(inputs, ctx) -> dict[str, value | (value, Validity)]
+```
+
+keyed by the entry's declared role names. Per-key, each value can still
+be bare (validity derived from that specific output point's own
+declared thresholds, exactly as today) or an explicit `(value,
+Validity)` tuple (needed when the function's job *is* the validity
+computation, as `worst_validity`/`sequence_validity` already do).
+
+Engine dispatch is on `node.output`'s type (str vs dict), not on the
+shape of what the function returns — this keeps the single-output path
+completely unchanged and gives a clear, checkable contract for the
+multi-output path: **the returned dict's keys must exactly equal the
+declared role names.** A mismatch (extra or missing key) raises
+immediately — an extra key is silent lost work (a typo'd role that
+never gets a canonical name to write to), a missing key leaves a
+promised SMAX point with no write *and* no validity metadata that tick,
+worse than `INVALID_NO_DATA` because a consumer can't distinguish "not
+updated this tick" from "healthy, unchanged."
+
+### 8.3 Per-node error isolation (applies to every node, not just multi-output)
+
+Resolving 8.2's error handling surfaced a broader, deliberate engine
+change: today, an uncaught exception from any node's function call
+(single- or multi-output) aborts the entire `tick()` — every node after
+it in topological order silently doesn't run that cycle. `tick()` now
+wraps each node's function call *and* the key-match check in a
+try/except: on any exception, log it, resolve that node's canonical
+name(s) to `(None, INVALID_NO_DATA)` (written the same way an
+unresolvable input already short-circuits — validity metadata pushed,
+no value overwrite), and continue to the next node. One broken
+computation stalls only itself for that tick; the rest of the DAG still
+runs, and downstream dependents see an explicit `INVALID_NO_DATA` this
+tick rather than silently reading a stale tree value.
+
+### 8.4 Touch points
+
+- `computenode.py`: `ComputeNode.output: str | dict[str, str]`; add
+  `output_names` (`[output]` or `list(output.values())`) used
+  everywhere validation/dependency code needs "every canonical name
+  this entry writes." One `state`/`ComputeContext` per entry regardless
+  of output count — a multi-output computation is one calculation, one
+  piece of cross-tick memory.
+- `computeconfig.py`: validate every name in `output_names` is declared
+  and globally unique across all entries; `_build_dependency_order`'s
+  `by_output` maps every canonical name (not just one per node) to its
+  owning node, so a downstream entry can depend on any one of a
+  multi-output entry's results.
+- `engine.py`: dispatch and per-node try/except as in §8.2/§8.3; write
+  once per canonical name either way, so `ComputeResult` stays one
+  entry per *point*, not per config entry — no change to how callers
+  consume `tick()`'s return value.
+- `functions.py`: document the third return shape; add `min_max_value`
+  as the concrete built-in exercising this end-to-end (real payoff:
+  today `min_value` + `max_value` as separate entries means two full
+  passes over identical inputs).
+
+Fully backward compatible: every existing entry has `output: str`, hits
+the unchanged single-output path, zero behavior change.
+
