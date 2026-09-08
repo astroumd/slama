@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "slama"
 description = "SMA LMA code"
@@ -32,7 +36,7 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
 ]
 
-all = ["slama"]
+#all = ["slama"]
 
 [dependency-groups]
 dev = [
