@@ -32,7 +32,7 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
 ]
 
-#all = ["slama"]
+all = ["slama"]
 
 [dependency-groups]
 dev = [
