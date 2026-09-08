@@ -43,6 +43,7 @@ import statistics
 from typing import Callable
 
 import astropy.units as u
+import numpy as np
 from slama.monitor.monitorpoint import Validity
 from slama.coordinates import sun_distance
 
@@ -158,8 +159,39 @@ def worst_validity(inputs: list[ResolvedInput], ctx: ComputeContext):
 
 @compute_function("count_true")
 def count_true(inputs: list[ResolvedInput], ctx: ComputeContext) -> int:
-    """Count inputs whose value is truthy (e.g. boolean ``is_online`` points)."""
-    return sum(1 for r in inputs if r.value)
+    """Count truthy elements across ``inputs``.
+
+    Each input's value is usually a scalar (one boolean point per
+    antenna, e.g. a hypothetical ``antenna:1-8:is_online``), but a
+    single input may instead resolve to an array -- the real,
+    already-deployed case being
+    ``DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B``, a size-11 ``int8``
+    bit-vector point tracking which antennas are online (the
+    per-antenna ``is_online`` points are schema-only and never
+    actually written by the live system). Array-valued inputs are
+    summed element-wise rather than tested with a bare ``if r.value``,
+    which raises ``ValueError`` ("truth value of an array with more
+    than one element is ambiguous") for any multi-element array.
+
+    An optional ``ctx.params["indices"]`` -- a list of positions --
+    restricts counting, for any array-valued input, to just those
+    positions. Needed for e.g. a "V11" SMA bit-vector: index 0 is
+    always a placeholder, indices 1-8 are the standard antennas, and
+    9/10 are only meaningful when JCMT/CSO are patched into the array
+    (a rare, deliberately-configured case). Scalar inputs are
+    unaffected -- ``indices`` only ever selects within an array.
+    """
+    indices = ctx.params.get("indices")
+    total = 0
+    for r in inputs:
+        v = r.value
+        if isinstance(v, (np.ndarray, list, tuple)):
+            if indices is not None:
+                v = [v[i] for i in indices]
+            total += sum(1 for x in v if x)
+        else:
+            total += 1 if v else 0
+    return total
 
 
 @compute_function("count_valid")
@@ -262,6 +294,7 @@ def sun_distance_degrees(inputs: dict[str, ResolvedInput], ctx: ComputeContext) 
         The angular separation in degrees, via
         :func:`slama.coordinates.core.sun_distance`.
     """
+    #print(f"computing sun distance for {inputs=} with context {ctx=}")
     sd = sun_distance(
         inputs["sunaz"].value, inputs["sunel"].value,
         inputs["antaz"].value, inputs["antel"].value,

@@ -1,4 +1,5 @@
 """Unit tests for the built-in compute functions (no engine/config needed)."""
+import numpy as np
 import pytest
 
 from slama.monitor.compute.computenode import ComputeContext, ResolvedInput
@@ -103,6 +104,32 @@ class TestCounts:
     def test_count_true(self):
         inputs = [ri("a", True), ri("b", False), ri("c", True)]
         assert count_true(inputs, ctx()) == 2
+
+    def test_count_true_single_vector_input(self):
+        # Real deployed shape: one input resolving to an array-valued
+        # point (e.g. DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B, size 11)
+        # rather than one scalar point per antenna. A bare `if r.value`
+        # would raise ValueError on a multi-element numpy array.
+        vector = np.array([1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0], dtype=np.int8)
+        inputs = [ri("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", vector)]
+        assert count_true(inputs, ctx()) == 3
+
+    def test_count_true_vector_input_with_indices_param(self):
+        # V11 vector: index 0 is a placeholder (here truthy, but must
+        # be excluded), 1-8 are the standard antennas, 9/10 (JCMT/CSO)
+        # are excluded here too since this entry isn't configured for
+        # them.
+        vector = np.array([1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1], dtype=np.int8)
+        inputs = [ri("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", vector)]
+        params = {"indices": [1, 2, 3, 4, 5, 6, 7, 8]}
+        assert count_true(inputs, ctx(params=params)) == 3
+
+    def test_count_true_indices_param_ignored_for_scalar_inputs(self):
+        # indices only ever selects within an array-valued input --
+        # a scalar input (one point per antenna) is counted as-is.
+        inputs = [ri("a", True), ri("b", False)]
+        params = {"indices": [0]}
+        assert count_true(inputs, ctx(params=params)) == 1
 
     def test_count_valid_excludes_invalid_family(self):
         inputs = [
