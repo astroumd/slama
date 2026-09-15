@@ -29,3 +29,17 @@ test2:
 ## time:     display current unix time and current local time
 time:
 	date +"%s - %c"
+
+## test3:    a few "lookup" runs
+test3:
+	lookup -t "14 Dec 2010 12:40:15" -s sun
+	@echo "102.397216 -56.489765 0.000000"
+	lookup -t "14 Dec 2010 12:40:15" -s moon
+	@echo "285.892403 -24.044336 99.411429"
+	lookup -t "14 Dec 2010 12:40:15" -s mars
+	@echo "106.175843 -68.953021 12.577175"
+
+## test4:    a few "calfind" runs
+test4:
+	calfind -r 267.25 -d 70.117
+	@echo "0359+509 --  2.34 Jy, RA  3.99, Dec  51.0"
