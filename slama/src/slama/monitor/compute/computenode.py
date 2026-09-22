@@ -19,6 +19,7 @@ and :mod:`engine` consumes:
 """
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -65,9 +66,21 @@ class ComputeNode:
         ``"propagate"`` short-circuits the whole node if any input is
         invalid. Ignored for dict-form inputs, which always behave as
         ``"propagate"`` (a named input can't sensibly be dropped).
-    staleness_s : float
+    staleness_s : float or None
         An input older than this many seconds is treated as
-        ``INVALID_NO_DATA`` regardless of its own validity.
+        ``INVALID_NO_DATA`` regardless of its own validity. ``None``
+        disables the age check entirely (a present, non-``None`` value
+        is never stale).
+    input_staleness : dict of str to (float or None)
+        Per-input overrides of :attr:`staleness_s`, keyed by dict-form
+        input role name (config form ``{"name": ..., "staleness_s":
+        ...}``). A role absent from this dict uses :attr:`staleness_s`.
+        Needed because many RM status points are only written to SMAX
+        when their value *changes*, so their SMAX timestamp says
+        nothing about whether the hardware is still reporting; such an
+        input gets ``None`` here and the function checks freshness
+        against an RM heartbeat input (e.g. ``RM_SERVO_TIMESTAMP_L``)
+        instead. See :meth:`staleness_for`.
     interval_s : float or None
         Reserved for future per-entry tick cadence (design doc §7
         decision 3). Not yet consulted by :class:`ComputeEngine` —
@@ -85,8 +98,9 @@ class ComputeNode:
     inputs: list[str] | dict[str, str]
     params: dict = field(default_factory=dict)
     invalid_inputs: str = "skip"
-    staleness_s: float = 30.0
+    staleness_s: float | None = 30.0
     interval_s: float | None = None
+    input_staleness: dict[str, float | None] = field(default_factory=dict)
 
     state: dict = field(default_factory=dict)
 
@@ -103,6 +117,26 @@ class ComputeNode:
         if isinstance(self.output, dict):
             return list(self.output.values())
         return [self.output]
+
+    def staleness_for(self, role: str | None) -> float | None:
+        """Staleness limit, in seconds, to apply to one input.
+
+        Parameters
+        ----------
+        role : str or None
+            Dict-form input role name, or ``None`` for a list-form
+            input (list-form inputs have no per-input override).
+
+        Returns
+        -------
+        float or None
+            ``input_staleness[role]`` if the role has an override
+            (which may itself be ``None``, meaning "never stale"),
+            otherwise the node-wide :attr:`staleness_s`.
+        """
+        if role is not None and role in self.input_staleness:
+            return self.input_staleness[role]
+        return self.staleness_s
 
 
 @dataclass
@@ -146,8 +180,17 @@ class ComputeContext:
     params : dict
         This node's static config, shared across ticks — see
         :attr:`ComputeNode.params`.
+    wall_clock : callable
+        Wall-clock epoch seconds, ``() -> float``: the same clock the
+        engine uses for SMAX timestamps and staleness. Functions that
+        compare an RM heartbeat *value* (e.g. ``RM_TRACK_TIMESTAMP_L``,
+        a Unix time) against "now" must use this, not :attr:`clock`,
+        which is monotonic and has an arbitrary epoch. Defaults to
+        :func:`time.time`; :class:`ComputeEngine` injects its own
+        ``wall_clock`` so tests stay deterministic.
     """
 
     clock: Callable[[], float]
     state: dict
     params: dict
+    wall_clock: Callable[[], float] = time.time

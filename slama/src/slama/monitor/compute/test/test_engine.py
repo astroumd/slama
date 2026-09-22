@@ -23,6 +23,12 @@ def _test_always_raises(inputs, ctx):
     raise RuntimeError("boom")
 
 
+@compute_function("_test_heartbeat_age")
+def _test_heartbeat_age(inputs, ctx):
+    """Test-only: wall-clock age of the ``hb`` input, plus the ``status`` value."""
+    return ctx.wall_clock() - float(inputs["hb"].value) + float(inputs["status"].value)
+
+
 # ---------------------------------------------------------------------------
 # Fakes
 # ---------------------------------------------------------------------------
@@ -56,6 +62,9 @@ class FakeMonitorSystem:
 
     def read_all(self, client):
         pass  # tests set values directly on the fake MonitorPoint objects
+
+    def read(self, canonical_names, client):
+        self.read_calls = getattr(self, "read_calls", []) + [list(canonical_names)]
 
 
 class FakeSmaxClient:
@@ -240,6 +249,68 @@ class TestStalenessPolicy:
         results = engine.tick()  # both readings are 1000s old, staleness_s=30
         assert results[0].value is None
         assert results[0].validity == Validity.INVALID_NO_DATA
+
+
+class TestPerInputStaleness:
+    """Per-input ``staleness_s`` for points SMAX only rewrites on change."""
+
+    NOW = 1_700_000_000.0
+
+    def _setup(self, status_spec, entry_staleness=30):
+        status = make_mp("RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", smax_type="integer")
+        hb = make_mp("RM:acc1:RM_SERVO_TIMESTAMP_L", smax_type="integer")
+        # status last written 3 days ago (unchanged value), heartbeat fresh
+        set_value(status, 0, ts=datetime.fromtimestamp(self.NOW - 3 * 86400, tz=timezone.utc))
+        set_value(hb, int(self.NOW - 2), ts=datetime.fromtimestamp(self.NOW - 1, tz=timezone.utc))
+        out = make_mp("monitorsystem:antenna:1:servo_age", smax_type="float")
+        ms = FakeMonitorSystem([status, hb, out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": "monitorsystem:antenna:1:servo_age",
+                "function": "_test_heartbeat_age",
+                "inputs": {"status": status_spec, "hb": "RM:acc1:RM_SERVO_TIMESTAMP_L"},
+                "staleness_s": entry_staleness,
+            }],
+        }, ms)
+        return ComputeEngine(cfg, ms, client=None, wall_clock=lambda: self.NOW)
+
+    def test_change_only_input_is_stale_without_override(self):
+        engine = self._setup("RM:acc1:RM_ANTENNA_DRIVE_STATUS_B")
+        assert engine.tick()[0].validity == Validity.INVALID_NO_DATA
+
+    def test_null_override_exempts_input(self):
+        engine = self._setup({"name": "RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", "staleness_s": None})
+        result = engine.tick()[0]
+        assert result.validity != Validity.INVALID_NO_DATA
+        # function saw a wall clock, not the monotonic one: age 2 s + status 0
+        assert result.value == pytest.approx(2.0)
+
+    def test_numeric_override_still_enforced(self):
+        engine = self._setup({"name": "RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", "staleness_s": 3600})
+        assert engine.tick()[0].validity == Validity.INVALID_NO_DATA
+
+    def test_entry_level_null_disables_staleness(self):
+        engine = self._setup("RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", entry_staleness=None)
+        assert engine.tick()[0].validity != Validity.INVALID_NO_DATA
+
+    def test_never_written_input_still_no_data_with_null_override(self):
+        status = make_mp("RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", smax_type="integer")
+        hb = make_mp("RM:acc1:RM_SERVO_TIMESTAMP_L", smax_type="integer")
+        set_value(hb, int(self.NOW), ts=datetime.fromtimestamp(self.NOW, tz=timezone.utc))
+        out = make_mp("monitorsystem:antenna:1:servo_age", smax_type="float")
+        ms = FakeMonitorSystem([status, hb, out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": "monitorsystem:antenna:1:servo_age",
+                "function": "_test_heartbeat_age",
+                "inputs": {
+                    "status": {"name": "RM:acc1:RM_ANTENNA_DRIVE_STATUS_B", "staleness_s": None},
+                    "hb": "RM:acc1:RM_SERVO_TIMESTAMP_L",
+                },
+            }],
+        }, ms)
+        engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: self.NOW)
+        assert engine.tick()[0].validity == Validity.INVALID_NO_DATA
 
 
 class TestDictInputRequiredPolicy:
@@ -458,3 +529,25 @@ class TestErrorIsolation:
         assert ("monitorsystem:weather", "temp_min", 5.0) not in client.shared
         assert ("validity", "monitorsystem:weather:temp_min",
                 str(int(Validity.INVALID_NO_DATA))) in client.meta
+
+
+class TestReadsOnlyInputs:
+    def test_tick_reads_only_node_inputs_not_whole_tree(self):
+        a = make_mp("antenna:1:is_online", smax_type="boolean")
+        b = make_mp("antenna:2:is_online", smax_type="boolean")
+        unrelated = make_mp("antenna:3:is_online", smax_type="boolean")
+        for mp in (a, b, unrelated):
+            set_value(mp, True, ts=datetime.fromtimestamp(1_700_000_000, tz=timezone.utc))
+        out = make_mp("monitorsystem:array:antennas_online", smax_type="integer")
+        ms = FakeMonitorSystem([a, b, unrelated, out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": "monitorsystem:array:antennas_online",
+                "function": "count_true",
+                "inputs": ["antenna:1-2:is_online"],
+            }],
+        }, ms)
+        engine = ComputeEngine(cfg, ms, client=FakeSmaxClient(),
+                               wall_clock=lambda: 1_700_000_000.0)
+        engine.tick()
+        assert ms.read_calls == [["antenna:1:is_online", "antenna:2:is_online"]]

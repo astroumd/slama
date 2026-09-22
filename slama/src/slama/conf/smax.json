@@ -7804,6 +7804,21 @@
           "size": "1",
           "smax_type": "int16"
         },
+        "RM_ACTIVE_HIGH_RECEIVER_C10": {
+          "description": "Receiver selection for high-band Rx",
+          "size": "1",
+          "smax_type": "string",
+          "valid_strings": [
+            "A1",
+            "B1",
+            "C",
+            "E",
+            "A2",
+            "B2",
+            "D",
+            "F"
+          ]
+        },
         "RM_ACTIVE_LOW_RECEIVER_C10": {
           "description": "Receiver selection for low-band Rx",
           "size": "1",

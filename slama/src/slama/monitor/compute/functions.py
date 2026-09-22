@@ -98,6 +98,100 @@ def get_function(name: str) -> Callable:
 
 
 # ---------------------------------------------------------------------------
+# Shared helpers for ported curses-monitor logic
+# ---------------------------------------------------------------------------
+
+def _age_s(ts, ctx: ComputeContext) -> float:
+    """Seconds since a Unix-time heartbeat value, by the engine's wall clock.
+
+    Many RM points *are* timestamps (``RM_TRACK_TIMESTAMP_L``,
+    ``RM_SERVO_TIMESTAMP_L``, ...), written by the antenna computer
+    every cycle; their *value* is the freshness signal the curses
+    monitor relied on, rather than their SMAX write time.
+
+    Parameters
+    ----------
+    ts : int or float
+        Unix epoch seconds, as stored in the heartbeat point.
+    ctx : ComputeContext
+        Supplies :attr:`ComputeContext.wall_clock` (never the monotonic
+        :attr:`ComputeContext.clock`, whose epoch is arbitrary).
+
+    Returns
+    -------
+    float
+        ``ctx.wall_clock() - ts``. Negative if ``ts`` is in the
+        future (clock skew or a garbage value); callers that care
+        should compare ``abs()``, as the C code does.
+    """
+    return ctx.wall_clock() - float(ts)
+
+
+def _label(code, table: dict, unknown: str = "?") -> str:
+    """Look up the display label for an integer status code.
+
+    Parameters
+    ----------
+    code : int, float, or numpy scalar
+        Raw status code from SMAX. Integral floats (e.g. ``3.0``) are
+        accepted; anything non-integral or non-numeric is unknown.
+    table : dict of int to str
+        Code -> label map, ported from the curses source.
+    unknown : str, optional
+        Label for a code not in ``table``. Default ``"?"``. Output
+        points declare ``state_validity`` without this label, so their
+        ``unknown_state`` (default ERROR) colours it — no extra
+        validity plumbing needed in each function.
+
+    Returns
+    -------
+    str
+        ``table[int(code)]``, or ``unknown``.
+    """
+    try:
+        f = float(code)
+    except (TypeError, ValueError):
+        return unknown
+    if not f.is_integer():
+        return unknown
+    return table.get(int(f), unknown)
+
+
+def _array_elem(value, idx: int):
+    """Return element ``idx`` of an array-valued SMAX point.
+
+    The compute config has no syntax for indexing into a vector point
+    (``..._V16_F``, ``..._V2_S``); entries pass the whole array and name
+    the index in ``params`` instead (as :func:`count_true` does with
+    ``indices``).
+
+    Parameters
+    ----------
+    value : numpy.ndarray, list, tuple, or scalar
+        The pulled value. A scalar is accepted only for ``idx == 0``
+        (a size-1 vector may arrive unwrapped).
+    idx : int
+        Zero-based index.
+
+    Returns
+    -------
+    Any
+        The element, as a plain Python scalar where possible.
+
+    Raises
+    ------
+    IndexError
+        If ``idx`` is out of range, or nonzero for a scalar ``value``.
+    """
+    if isinstance(value, (np.ndarray, list, tuple)):
+        elem = np.asarray(value).ravel()[idx]
+        return elem.item() if hasattr(elem, "item") else elem
+    if idx == 0:
+        return value
+    raise IndexError(f"index {idx} into scalar value {value!r}")
+
+
+# ---------------------------------------------------------------------------
 # Severity ordering for worst_validity
 # ---------------------------------------------------------------------------
 

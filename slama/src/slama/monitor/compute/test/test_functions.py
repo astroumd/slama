@@ -4,6 +4,9 @@ import pytest
 
 from slama.monitor.compute.computenode import ComputeContext, ResolvedInput
 from slama.monitor.compute.functions import (
+    _age_s,
+    _array_elem,
+    _label,
     _severity_score,
     count_true,
     count_valid,
@@ -35,12 +38,57 @@ def ri(name, value, validity=Validity.VALID_GOOD):
     return ResolvedInput(name, value, validity)
 
 
-def ctx(clock=None, state=None, params=None):
+WALL_NOW = 1_790_000_000.0
+
+
+def ctx(clock=None, state=None, params=None, wall=None):
     return ComputeContext(
         clock=clock if clock is not None else FakeClock(),
         state=state if state is not None else {},
         params=params if params is not None else {},
+        wall_clock=wall if wall is not None else (lambda: WALL_NOW),
     )
+
+
+# ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
+
+class TestHelpers:
+    def test_age_uses_wall_clock_not_monotonic(self):
+        c = ctx(clock=FakeClock(5.0))
+        assert _age_s(WALL_NOW - 2, c) == pytest.approx(2.0)
+
+    def test_age_negative_for_future_timestamp(self):
+        assert _age_s(WALL_NOW + 5, ctx()) == pytest.approx(-5.0)
+
+    @pytest.mark.parametrize("code, expected", [
+        (1, "on"), (1.0, "on"), (np.int16(0), "off"),
+        (7, "?"), (-702, "?"), (1.5, "?"), ("x", "?"), (None, "?"),
+    ])
+    def test_label(self, code, expected):
+        assert _label(code, {0: "off", 1: "on"}) == expected
+
+    def test_label_custom_unknown(self):
+        assert _label(9, {0: "off"}, unknown="???") == "???"
+
+    def test_array_elem_numpy_returns_python_scalar(self):
+        v = _array_elem(np.array([0.5, 4.2, 3.0], dtype=np.float32), 1)
+        assert isinstance(v, float) and v == pytest.approx(4.2)
+
+    def test_array_elem_list(self):
+        assert _array_elem(["unknown", "CO"], 1) == "CO"
+
+    def test_array_elem_scalar_index_zero(self):
+        assert _array_elem(3.5, 0) == 3.5
+
+    def test_array_elem_scalar_nonzero_index_raises(self):
+        with pytest.raises(IndexError):
+            _array_elem(3.5, 1)
+
+    def test_array_elem_out_of_range_raises(self):
+        with pytest.raises(IndexError):
+            _array_elem(np.zeros(2), 5)
 
 
 # ---------------------------------------------------------------------------

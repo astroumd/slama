@@ -16,10 +16,10 @@
       "function": "count_true",
       "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
       "params": {
-        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9/10 (JCMT/CSO) are omitted unless patched into the array.",
+        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9/10 (JCMT/CSO) are omitted unless patched into the array. staleness_s null: DSM writes this only when array membership changes (19 h old in the 2026-09-22 snapshot), so its SMAX timestamp is not a freshness signal.",
         "indices": [1, 2, 3, 4, 5, 6, 7, 8]
       },
-      "staleness_s": 3600
+      "staleness_s": null
     },
     {
       "__each__": {
