@@ -1,6 +1,6 @@
 {
   "name": "Weather (Multi-Site)",
-  "description": "Weather at summit sites: SMAroof, JCMT, Subaru, UKIRT, CFHT, UH88, IRTF — DSM placeholders",
+  "description": "Weather at summit sites: SMAroof, JCMT, Subaru, CFHT, UH88, IRTF — DSM placeholders",
   "update_interval": 30,
   "layout": [
     {
@@ -24,7 +24,6 @@
         {"label": "JCMT Wind (mph) (DSM)",    "point": "DSM:colossus:JCMT_METEOROLOGY_X:WINDSPEED_F"},
         {"label": "Subaru Temp (C) (DSM)",    "point": "DSM:colossus:SUBARU_METEOROLOGY_X:TEMP_F"},
         {"label": "Subaru Humidity % (DSM)",  "point": "DSM:colossus:SUBARU_METEOROLOGY_X:HUMIDITY_F"},
-        {"label": "UKIRT Temp (C) (DSM)",     "point": "DSM:colossus:UKIRT_METEOROLOGY_X:TEMP_F"},
         {"label": "Tau225 GFS (DSM)",         "point": "weather:forecast:gfs:tau225"},
         {"label": "Tau350 (DSM)",             "point": "DSM:colossus:DSM_CSO_350MICRON_TAU_SCALED_F"}
       ]
