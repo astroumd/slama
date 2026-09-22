@@ -311,6 +311,127 @@
           }
         }
       }
+    },
+    {
+      "_comment": "DSM:colossus weather. Dead stations (UKIRT, CFHT) are no longer written at all, so wind/data_age use staleness_s null and check each struct's SERVER_TIMESTAMP_L value instead.",
+      "output": {
+        "speed": "monitorsystem:weather:wind_speed",
+        "direction": "monitorsystem:weather:wind_direction",
+        "source": "monitorsystem:weather:wind_source",
+        "invalid_stations": "monitorsystem:weather:wind_invalid_stations"
+      },
+      "function": "wind",
+      "inputs": {
+        "server": "DSM:colossus:DSM_WIND_SERVER_C7",
+        "SMA_speed": "DSM:colossus:SMA_METEOROLOGY_X:WINDSPEED_F",
+        "SMA_dir": "DSM:colossus:SMA_METEOROLOGY_X:WINDDIR_F",
+        "SMA_ts": "DSM:colossus:SMA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "UKIRT_speed": "DSM:colossus:UKIRT_METEOROLOGY_X:WINDSPEED_F",
+        "UKIRT_dir": "DSM:colossus:UKIRT_METEOROLOGY_X:WINDDIR_F",
+        "UKIRT_ts": "DSM:colossus:UKIRT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "CFHT_speed": "DSM:colossus:CFHT_METEOROLOGY_X:WINDSPEED_F",
+        "CFHT_dir": "DSM:colossus:CFHT_METEOROLOGY_X:WINDDIR_F",
+        "CFHT_ts": "DSM:colossus:CFHT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "SUBARU_speed": "DSM:colossus:SUBARU_METEOROLOGY_X:WINDSPEED_F",
+        "SUBARU_dir": "DSM:colossus:SUBARU_METEOROLOGY_X:WINDDIR_F",
+        "SUBARU_ts": "DSM:colossus:SUBARU_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "UH88_speed": "DSM:colossus:UH88_METEOROLOGY_X:WINDSPEED_F",
+        "UH88_dir": "DSM:colossus:UH88_METEOROLOGY_X:WINDDIR_F",
+        "UH88_ts": "DSM:colossus:UH88_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "VLBA_speed": "DSM:colossus:VLBA_METEOROLOGY_X:WINDSPEED_F",
+        "VLBA_dir": "DSM:colossus:VLBA_METEOROLOGY_X:WINDDIR_F",
+        "VLBA_ts": "DSM:colossus:VLBA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "IRTF_speed": "DSM:colossus:IRTF_METEOROLOGY_X:WINDSPEED_F",
+        "IRTF_dir": "DSM:colossus:IRTF_METEOROLOGY_X:WINDDIR_F",
+        "IRTF_ts": "DSM:colossus:IRTF_METEOROLOGY_X:SERVER_TIMESTAMP_L"
+      },
+      "staleness_s": null
+    },
+    {
+      "output": "monitorsystem:weather:sun_visible",
+      "function": "sun_visible",
+      "inputs": {
+        "solar_temp": "DSM:colossus:SMA_METEOROLOGY_X:SOLAR_TEMP_F",
+        "air_temp": "DSM:colossus:SMA_METEOROLOGY_X:TEMP_F"
+      },
+      "staleness_s": 90
+    },
+    {
+      "output": "monitorsystem:weather:server_label",
+      "function": "weather_server_label",
+      "inputs": {
+        "temperature": "DSM:colossus:DSM_TEMPERATURE_SERVER_C7",
+        "humidity": "DSM:colossus:DSM_HUMIDITY_SERVER_C7",
+        "wind": "DSM:colossus:DSM_WIND_SERVER_C7",
+        "pressure": "DSM:colossus:DSM_PRESSURE_SERVER_C7"
+      },
+      "staleness_s": 90
+    },
+    {
+      "output": "monitorsystem:weather:data_age_s",
+      "function": "weather_data_age",
+      "inputs": {
+        "server": "DSM:colossus:DSM_TEMPERATURE_SERVER_C7",
+        "manual": "DSM:colossus:DSM_MANUAL_WEATHER_FLAG_S",
+        "getweather_ts": "DSM:colossus:DSM_GETWEATHER_TIMESTAMP_L",
+        "SMA_ts": "DSM:colossus:SMA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "UKIRT_ts": "DSM:colossus:UKIRT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "KECK_ts": "DSM:colossus:KECK_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "CFHT_ts": "DSM:colossus:CFHT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "SUBARU_ts": "DSM:colossus:SUBARU_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "JCMT_ts": "DSM:colossus:JCMT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "UH88_ts": "DSM:colossus:UH88_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "VLBA_ts": "DSM:colossus:VLBA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
+        "IRTF_ts": "DSM:colossus:IRTF_METEOROLOGY_X:SERVER_TIMESTAMP_L"
+      },
+      "staleness_s": null
+    },
+    {
+      "output": "monitorsystem:array:genset_active",
+      "function": "genset_active",
+      "inputs": {
+        "l1": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL1_F",
+        "l2": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL2_F",
+        "l3": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL3_F"
+      },
+      "staleness_s": 90
+    },
+    {
+      "_comment": "TSTAMP is minutes of the UT day; compared against wall-clock UT in the function.",
+      "output": "monitorsystem:weather:tau225_stale",
+      "function": "tau_stale",
+      "inputs": {
+        "tstamp": "DSM:colossus:DSM_CSO_225GHZ_TAU_TSTAMP_L"
+      },
+      "params": {
+        "margin_h": 1.0
+      },
+      "staleness_s": 90
+    },
+    {
+      "output": "monitorsystem:weather:tau350_stale",
+      "function": "tau_stale",
+      "inputs": {
+        "tstamp": "DSM:colossus:DSM_CSO_350MICRON_TAU_TSTAMP_L"
+      },
+      "params": {
+        "margin_h": 0.5
+      },
+      "staleness_s": 90
+    },
+    {
+      "output": "monitorsystem:weather:gfs_tau225",
+      "function": "tau_standout",
+      "inputs": {
+        "tau": {
+          "name": "weather:forecast:gfs:tau225",
+          "staleness_s": 1800
+        },
+        "rest_freq": {
+          "name": "DSM:hal9000:DSM_REQUESTED_FREQUENCY_V2_D",
+          "staleness_s": null
+        }
+      }
     }
   ]
 }

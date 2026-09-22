@@ -13,6 +13,15 @@ from slama.monitor.compute.functions import (
     deice_status,
     dewar_4k_temp,
     drive_status,
+    genset_active,
+    sun_visible,
+    tau_stale,
+    tau_standout,
+    weather_data_age,
+    weather_server_label,
+    wind,
+    _circular_mean_deg,
+    _ut_stale,
     hotload_position,
     line_name,
     lo_lock_ok,
@@ -615,3 +624,177 @@ class TestDewar4kTemp:
 
     def test_wsma_shape(self):
         assert dewar_4k_temp({"temp": ri("w", 4.076)}, ctx()) == pytest.approx(4.076)
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port: weather / array environment
+# ---------------------------------------------------------------------------
+
+STATIONS = ("SMA", "UKIRT", "CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
+
+
+def _wind_inputs(server="SMA", stations=None):
+    """Defaults: every station fresh at 10 mph / 90 deg; SMA 4.2 m/s / 107.7 deg."""
+    st = {n: (10.0, 90.0, 5.0) for n in STATIONS}
+    st["SMA"] = (4.2, 107.7, 5.0)
+    st.update(stations or {})
+    d = {"server": ri("server", server)}
+    for n, (speed, direction, age) in st.items():
+        d[f"{n}_speed"] = ri(f"{n}s", speed)
+        d[f"{n}_dir"] = ri(f"{n}d", direction)
+        d[f"{n}_ts"] = ri(f"{n}t", WALL_NOW - age)
+    return d
+
+
+class TestWind:
+    def test_sma(self):
+        out = wind(_wind_inputs(), ctx())
+        assert out["speed"] == pytest.approx(4.2)
+        assert out["direction"] == pytest.approx(107.7)
+        assert out["source"] == "SMA"
+        assert out["invalid_stations"] == 0
+
+    def test_frozen_sma_falls_back_to_average_in_mps(self):
+        out = wind(_wind_inputs(stations={"SMA": (0.05, 0.0, 5.0)}), ctx())
+        assert out["source"] == "average"
+        assert out["speed"] == pytest.approx(10.0 * 0.44704)
+        assert out["direction"] == pytest.approx(90.0)
+
+    def test_stale_sma_falls_back(self):
+        out = wind(_wind_inputs(stations={"SMA": (4.2, 0.0, 4000)}), ctx())
+        assert out["source"] == "average"
+
+    def test_average_excludes_frozen_and_stale_stations(self):
+        out = wind(_wind_inputs(stations={
+            "SMA": (0.0, 0.0, 5.0), "UKIRT": (0.0, 0.0, 5.0), "CFHT": (30.0, 0.0, 99999),
+            "UH88": (20.0, 0.0, 5.0)}), ctx())
+        assert out["invalid_stations"] == 2
+        assert out["speed"] == pytest.approx((20 + 10 + 10) / 3 * 0.44704)
+
+    def test_circular_direction_mean(self):
+        assert _circular_mean_deg([350, 10]) == pytest.approx(0.0, abs=1e-9)
+
+    def test_direct_station(self):
+        out = wind(_wind_inputs(server="IRTF", stations={"IRTF": (16.0, 22.5, 5.0)}), ctx())
+        assert out["source"] == "IRTF"
+        assert out["speed"] == pytest.approx(16 * 0.44704)
+
+    def test_ukirt_has_no_fallback(self):
+        out = wind(_wind_inputs(server="UKIRT", stations={"UKIRT": (0.0, 0.0, 5.0)}), ctx())
+        assert out["source"] == "UKIRT"
+
+    def test_unknown_server_is_no_data(self):
+        out = wind(_wind_inputs(server="JCMT"), ctx())
+        assert out["speed"] == (None, Validity.INVALID_NO_DATA)
+        assert out["source"] == ("none", Validity.VALID_ERROR)
+
+    def test_all_stations_invalid_is_no_data(self):
+        dead = {n: (0.0, 0.0, 5.0) for n in STATIONS}
+        out = wind(_wind_inputs(stations=dead), ctx())
+        assert out["speed"] == (None, Validity.INVALID_NO_DATA)
+        assert out["invalid_stations"] == 5
+
+    def test_wacko_speed(self):
+        out = wind(_wind_inputs(stations={"SMA": (500.0, 0.0, 5.0)}), ctx())
+        assert out["speed"] == (500.0, Validity.VALID_ERROR)
+
+
+class TestSunVisible:
+    def test(self):
+        assert sun_visible({"solar_temp": ri("s", 10.0), "air_temp": ri("a", 5.0)}, ctx()) is True
+        assert sun_visible({"solar_temp": ri("s", 0.0), "air_temp": ri("a", 1.7)}, ctx()) is False
+
+
+class TestWeatherServerLabel:
+    def _run(self, t, h, w, p):
+        return weather_server_label({"temperature": ri("t", t), "humidity": ri("h", h),
+                                     "wind": ri("w", w), "pressure": ri("p", p)}, ctx())
+
+    def test_identical(self):
+        assert self._run("SMA", "SMA", "SMA", "SMA") == "SMA"
+        assert self._run("Subaru", "Subaru", "Subaru", "Subaru") == "Subar"
+
+    def test_all_contain_sma(self):
+        assert self._run("SMAaux", "SMA", "SMA", "SMAaux") == "SMA"
+
+    def test_pairs(self):
+        assert self._run("SMA", "JCMT", "SMA", "JCMT") == "SM/JC"
+        assert self._run("Subaru", "JCMT", "JCMT", "Subaru") == "JC/SU"
+        assert self._run("CFHT", "JCMT", "CFHT", "JCMT") == "JC/CF"
+
+    def test_mix(self):
+        assert self._run("SMA", "JCMT", "Subaru", "CFHT") == "mix"
+
+
+class TestWeatherDataAge:
+    def _inputs(self, server="SMA", manual=0, getweather_age=10.0, **ages):
+        d = {"server": ri("s", server),
+             "manual": ResolvedInput("m", manual, Validity.VALID_GOOD, WALL_NOW - 100),
+             "getweather_ts": ri("g", WALL_NOW - getweather_age)}
+        for n in ("SMA", "UKIRT", "KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF"):
+            d[f"{n}_ts"] = ri(n, WALL_NOW - ages.get(n, 30.0))
+        return d
+
+    def test_sma(self):
+        assert weather_data_age(self._inputs(SMA=47), ctx()) == pytest.approx(47.0)
+
+    def test_station(self):
+        assert weather_data_age(self._inputs(server="Subaru", SUBARU=263), ctx()) == pytest.approx(263)
+
+    def test_manual_uses_flag_write_time(self):
+        assert weather_data_age(self._inputs(manual=1), ctx()) == pytest.approx(100.0)
+
+    def test_daemon_stale_is_error(self):
+        age, v = weather_data_age(self._inputs(getweather_age=721), ctx())
+        assert v == Validity.VALID_ERROR
+
+    def test_smaaux_unresolvable(self):
+        assert weather_data_age(self._inputs(server="SMAaux"), ctx()) == (None, Validity.INVALID_NO_DATA)
+
+
+class TestGensetActive:
+    def _run(self, c, clock, state, current):
+        return genset_active({"l1": ri("1", current), "l2": ri("2", 0.0), "l3": ri("3", 0.0)},
+                             ctx(clock=clock, state=state))
+
+    def test_hysteresis(self):
+        clock, state = FakeClock(), {}
+        assert self._run(None, clock, state, 5.0) == (False, Validity.VALID_GOOD)
+        clock.advance(120)
+        assert self._run(None, clock, state, 5.0)[0] is False
+        clock.advance(1)
+        assert self._run(None, clock, state, 5.0) == (True, Validity.VALID_WARNING)
+        assert self._run(None, clock, state, 0.0) == (False, Validity.VALID_GOOD)
+        assert "nonzero_since" not in state
+
+
+class TestTauStale:
+    @pytest.mark.parametrize("hours, margin, ut, stale", [
+        (16.5, 1.0, 16.5, False),
+        (15.4, 1.0, 16.5, True),
+        (23.8, 1.0, 0.3, False),    # window crosses midnight: 23.3..0.3
+        (22.0, 1.0, 0.3, True),
+        (0.2, 1.0, 0.3, False),
+        (-1e8 / 60, 0.5, 16.5, True),
+    ])
+    def test_ut_stale(self, hours, margin, ut, stale):
+        assert _ut_stale(hours, margin, ut) is stale
+
+    def test_uses_wall_clock_ut(self):
+        ut_min = (WALL_NOW % 86400) / 60
+        c = ctx(params={"margin_h": 1.0})
+        assert tau_stale({"tstamp": ri("t", ut_min)}, c) == (False, Validity.VALID_GOOD)
+        assert tau_stale({"tstamp": ri("t", ut_min - 90)}, c) == (True, Validity.VALID_WARNING)
+
+
+class TestTauStandout:
+    def _run(self, tau, freq):
+        return tau_standout({"tau": ri("t", tau), "rest_freq": ri("f", np.array([freq, freq]))}, ctx())
+
+    @pytest.mark.parametrize("tau, freq, v", [
+        (0.24, 230e9, Validity.VALID_GOOD), (0.45, 230e9, Validity.VALID_WARNING),
+        (0.24, 345e9, Validity.VALID_WARNING), (0.15, 690e9, Validity.VALID_WARNING),
+        (-0.1, 230e9, Validity.VALID_ERROR), (10.0, 230e9, Validity.VALID_ERROR),
+    ])
+    def test(self, tau, freq, v):
+        assert self._run(tau, freq)[1] == v

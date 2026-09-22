@@ -969,3 +969,376 @@ def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     if t <= DEWAR_WACKO_K:
         return t, Validity.VALID_ERROR
     return t
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port — weather / array environment (goals/monsubsys_arrayMonitor.md)
+#
+# All *_METEOROLOGY_X structs live on DSM:colossus and are rewritten every
+# cycle even when a station is dead, so their SMAX timestamps say nothing;
+# each struct's SERVER_TIMESTAMP_L *value* is the real freshness signal.
+# ---------------------------------------------------------------------------
+
+MPH_TO_MPS = 0.44704
+"""``weather.h`` ``MPH_TO_METER_PER_SEC``."""
+
+WIND_METER_FROZEN_CUTOFF_MPH = 0.20
+"""``arrayMonitor.c``: a wind speed below this means a frozen anemometer."""
+
+WIND_STATION_STALE_S = 1800.0
+"""``computeMedianWindspeed()``: stations older than this are excluded."""
+
+WIND_SPEED_WACKO_MPS = 150.0 * MPH_TO_MPS
+"""``arrayMonitor.c:1587``: speeds above 150 mph are shown as "wacko"."""
+
+WIND_AVERAGE_STATIONS = ("UH88", "IRTF", "UKIRT", "CFHT", "SUBARU")
+"""``computeMedianWindspeed()`` station order (VLBA deliberately excluded)."""
+
+WIND_DIRECT_STATIONS = ("UKIRT", "CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
+"""Stations ``DSM_WIND_SERVER_C7`` can name directly (``arrayMonitor.c:386-417``).
+
+Matched in this order by case-insensitive substring, after ``"SMA"``
+(which the C checks first, so ``"SMAaux"`` also counts as SMA).
+"""
+
+SUNSHINE_CRITERION_C = 4.0
+"""``weather.h`` ``SUNSHINE_CRITERION``: solar minus air temperature, degC."""
+
+WEATHER_STALE_S = 1200.0
+"""``arrayMonitor.c`` ``STALE_SECONDS``: weather source data age limit."""
+
+GETWEATHER_STALE_S = 720.0
+"""``arrayMonitor.c:1526``: ``DSM_GETWEATHER_TIMESTAMP_L`` (weather daemon) limit."""
+
+WEATHER_TIMESTAMP_STATIONS = ("UKIRT", "KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF")
+"""Non-SMA sources ``DSM_TEMPERATURE_SERVER_C7`` can name (``arrayMonitor.c:1375-1520``)."""
+
+GENSET_ACTIVE_AFTER_S = 120.0
+"""``arrayMonitor.c:711-721``: nonzero generator current for this long => active.
+
+The C counts 120 refresh cycles (~1 s each); this port uses elapsed time
+so the result doesn't depend on the engine's interval.
+"""
+
+
+def _circular_mean_deg(angles) -> float:
+    """Mean direction of ``angles`` (degrees), in [0, 360).
+
+    The C averages wind directions arithmetically, so 350° and 10°
+    average to 180°; a vector mean gives the intended 0°.
+    """
+    rad = np.radians(np.asarray(angles, dtype=float))
+    mean = float(np.degrees(np.arctan2(np.sin(rad).mean(), np.cos(rad).mean())) % 360.0)
+    # arctan2 of a tiny negative sine gives -1e-15 deg, which % 360 turns
+    # into 359.999...; snap that back to 0.
+    return 0.0 if mean > 360.0 - 1e-9 else mean
+
+
+def _station_wind(inputs, name, ctx):
+    """``(speed_mph, direction_deg, fresh)`` for one station's ``<name>_*`` inputs."""
+    speed = float(inputs[f"{name}_speed"].value)
+    direction = float(inputs[f"{name}_dir"].value)
+    fresh = abs(_age_s(inputs[f"{name}_ts"].value, ctx)) <= WIND_STATION_STALE_S
+    return speed, direction, fresh
+
+
+@compute_function("wind")
+def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
+    """Summit wind speed/direction with frozen-meter fallback (``arrayMonitor.c:372-419, 2715-2783``).
+
+    Source selection follows ``DSM_WIND_SERVER_C7``:
+
+    * contains ``"SMA"``: the SMA station, unless its speed is at or
+      below :data:`WIND_METER_FROZEN_CUTOFF_MPH` (frozen) or its
+      ``SERVER_TIMESTAMP_L`` is older than :data:`WIND_STATION_STALE_S`
+      (not in the C, which had no SMA freshness check here), in which
+      case the cross-station average is used instead.
+    * names a station in :data:`WIND_DIRECT_STATIONS`: that station;
+      UKIRT has no fallback, the others fall back to the average when
+      below the cutoff, as in the C.
+    * anything else (KECK, JCMT, empty): no wind; the C left the
+      variables uninitialised.
+
+    The cross-station average (``computeMedianWindspeed``, despite the
+    name a mean) uses :data:`WIND_AVERAGE_STATIONS`, excluding any
+    station below the cutoff or with ``SERVER_TIMESTAMP_L`` older than
+    :data:`WIND_STATION_STALE_S`.
+
+    Deliberate differences from the C: the direction average is a
+    circular mean (:func:`_circular_mean_deg`); speeds are output in
+    m/s (SMA reports m/s; the other stations are treated as mph and
+    converted, as the C does); a fallback with no valid station is
+    no-data rather than 0.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"server"``; ``"SMA_speed"``, ``"SMA_dir"``, ``"SMA_ts"``; and
+        ``"<ST>_speed"``, ``"<ST>_dir"``, ``"<ST>_ts"`` for every station
+        in :data:`WIND_DIRECT_STATIONS`.
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    dict
+        Roles ``"speed"`` (m/s), ``"direction"`` (deg), ``"source"``
+        (``"SMA"``, a station name, ``"average"``, or ``"none"``) and
+        ``"invalid_stations"`` (count excluded from the average).
+    """
+    valid, invalid = [], 0
+    for st in WIND_AVERAGE_STATIONS:
+        speed, direction, fresh = _station_wind(inputs, st, ctx)
+        if speed < WIND_METER_FROZEN_CUTOFF_MPH or not fresh:
+            invalid += 1
+        else:
+            valid.append((speed * MPH_TO_MPS, direction))
+
+    def average():
+        if not valid:
+            return None, None, "none"
+        return (float(np.mean([s for s, _ in valid])),
+                _circular_mean_deg([d for _, d in valid]), "average")
+
+    server = str(inputs["server"].value).upper()
+    if "SMA" in server:
+        speed_mps = float(inputs["SMA_speed"].value)
+        sma_fresh = abs(_age_s(inputs["SMA_ts"].value, ctx)) <= WIND_STATION_STALE_S
+        if sma_fresh and speed_mps / MPH_TO_MPS > WIND_METER_FROZEN_CUTOFF_MPH:
+            speed, direction, source = speed_mps, float(inputs["SMA_dir"].value), "SMA"
+        else:
+            speed, direction, source = average()
+    else:
+        station = next((st for st in WIND_DIRECT_STATIONS if st in server), None)
+        if station is None:
+            speed, direction, source = None, None, "none"
+        else:
+            mph, direction, _ = _station_wind(inputs, station, ctx)
+            speed, source = mph * MPH_TO_MPS, station
+            if station != "UKIRT" and mph < WIND_METER_FROZEN_CUTOFF_MPH:
+                speed, direction, source = average()
+
+    if speed is None:
+        return {"speed": (None, Validity.INVALID_NO_DATA),
+                "direction": (None, Validity.INVALID_NO_DATA),
+                "source": ("none", Validity.VALID_ERROR),
+                "invalid_stations": invalid}
+    speed_out = (speed, Validity.VALID_ERROR) if not 0 <= speed <= WIND_SPEED_WACKO_MPS else speed
+    dir_out = (direction, Validity.VALID_ERROR) if not -99 < direction <= 400 else direction
+    return {"speed": speed_out, "direction": dir_out, "source": source,
+            "invalid_stations": invalid}
+
+
+@compute_function("sun_visible")
+def sun_visible(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
+    """Sunshine indicator (``arrayMonitor.c:770-778``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"solar_temp"`` and ``"air_temp"``: ``SMA_METEOROLOGY_X``
+        ``SOLAR_TEMP_F`` and ``TEMP_F`` (degC).
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    bool
+        True if the solar sensor reads more than
+        :data:`SUNSHINE_CRITERION_C` above the air temperature.
+    """
+    return float(inputs["solar_temp"].value) - float(inputs["air_temp"].value) > SUNSHINE_CRITERION_C
+
+
+def _server_is(server: str, name: str) -> bool:
+    """The C's ``present()``: a case-sensitive substring test."""
+    return name in server
+
+
+@compute_function("weather_server_label")
+def weather_server_label(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Summarise the four weather-source servers (``printWeatherServer``, 2555-2598).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"temperature"``, ``"humidity"``, ``"wind"``, ``"pressure"``:
+        the ``DSM_*_SERVER_C7`` strings.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        First matching rule: all identical -> first 5 characters; all
+        contain SMA -> ``"SMA"``; each contains one of a pair ->
+        ``"SM/JC"``, ``"JC/SU"``, ``"SM/SU"``, ``"SM/CF"``, ``"JC/CF"``;
+        else ``"mix"``.
+    """
+    servers = [str(inputs[k].value) for k in ("temperature", "humidity", "wind", "pressure")]
+    if all(s == servers[0] for s in servers):
+        return servers[0][:5].strip()
+    for label, names in (("SMA", ("SMA",)), ("SM/JC", ("SMA", "JCMT")),
+                         ("JC/SU", ("Subaru", "JCMT")), ("SM/SU", ("Subaru", "SMA")),
+                         ("SM/CF", ("CFHT", "SMA")), ("JC/CF", ("CFHT", "JCMT"))):
+        if all(any(_server_is(s, n) for n in names) for s in servers):
+            return label
+    return "mix"
+
+
+@compute_function("weather_data_age")
+def weather_data_age(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Age of the temperature source's data (``arrayMonitor.c:1352-1543``).
+
+    Resolves the source like the C: manual weather
+    (``DSM_MANUAL_WEATHER_FLAG_S == 1``) uses that flag's own write
+    time; otherwise ``DSM_TEMPERATURE_SERVER_C7`` picks the SMA struct
+    or a station in :data:`WEATHER_TIMESTAMP_STATIONS`, whose
+    ``SERVER_TIMESTAMP_L`` is used. ``"SMAaux"`` would need
+    ``RM_AUX_WEATHER_TIMESTAMP_L`` on acc6, which is neither in SMAX nor
+    declared, so it resolves to no data. Only the temperature source
+    matters: the C resolves all four but tests only this one.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"server"``, ``"manual"``, ``"getweather_ts"``, ``"SMA_ts"``,
+        and ``"<ST>_ts"`` for every station in
+        :data:`WEATHER_TIMESTAMP_STATIONS`.
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    float or tuple of (float, Validity)
+        Age in seconds; the output's ``err_high`` applies
+        :data:`WEATHER_STALE_S`. ``(age, VALID_ERROR)`` if the weather
+        daemon heartbeat is older than :data:`GETWEATHER_STALE_S` (C:
+        "d.stl"); ``(None, INVALID_NO_DATA)`` if the source can't be
+        resolved.
+    """
+    manual = _is_one(inputs["manual"].value)
+    if manual:
+        ts = inputs["manual"].timestamp
+    else:
+        server = str(inputs["server"].value)
+        if "SMAaux" in server:
+            ts = None
+        elif "SMA" in server:
+            ts = inputs["SMA_ts"].value
+        else:
+            st = next((s for s in WEATHER_TIMESTAMP_STATIONS if s in server.upper()), None)
+            ts = inputs[f"{st}_ts"].value if st else None
+    if ts is None:
+        return None, Validity.INVALID_NO_DATA
+    age = _age_s(ts, ctx)
+    if not manual and _age_s(inputs["getweather_ts"].value, ctx) > GETWEATHER_STALE_S:
+        return age, Validity.VALID_ERROR
+    return age
+
+
+@compute_function("genset_active")
+def genset_active(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Backup generator running (``arrayMonitor.c:711-721``, with hysteresis).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"l1"``, ``"l2"``, ``"l3"``: ``DSM_IWATCH_DATA_X``
+        ``CURRENTL{1,2,3}_F``.
+    ctx : ComputeContext
+        ``ctx.state["nonzero_since"]`` holds the monotonic ``ctx.clock``
+        time the current run of nonzero readings began.
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_WARNING)`` once any phase current has been
+        nonzero for more than :data:`GENSET_ACTIVE_AFTER_S`; otherwise
+        ``(False, VALID_GOOD)``.
+    """
+    now = ctx.clock()
+    if any(float(inputs[k].value) != 0.0 for k in ("l1", "l2", "l3")):
+        since = ctx.state.setdefault("nonzero_since", now)
+        active = now - since > GENSET_ACTIVE_AFTER_S
+    else:
+        ctx.state.pop("nonzero_since", None)
+        active = False
+    return active, (Validity.VALID_WARNING if active else Validity.VALID_GOOD)
+
+
+def _ut_stale(hours: float, margin: float, ut_hours: float) -> bool:
+    """Port of ``computeUTstale()`` (``arrayMonitor.c:2600-2608``).
+
+    ``hours`` is the measurement time as UT hours of day; it is stale if
+    older than ``ut_hours - margin``, with the C's handling of the
+    window crossing midnight.
+    """
+    lo = ut_hours - margin
+    if lo < 0:
+        if hours < ut_hours + 0.01:
+            return False
+        lo += 24
+    return hours < lo
+
+
+@compute_function("tau_stale")
+def tau_stale(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Whether a CSO/tipper tau measurement is stale (``arrayMonitor.c:1603-1609``).
+
+    ``DSM_CSO_*_TAU_TSTAMP_L`` is *minutes of the UT day*, not a Unix
+    time. The C compares it against ``RM_UTC_HOURS_F`` of a reference
+    antenna; this port uses the engine's wall-clock UT, which is the
+    same quantity without depending on an antenna being up.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"tstamp"``: the measurement's minute of the UT day.
+    ctx : ComputeContext
+        ``ctx.params["margin_h"]``: 1.0 for 225 GHz, 0.5 for 350 um.
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_WARNING)`` if stale, else ``(False, VALID_GOOD)``.
+    """
+    ut_hours = (ctx.wall_clock() % 86400.0) / 3600.0
+    stale = _ut_stale(float(inputs["tstamp"].value) / 60.0, float(ctx.params["margin_h"]), ut_hours)
+    return stale, (Validity.VALID_WARNING if stale else Validity.VALID_GOOD)
+
+
+def _standout_tau(freq_hz: float) -> float:
+    """``STANDOUT_TAU()`` (``arrayMonitor.c:2785-2790``): tau above which to highlight."""
+    if freq_hz < 300e9:
+        return 0.40
+    if freq_hz < 600e9:
+        return 0.20
+    return 0.10
+
+
+@compute_function("tau_standout")
+def tau_standout(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Tau with a frequency-dependent highlight (``arrayMonitor.c:1611-1655``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"tau"``; ``"rest_freq"``: ``DSM_REQUESTED_FREQUENCY_V2_D``
+        (element 0, as the C uses ``restFrequency[0]``).
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    tuple of (float, Validity)
+        ``VALID_ERROR`` if tau is outside [0, 9.99] (C: "wack");
+        ``VALID_WARNING`` above :func:`_standout_tau` for the observing
+        frequency; else ``VALID_GOOD``. (The C tested the CSO tau even
+        when showing GFS; this port tests the value it reports.)
+    """
+    tau = float(inputs["tau"].value)
+    if not 0.0 <= tau <= 9.99:
+        return tau, Validity.VALID_ERROR
+    limit = _standout_tau(float(_array_elem(inputs["rest_freq"].value, 0)))
+    return tau, (Validity.VALID_WARNING if tau > limit else Validity.VALID_GOOD)
