@@ -208,6 +208,24 @@
         {"label": "Wind (m/s)",     "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
         {"label": "Wind dir (deg)", "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360}
       ]
+    },
+    {
+      "type": "grid",
+      "title": "Weather (computed)",
+      "columns": 3,
+      "cells": [
+        {"label": "Wind (m/s)",           "point": "monitorsystem:weather:wind_speed", "format": "{:.1f}"},
+        {"label": "Wind dir (deg)",       "point": "monitorsystem:weather:wind_direction", "format": "{:.0f}"},
+        {"label": "Wind source",          "point": "monitorsystem:weather:wind_source"},
+        {"label": "Wind stations excluded", "point": "monitorsystem:weather:wind_invalid_stations"},
+        {"label": "Weather servers",      "point": "monitorsystem:weather:server_label"},
+        {"label": "Weather data age (s)", "point": "monitorsystem:weather:data_age_s", "format": "{:.0f}"},
+        {"label": "Sun visible",          "point": "monitorsystem:weather:sun_visible"},
+        {"label": "Tau225 GFS",           "point": "monitorsystem:weather:gfs_tau225", "format": "{:.3f}"},
+        {"label": "Tau225 stale",         "point": "monitorsystem:weather:tau225_stale"},
+        {"label": "Tau350 stale",         "point": "monitorsystem:weather:tau350_stale"},
+        {"label": "Generator running",    "point": "monitorsystem:array:genset_active"}
+      ]
     }
   ]
 }

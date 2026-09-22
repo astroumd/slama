@@ -12336,6 +12336,11 @@
         "warn_low": 6,
         "err_low": 4
       },
+      "genset_active": {
+        "description": "Backup generator running: iWatch phase current nonzero for > 120 s (arrayMonitor.c gensetActive), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "boolean"
+      },
       "focus_curve_count": {
         "description": "Number of antennas with a fresh chopper status and focus curve on (arrayMonitor.c chopperStatus[0]), from slama.monitor.compute",
         "size": "1",
@@ -12475,6 +12480,69 @@
             "err_high": 5.2
           }
         }
+      }
+    },
+    "weather": {
+      "wind_speed": {
+        "description": "Summit wind speed: SMA station, or cross-station average if frozen (arrayMonitor.c windspeed), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "m/s",
+        "warn_high": 13.4
+      },
+      "wind_direction": {
+        "description": "Summit wind direction matching wind_speed's source (circular mean when averaged), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "deg"
+      },
+      "wind_source": {
+        "description": "Where wind_speed came from: SMA, a station name, average, or none, from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "string",
+        "state_validity": {
+          "SMA": "GOOD",
+          "average": "WARNING",
+          "none": "ERROR"
+        },
+        "unknown_state": "GOOD"
+      },
+      "wind_invalid_stations": {
+        "description": "Number of the 4 averaging stations (UH88, IRTF, CFHT, SUBARU) excluded as frozen or older than 1800 s, from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "integer"
+      },
+      "sun_visible": {
+        "description": "SMA solar sensor more than 4 C above air temperature (arrayMonitor.c sunshine asterisk), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "boolean"
+      },
+      "server_label": {
+        "description": "Summary of the temperature/humidity/wind/pressure source servers (arrayMonitor.c printWeatherServer), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "string"
+      },
+      "data_age_s": {
+        "description": "Age of the temperature source's data; ERROR if the weather daemon (DSM_GETWEATHER_TIMESTAMP_L) is > 720 s stale (arrayMonitor.c d.stl/s.stl), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s",
+        "err_high": 1200
+      },
+      "tau225_stale": {
+        "description": "CSO/tipper 225 GHz tau older than 1 h of UT (arrayMonitor.c computeUTstale), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "boolean"
+      },
+      "tau350_stale": {
+        "description": "CSO 350 micron tau older than 0.5 h of UT (arrayMonitor.c computeUTstale), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "boolean"
+      },
+      "gfs_tau225": {
+        "description": "GFS forecast 225 GHz tau (weather:forecast:gfs:tau225), no-data if > 1800 s old; WARNING above the observing-frequency standout tau (arrayMonitor.c STANDOUT_TAU), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float"
       }
     },
     "rx": {
