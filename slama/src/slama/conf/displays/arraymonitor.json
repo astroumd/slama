@@ -59,7 +59,15 @@
         {"label": "Sun distance (deg)",  "points": "monitorsystem:antenna:{ant}:sun_distance", "format": "{:.1f}"},
         {"label": "Chopper",             "points": "monitorsystem:antenna:{ant}:chopper_status"},
         {"label": "Deice",               "points": "monitorsystem:antenna:{ant}:deice_status"},
-        {"label": "Clock offset (s)",    "points": "monitorsystem:antenna:{ant}:clock_offset_s", "format": "{:+.2f}"}
+        {"label": "Clock offset (s)",    "points": "monitorsystem:antenna:{ant}:clock_offset_s", "format": "{:+.2f}"},
+        {"label": "Rx low",              "points": "monitorsystem:antenna:{ant}:rx_low_label"},
+        {"label": "Rx high",             "points": "monitorsystem:antenna:{ant}:rx_high_label"},
+        {"label": "LO (g1-y1/g2-y2)",    "points": "monitorsystem:antenna:{ant}:lo_status"},
+        {"label": "LO locked for band",  "points": "monitorsystem:antenna:{ant}:lo_lock_ok"},
+        {"label": "YIG1 locked",         "points": "monitorsystem:antenna:{ant}:yig1_locked"},
+        {"label": "YIG2 locked",         "points": "monitorsystem:antenna:{ant}:yig2_locked"},
+        {"label": "Load",                "points": "monitorsystem:antenna:{ant}:hotload_position"},
+        {"label": "Dewar 4K (K)",        "points": "monitorsystem:antenna:{ant}:dewar_4k_temp", "format": "{:.2f}"}
       ]
     },
     {
@@ -67,7 +75,9 @@
       "title": "Array (computed)",
       "cells": [
         {"label": "# Antennas online",        "point": "monitorsystem:array:antennas_online"},
-        {"label": "# Antennas focus curve on", "point": "monitorsystem:array:focus_curve_count"}
+        {"label": "# Antennas focus curve on", "point": "monitorsystem:array:focus_curve_count"},
+        {"label": "Rx 1 (low) line",           "point": "monitorsystem:rx:1:line_name"},
+        {"label": "Rx 2 (high) line",          "point": "monitorsystem:rx:2:line_name"}
       ]
     },
     {

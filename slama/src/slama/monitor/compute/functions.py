@@ -687,3 +687,285 @@ def clock_offset(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> float
         ref = ctx.wall_clock()
     offset = (ref % 86400.0) - float(inputs["utc_hr"].value) * 3600.0
     return (offset + 43200.0) % 86400.0 - 43200.0
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port — receiver / LO (goals/monsubsys_arrayMonitor.md)
+#
+# Antenna receiver types (/global/configFiles/rxtype.conf, per Marc
+# 2026-09-22): wSMA on 1, 7, 8; old Tune6 receivers on 2-6. The wSMA LO
+# lock (wsmaSelection/wsmaIsLocked) is not ported yet, so LO points exist
+# only for the Tune6 antennas in computations.json.
+# ---------------------------------------------------------------------------
+
+PHASE_LOCK_IS_STALE_S = 90.0
+"""``arrayMonitor.c`` ``PHASE_LOCK_IS_STALE``: gunn-lock heartbeat limit."""
+
+HI_LO_FREQ_CUTOFF_HZ = 600.0e9
+"""``receiverMonitor.h`` ``HI_LO_FREQ_CUTOFF_GHZ`` in Hz."""
+
+LAKESHORE_STALE_S = 60.0
+"""``arrayMonitor.c`` ``LAKESHORE_STALE``: dewar temperature heartbeat limit."""
+
+DEWAR_WACKO_K = 2.0
+"""``arrayMonitor.c:2296-2326``: a 4K reading at or below this is not physical."""
+
+SMA_N_CORR_SEGMENTS = 8
+"""Correlator chunk count; ``DSM_REQUESTED_CHUNK_V2_S`` is valid in 1..8."""
+
+RX_CODE_LABELS = {"A1": "230", "E": "240", "B1": "345", "C": "400"}
+"""``smaglobal.h`` ``RXCODE_*`` -> band label (``arrayMonitor.c:1143-1147``)."""
+
+# RM_TUNE6_COMMAND_BUSY_S codes (global/include/tune6status.h)
+TUNE6_BUSY_LABELS = {1: "tuningL", 2: "tuningH", 3: "LO adjL", 4: "LO adjH"}
+"""Busy codes that replace the whole LO field (``arrayMonitor.c:2163-2175``)."""
+_TUNE6_IV_SWEEP = 6
+_TUNE6_IV_SWEEP_HIGH_FREQ = 7
+_TUNE6_PB_SWEEP = 8
+_TUNE6_PB_SWEEP_HIGH_FREQ = 9
+_TUNE6_LINEAR_LOAD = 12
+_TUNE6_MAX_CODE = 12
+
+HOTLOAD_LABELS = {1: "Sky", 3: "Sky", 2: "Amb", 4: "Amb", 5: "Mov"}
+"""``RM_UNHEATEDLOAD_STATUS_S`` -> label (``printNewHotloadPosition``, 2808-2831)."""
+
+
+def _tri_state(v) -> str:
+    """``printTriState``: 1 -> "1", 0 -> "0", anything else -> "w"."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return "w"
+    return "1" if f == 1 else ("0" if f == 0 else "w")
+
+
+def _is_one(v) -> bool:
+    """True iff ``v`` is numerically 1 (the C's ``== 1`` lock tests)."""
+    try:
+        return float(v) == 1
+    except (TypeError, ValueError):
+        return False
+
+
+@compute_function("yig_locked")
+def yig_locked(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """YIG lock flag (``arrayMonitor.c:486-489``: ``(RM_YIGn_LOCKED_S == 1)``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"locked"``: ``RM_YIG1_LOCKED_S`` or ``RM_YIG2_LOCKED_S``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_GOOD)`` if locked, else ``(False,
+        VALID_WARNING)`` — unlocked is normal for an unused receiver,
+        so the band-aware alarm is left to :func:`lo_lock_ok`.
+    """
+    locked = _is_one(inputs["locked"].value)
+    return locked, (Validity.VALID_GOOD if locked else Validity.VALID_WARNING)
+
+
+@compute_function("lo_status")
+def lo_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Tune6 LO status field (``arrayMonitor.c:2160-2225``).
+
+    Busy codes 1-4 replace the whole field (``tuningL``, ``tuningH``,
+    ``LO adjL``, ``LO adjH``). Otherwise the field is
+    ``<left>/<right>``: left is ``IV`` (busy 6), ``PB`` (8), or
+    ``gunn1-yig1``; right is ``IV`` (7), ``PB`` (9), or ``gunn2-yig2``,
+    each lock shown as ``1``/``0``/``w`` (``printTriState``).
+
+    The C tests ``PB_SWEEP`` (8) on *both* sides and never
+    ``PB_SWEEP_HIGH_FREQ`` (9); this port uses 9 on the right, as
+    intended. A busy code outside 0..12 (garbage — common in the
+    2026-09-22 snapshot) gives ``"?"`` rather than the C's silent
+    fall-through.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"busy"``, ``"gunn1"``, ``"gunn2"``, ``"yig1"``, ``"yig2"``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    tuple of (str, Validity)
+        ``VALID_ERROR`` for ``"?"``; ``VALID_WARNING`` while tuning or
+        sweeping, or if any lock is not 1; ``VALID_GOOD`` for
+        ``"1-1/1-1"``.
+    """
+    busy_label = _label(inputs["busy"].value, {i: str(i) for i in range(_TUNE6_MAX_CODE + 1)})
+    if busy_label == "?":
+        return "?", Validity.VALID_ERROR
+    busy = int(busy_label)
+    if busy in TUNE6_BUSY_LABELS:
+        return TUNE6_BUSY_LABELS[busy], Validity.VALID_WARNING
+
+    g1, y1, g2, y2 = (_tri_state(inputs[k].value) for k in ("gunn1", "yig1", "gunn2", "yig2"))
+    left = {_TUNE6_IV_SWEEP: "IV", _TUNE6_PB_SWEEP: "PB"}.get(busy, f"{g1}-{y1}")
+    right = {_TUNE6_IV_SWEEP_HIGH_FREQ: "IV", _TUNE6_PB_SWEEP_HIGH_FREQ: "PB"}.get(busy, f"{g2}-{y2}")
+    label = f"{left}/{right}"
+    return label, (Validity.VALID_GOOD if label == "1-1/1-1" else Validity.VALID_WARNING)
+
+
+@compute_function("lo_lock_ok")
+def lo_lock_ok(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Whether the LO is locked for the observing band (``arrayMonitor.c:2152-2158``).
+
+    The C raises ``LO_FAULT`` unless all of gunn1, yig1 and gunn2 are
+    locked, or the chain that the rest frequency needs is locked: above
+    :data:`HI_LO_FREQ_CUTOFF_HZ`, gunn2 + yig1; below it, gunn1 + yig1.
+    The gunn1 lock heartbeat (``RM_GUNN1_LOCKED_TIMESTAMP_L``) older
+    than :data:`PHASE_LOCK_IS_STALE_S` is also an error (the C
+    highlights it).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"gunn1"``, ``"gunn2"``, ``"yig1"``, ``"gunn1_ts"``, and
+        ``"rest_freq"`` (``DSM_REQUESTED_FREQUENCY_V2_D``; element
+        ``0``, as the C uses ``restFrequency[0]``).
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(ok, VALID_GOOD)`` or ``(ok, VALID_ERROR)``; ``VALID_ERROR``
+        whenever the heartbeat is stale, regardless of ``ok``.
+    """
+    g1, g2, y1 = (_is_one(inputs[k].value) for k in ("gunn1", "gunn2", "yig1"))
+    rest = float(_array_elem(inputs["rest_freq"].value, 0))
+    ok = (g1 and y1 and g2) \
+        or (rest > HI_LO_FREQ_CUTOFF_HZ and g2 and y1) \
+        or (rest < HI_LO_FREQ_CUTOFF_HZ and g1 and y1)
+    stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
+    return ok, (Validity.VALID_GOOD if ok and not stale else Validity.VALID_ERROR)
+
+
+@compute_function("hotload_position")
+def hotload_position(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Hot/ambient load position label (``printNewHotloadPosition``, 2808-2831; caller 2333-2343).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"status"``: ``RM_UNHEATEDLOAD_STATUS_S``; ``"busy"``:
+        ``RM_TUNE6_COMMAND_BUSY_S``; optional ``"optics_board"``:
+        ``RM_OPTICS_BOARD_PRESENT_S`` (the C checks it only for
+        antennas without a wSMA load).
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"NoB"`` if the optics board is absent; ``"LinLoad"`` while
+        Tune6 runs a linear-load measurement (C: "mov", renamed so it
+        is not a case-only twin of ``"Mov"``); ``"Sky"``, ``"Amb"``,
+        ``"Mov"`` from :data:`HOTLOAD_LABELS`; otherwise ``"?"`` (C:
+        "Wac"). Validity comes from the output's ``state_validity``.
+    """
+    if "optics_board" in inputs and _label(inputs["optics_board"].value, {0: "0"}) == "0":
+        return "NoB"
+    if _label(inputs["busy"].value, {_TUNE6_LINEAR_LOAD: "x"}) == "x":
+        return "LinLoad"
+    return _label(inputs["status"].value, HOTLOAD_LABELS)
+
+
+@compute_function("rx_label")
+def rx_label(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Receiver band label from an active-receiver code (``arrayMonitor.c:1138-1148``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"code"``: ``RM_ACTIVE_LOW_RECEIVER_C10`` or
+        ``RM_ACTIVE_HIGH_RECEIVER_C10``.
+    ctx : ComputeContext
+        ``ctx.params["default"]``: label for an unrecognised code
+        (the C uses ``"A"`` for the low slot, ``"B"`` for the high).
+
+    Returns
+    -------
+    str
+        ``"230"``, ``"240"``, ``"345"``, ``"400"``, or the default.
+    """
+    return RX_CODE_LABELS.get(str(inputs["code"].value).strip()[:9], ctx.params["default"])
+
+
+@compute_function("line_name")
+def line_name(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Spectral line label for one receiver slot (``arrayMonitor.c:1181-1201``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"names"``: ``DSM_AS_IFLO_LINE_NAME_V2_C41``; ``"chunks"``:
+        ``DSM_REQUESTED_CHUNK_V2_S``; ``"mrg_locked"``:
+        ``MRG_CONTROL_X:YIG_LOCKED_V2_S``. All are 2-element vectors.
+    ctx : ComputeContext
+        ``ctx.params["index"]``: 0 for the low receiver slot, 1 for
+        the high.
+
+    Returns
+    -------
+    tuple of (str, Validity)
+        ``("YIG Unlkd", VALID_WARNING)`` if the MRG YIG is unlocked;
+        otherwise the line name (at most 12 characters), falling back
+        to ``"sNN"`` for a valid correlator chunk when the name is
+        empty or ``"unknown"``, else ``""``; ``VALID_GOOD``.
+    """
+    idx = int(ctx.params["index"])
+    if not _is_one(_array_elem(inputs["mrg_locked"].value, idx)):
+        return "YIG Unlkd", Validity.VALID_WARNING
+    name = str(_array_elem(inputs["names"].value, idx)).strip()[:12]
+    if name in ("", "unknown"):
+        chunk = int(_array_elem(inputs["chunks"].value, idx))
+        name = f"s{chunk:02d}" if 0 < chunk <= SMA_N_CORR_SEGMENTS else ""
+    return name, Validity.VALID_GOOD
+
+
+@compute_function("dewar_4k_temp")
+def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Dewar 4K-stage temperature (``arrayMonitor.c:508-521, 2295-2326``).
+
+    Two input shapes, one per receiver type:
+
+    * Tune6: ``"temps"`` (``RM_DEWAR_TEMPS_V16_F``) indexed by
+      ``ctx.params["sensor"]`` (0-based; ``dewarTemp.conf`` column
+      ``ch4`` minus 1), gated by ``"ts"`` (``RM_LAKESHORE_TIMESTAMP_L``)
+      against :data:`LAKESHORE_STALE_S`.
+    * wSMA: ``"temp"`` (SMAX ``antenna:N:receiver:wsma:cryostat:
+      temperatures:4K-plate``); freshness is the engine's own
+      ``staleness_s`` on that input, as the C used its SMAX timestamp.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        See above.
+    ctx : ComputeContext
+        ``params["sensor"]`` for the Tune6 shape; wall clock for ``"ts"``.
+
+    Returns
+    -------
+    float or tuple of (float, Validity)
+        The temperature in K. ``(T, INVALID_NO_DATA)`` if the lakeshore
+        heartbeat is stale; ``(T, VALID_ERROR)`` if ``T <=``
+        :data:`DEWAR_WACKO_K` (C: "wac"); otherwise bare, so the
+        output's ``err_high`` (the ``dewarTemp.conf`` 4K limit) applies.
+    """
+    if "temps" in inputs:
+        t = float(_array_elem(inputs["temps"].value, int(ctx.params["sensor"])))
+        if _age_s(inputs["ts"].value, ctx) > LAKESHORE_STALE_S:
+            return t, Validity.INVALID_NO_DATA
+    else:
+        t = float(inputs["temp"].value)
+    if t <= DEWAR_WACKO_K:
+        return t, Validity.VALID_ERROR
+    return t
