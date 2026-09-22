@@ -8929,11 +8929,6 @@
           },
           "description": "Dada on all physical receivers and receiver chains",
           "wsma": {
-            "<removed>": {
-              "description": "",
-              "size": "",
-              "smax_type": ""
-            },
             "cryostat": {
               "compressor": {
                 "compressor_control": {
