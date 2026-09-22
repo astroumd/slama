@@ -630,7 +630,7 @@ class TestDewar4kTemp:
 # arrayMonitor.c port: weather / array environment
 # ---------------------------------------------------------------------------
 
-STATIONS = ("SMA", "UKIRT", "CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
+STATIONS = ("SMA", "CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
 
 
 def _wind_inputs(server="SMA", stations=None):
@@ -666,10 +666,10 @@ class TestWind:
 
     def test_average_excludes_frozen_and_stale_stations(self):
         out = wind(_wind_inputs(stations={
-            "SMA": (0.0, 0.0, 5.0), "UKIRT": (0.0, 0.0, 5.0), "CFHT": (30.0, 0.0, 99999),
+            "SMA": (0.0, 0.0, 5.0), "SUBARU": (0.0, 0.0, 5.0), "CFHT": (30.0, 0.0, 99999),
             "UH88": (20.0, 0.0, 5.0)}), ctx())
         assert out["invalid_stations"] == 2
-        assert out["speed"] == pytest.approx((20 + 10 + 10) / 3 * 0.44704)
+        assert out["speed"] == pytest.approx((20 + 10) / 2 * 0.44704)
 
     def test_circular_direction_mean(self):
         assert _circular_mean_deg([350, 10]) == pytest.approx(0.0, abs=1e-9)
@@ -679,9 +679,13 @@ class TestWind:
         assert out["source"] == "IRTF"
         assert out["speed"] == pytest.approx(16 * 0.44704)
 
-    def test_ukirt_has_no_fallback(self):
-        out = wind(_wind_inputs(server="UKIRT", stations={"UKIRT": (0.0, 0.0, 5.0)}), ctx())
-        assert out["source"] == "UKIRT"
+    def test_direct_station_frozen_falls_back(self):
+        out = wind(_wind_inputs(server="Subaru", stations={"SUBARU": (0.0, 0.0, 5.0)}), ctx())
+        assert out["source"] == "average"
+
+    def test_decommissioned_ukirt_server_is_no_data(self):
+        out = wind(_wind_inputs(server="UKIRT"), ctx())
+        assert out["speed"] == (None, Validity.INVALID_NO_DATA)
 
     def test_unknown_server_is_no_data(self):
         out = wind(_wind_inputs(server="JCMT"), ctx())
@@ -692,7 +696,7 @@ class TestWind:
         dead = {n: (0.0, 0.0, 5.0) for n in STATIONS}
         out = wind(_wind_inputs(stations=dead), ctx())
         assert out["speed"] == (None, Validity.INVALID_NO_DATA)
-        assert out["invalid_stations"] == 5
+        assert out["invalid_stations"] == 4
 
     def test_wacko_speed(self):
         out = wind(_wind_inputs(stations={"SMA": (500.0, 0.0, 5.0)}), ctx())
@@ -731,7 +735,7 @@ class TestWeatherDataAge:
         d = {"server": ri("s", server),
              "manual": ResolvedInput("m", manual, Validity.VALID_GOOD, WALL_NOW - 100),
              "getweather_ts": ri("g", WALL_NOW - getweather_age)}
-        for n in ("SMA", "UKIRT", "KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF"):
+        for n in ("SMA", "KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF"):
             d[f"{n}_ts"] = ri(n, WALL_NOW - ages.get(n, 30.0))
         return d
 

@@ -991,14 +991,20 @@ WIND_STATION_STALE_S = 1800.0
 WIND_SPEED_WACKO_MPS = 150.0 * MPH_TO_MPS
 """``arrayMonitor.c:1587``: speeds above 150 mph are shown as "wacko"."""
 
-WIND_AVERAGE_STATIONS = ("UH88", "IRTF", "UKIRT", "CFHT", "SUBARU")
-"""``computeMedianWindspeed()`` station order (VLBA deliberately excluded)."""
+WIND_AVERAGE_STATIONS = ("UH88", "IRTF", "CFHT", "SUBARU")
+"""``computeMedianWindspeed()`` station order (VLBA deliberately excluded).
 
-WIND_DIRECT_STATIONS = ("UKIRT", "CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
+UKIRT is omitted: the telescope has been decommissioned and its weather
+station no longer produces data (Marc, 2026-09-22).
+"""
+
+WIND_DIRECT_STATIONS = ("CFHT", "SUBARU", "UH88", "VLBA", "IRTF")
 """Stations ``DSM_WIND_SERVER_C7`` can name directly (``arrayMonitor.c:386-417``).
 
 Matched in this order by case-insensitive substring, after ``"SMA"``
-(which the C checks first, so ``"SMAaux"`` also counts as SMA).
+(which the C checks first, so ``"SMAaux"`` also counts as SMA). The C's
+UKIRT branch (no frozen fallback) is dropped with the decommissioned
+station; a server naming UKIRT now gives no wind.
 """
 
 SUNSHINE_CRITERION_C = 4.0
@@ -1010,7 +1016,7 @@ WEATHER_STALE_S = 1200.0
 GETWEATHER_STALE_S = 720.0
 """``arrayMonitor.c:1526``: ``DSM_GETWEATHER_TIMESTAMP_L`` (weather daemon) limit."""
 
-WEATHER_TIMESTAMP_STATIONS = ("UKIRT", "KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF")
+WEATHER_TIMESTAMP_STATIONS = ("KECK", "CFHT", "SUBARU", "JCMT", "UH88", "VLBA", "IRTF")
 """Non-SMA sources ``DSM_TEMPERATURE_SERVER_C7`` can name (``arrayMonitor.c:1375-1520``)."""
 
 GENSET_ACTIVE_AFTER_S = 120.0
@@ -1053,11 +1059,10 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
       ``SERVER_TIMESTAMP_L`` is older than :data:`WIND_STATION_STALE_S`
       (not in the C, which had no SMA freshness check here), in which
       case the cross-station average is used instead.
-    * names a station in :data:`WIND_DIRECT_STATIONS`: that station;
-      UKIRT has no fallback, the others fall back to the average when
-      below the cutoff, as in the C.
-    * anything else (KECK, JCMT, empty): no wind; the C left the
-      variables uninitialised.
+    * names a station in :data:`WIND_DIRECT_STATIONS`: that station,
+      falling back to the average when below the cutoff, as in the C.
+    * anything else (KECK, JCMT, the decommissioned UKIRT, empty): no
+      wind; the C left the variables uninitialised.
 
     The cross-station average (``computeMedianWindspeed``, despite the
     name a mean) uses :data:`WIND_AVERAGE_STATIONS`, excluding any
@@ -1115,7 +1120,7 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
         else:
             mph, direction, _ = _station_wind(inputs, station, ctx)
             speed, source = mph * MPH_TO_MPS, station
-            if station != "UKIRT" and mph < WIND_METER_FROZEN_CUTOFF_MPH:
+            if mph < WIND_METER_FROZEN_CUTOFF_MPH:
                 speed, direction, source = average()
 
     if speed is None:

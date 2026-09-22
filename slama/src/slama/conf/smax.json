@@ -12508,7 +12508,7 @@
         "unknown_state": "GOOD"
       },
       "wind_invalid_stations": {
-        "description": "Number of the 5 averaging stations (UH88, IRTF, UKIRT, CFHT, SUBARU) excluded as frozen or older than 1800 s, from slama.monitor.compute",
+        "description": "Number of the 4 averaging stations (UH88, IRTF, CFHT, SUBARU) excluded as frozen or older than 1800 s, from slama.monitor.compute",
         "size": "1",
         "smax_type": "integer"
       },

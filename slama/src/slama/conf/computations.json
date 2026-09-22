@@ -313,7 +313,7 @@
       }
     },
     {
-      "_comment": "DSM:colossus weather. Dead stations (UKIRT, CFHT) are no longer written at all, so wind/data_age use staleness_s null and check each struct's SERVER_TIMESTAMP_L value instead.",
+      "_comment": "DSM:colossus weather. Stations can stop being written entirely (CFHT since March 2026; UKIRT is decommissioned and not an input), so wind/data_age use staleness_s null and check each struct's SERVER_TIMESTAMP_L value instead.",
       "output": {
         "speed": "monitorsystem:weather:wind_speed",
         "direction": "monitorsystem:weather:wind_direction",
@@ -326,9 +326,6 @@
         "SMA_speed": "DSM:colossus:SMA_METEOROLOGY_X:WINDSPEED_F",
         "SMA_dir": "DSM:colossus:SMA_METEOROLOGY_X:WINDDIR_F",
         "SMA_ts": "DSM:colossus:SMA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
-        "UKIRT_speed": "DSM:colossus:UKIRT_METEOROLOGY_X:WINDSPEED_F",
-        "UKIRT_dir": "DSM:colossus:UKIRT_METEOROLOGY_X:WINDDIR_F",
-        "UKIRT_ts": "DSM:colossus:UKIRT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
         "CFHT_speed": "DSM:colossus:CFHT_METEOROLOGY_X:WINDSPEED_F",
         "CFHT_dir": "DSM:colossus:CFHT_METEOROLOGY_X:WINDDIR_F",
         "CFHT_ts": "DSM:colossus:CFHT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
@@ -375,7 +372,6 @@
         "manual": "DSM:colossus:DSM_MANUAL_WEATHER_FLAG_S",
         "getweather_ts": "DSM:colossus:DSM_GETWEATHER_TIMESTAMP_L",
         "SMA_ts": "DSM:colossus:SMA_METEOROLOGY_X:SERVER_TIMESTAMP_L",
-        "UKIRT_ts": "DSM:colossus:UKIRT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
         "KECK_ts": "DSM:colossus:KECK_METEOROLOGY_X:SERVER_TIMESTAMP_L",
         "CFHT_ts": "DSM:colossus:CFHT_METEOROLOGY_X:SERVER_TIMESTAMP_L",
         "SUBARU_ts": "DSM:colossus:SUBARU_METEOROLOGY_X:SERVER_TIMESTAMP_L",
