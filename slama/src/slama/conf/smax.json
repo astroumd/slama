@@ -12341,6 +12341,34 @@
         "size": "1",
         "smax_type": "boolean"
       },
+      "source_type_flags": {
+        "description": "Source-type letters from DSM_AS_SOURCE_TYPE_L bits 1/2/4/8 -> F/B/G/I (arrayMonitor.c 921-930), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "string"
+      },
+      "swarm_scan_status": {
+        "description": "SWARM scan state: SWARM, no dataCatcher, or SWARM offline (arrayMonitor.c 1270-1348), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "string"
+      },
+      "swarm_progress_s": {
+        "description": "Current SWARM scan progress (SWARM_SCAN_X PROGRESS_L x SWARM_TICK), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s"
+      },
+      "swarm_length_s": {
+        "description": "Current SWARM scan length (SWARM_SCAN_X LENGTH_L x SWARM_TICK), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s"
+      },
+      "scan_age_s": {
+        "description": "Seconds since the data catcher last wrote DSM:hcn:DSM_AS_SCAN_SOURCE_C24 (arrayMonitor.c lastScan), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s"
+      },
       "focus_curve_count": {
         "description": "Number of antennas with a fresh chopper status and focus curve on (arrayMonitor.c chopperStatus[0]), from slama.monitor.compute",
         "size": "1",
@@ -12428,6 +12456,12 @@
             "warn_high": 0.5,
             "err_low": -1.0,
             "err_high": 1.0
+          },
+          "hour_angle": {
+            "description": "Antenna {i} source hour angle, RM_LST_HOURS_F - RM_RA_APP_HR_D wrapped to +/-12 h (arrayMonitor.c 1042-1051), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "h"
           },
           "yig1_locked": {
             "description": "Antenna {i} RM_YIG1_LOCKED_S == 1 (arrayMonitor.c yig1Status), from slama.monitor.compute",

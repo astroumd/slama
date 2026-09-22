@@ -14,6 +14,10 @@ from slama.monitor.compute.functions import (
     dewar_4k_temp,
     drive_status,
     genset_active,
+    hour_angle,
+    source_type_flags,
+    swarm_scan,
+    SWARM_TICK_S,
     sun_visible,
     tau_stale,
     tau_standout,
@@ -802,3 +806,69 @@ class TestTauStandout:
     ])
     def test(self, tau, freq, v):
         assert self._run(tau, freq)[1] == v
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port: source / scan
+# ---------------------------------------------------------------------------
+
+class TestHourAngle:
+    def _run(self, lst, ra, dec=20.0):
+        return hour_angle({"lst": ri("l", lst), "ra": ri("r", ra), "dec": ri("d", dec)}, ctx())
+
+    @pytest.mark.parametrize("lst, ra, ha", [
+        (6.0, 4.0, 2.0), (6.244624, 18.26431240032124, 11.980311), (23.0, 1.0, -2.0), (1.0, 23.0, 2.0),
+    ])
+    def test_wrap(self, lst, ra, ha):
+        assert self._run(lst, ra) == pytest.approx(ha, abs=1e-5)
+
+    def test_no_source(self):
+        assert self._run(6.0, 0.0, 0.0) == (None, Validity.INVALID_NO_DATA)
+
+    def test_garbage_is_error(self):
+        assert self._run(6.0, 1e9)[1] == Validity.VALID_ERROR
+        assert self._run(float("nan"), 3.0)[1] == Validity.VALID_ERROR
+
+
+class TestSourceTypeFlags:
+    @pytest.mark.parametrize("bits, letters", [(0, ""), (1, "F"), (5, "FG"), (15, "FBGI"), (16, "")])
+    def test(self, bits, letters):
+        assert source_type_flags({"type": ri("t", bits)}, ctx()) == letters
+
+
+class TestSwarmScan:
+    def _run(self, scan_age, corr_age, length=16192, progress=1205):
+        return swarm_scan({
+            "length": ResolvedInput("l", length, Validity.VALID_GOOD, WALL_NOW - corr_age),
+            "progress": ResolvedInput("p", progress, Validity.VALID_GOOD, WALL_NOW - corr_age),
+            "scan_source": ResolvedInput("s", "0102+584", Validity.VALID_GOOD, WALL_NOW - scan_age),
+        }, ctx())
+
+    def test_units(self):
+        out = self._run(1, 1)
+        assert out["length_s"] == pytest.approx(16192 * SWARM_TICK_S)
+        assert out["length_s"] == pytest.approx(14.84, abs=0.01)
+        assert out["progress_s"] == pytest.approx(1205 * SWARM_TICK_S)
+
+    def test_observing(self):
+        assert self._run(5, 1)["status"] == ("SWARM", Validity.VALID_GOOD)
+
+    def test_no_data_catcher(self):
+        assert self._run(100, 1)["status"] == ("no dataCatcher", Validity.VALID_ERROR)
+
+    def test_offline(self):
+        out = self._run(7764502, 7764487)
+        assert out["status"] == ("SWARM offline", Validity.VALID_WARNING)
+        assert out["scan_age_s"] == pytest.approx(7764502)
+
+    def test_wacko_age(self):
+        assert self._run(9e6, 9e6)["scan_age_s"][1] == Validity.VALID_ERROR
+
+    def test_missing_timestamp(self):
+        out = swarm_scan({
+            "length": ResolvedInput("l", 16192, Validity.VALID_GOOD, None),
+            "progress": ResolvedInput("p", 0, Validity.VALID_GOOD, None),
+            "scan_source": ResolvedInput("s", "x", Validity.VALID_GOOD, None),
+        }, ctx())
+        assert out["status"] == ("SWARM offline", Validity.VALID_WARNING)
+        assert out["scan_age_s"] == (None, Validity.INVALID_NO_DATA)
