@@ -12423,6 +12423,68 @@
             "warn_high": 0.5,
             "err_low": -1.0,
             "err_high": 1.0
+          },
+          "yig1_locked": {
+            "description": "Antenna {i} RM_YIG1_LOCKED_S == 1 (arrayMonitor.c yig1Status), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "yig2_locked": {
+            "description": "Antenna {i} RM_YIG2_LOCKED_S == 1 (arrayMonitor.c yig2Status), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "lo_status": {
+            "description": "Antenna {i} Tune6 LO field: gunn1-yig1/gunn2-yig2, tuningL/H, LO adjL/H, IV/PB, or ? (arrayMonitor.c 2160-2225). Tune6 antennas only; wSMA LO lock not yet ported. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "lo_lock_ok": {
+            "description": "Antenna {i} LO locked for the observing band, with fresh gunn-lock heartbeat (arrayMonitor.c LO_FAULT). Tune6 antennas only. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "hotload_position": {
+            "description": "Antenna {i} load position: Sky, Amb, Mov, LinLoad, NoB (no optics board), or ? (arrayMonitor.c printNewHotloadPosition), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "Sky": "GOOD",
+              "Amb": "GOOD",
+              "Mov": "WARNING",
+              "LinLoad": "WARNING",
+              "NoB": "INVALID_NO_HW"
+            },
+            "unknown_state": "ERROR"
+          },
+          "rx_low_label": {
+            "description": "Antenna {i} low-slot receiver band (230/240/345/400, else A) from RM_ACTIVE_LOW_RECEIVER_C10, from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "rx_high_label": {
+            "description": "Antenna {i} high-slot receiver band (230/240/345/400, else B) from RM_ACTIVE_HIGH_RECEIVER_C10, from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "dewar_4k_temp": {
+            "description": "Antenna {i} dewar 4K-stage temperature: RM_DEWAR_TEMPS_V16_F (Tune6) or wSMA 4K-plate (arrayMonitor.c dewarTemp); err_high is the dewarTemp.conf 4K limit. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "K",
+            "err_high": 5.2
+          }
+        }
+      }
+    },
+    "rx": {
+      "__each__": {
+        "over": "1-2",
+        "template": {
+          "line_name": {
+            "description": "Spectral line for receiver slot {i} (1 = low, 2 = high), or sNN chunk, or YIG Unlkd (arrayMonitor.c lineName), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
           }
         }
       }
