@@ -173,6 +173,23 @@ class TestReadAll:
             assert mp.value == 99.9
 
 
+class TestRead:
+    def test_read_pulls_only_named_points(self, ms):
+        client = MagicMock()
+        client.smax_pull.return_value = 7.0
+        ms.read(["subsystem_a:sensor1", "subsystem_b:flag"], client)
+        assert client.smax_pull.call_args_list == [
+            call("subsystem_a", "sensor1"), call("subsystem_b", "flag"),
+        ]
+        assert ms.get_monitor_point("subsystem_a:sensor1").value == 7.0
+
+    def test_read_skips_unknown_names(self, ms):
+        client = MagicMock()
+        client.smax_pull.return_value = 1.0
+        ms.read(["no:such:point", "subsystem_a:sensor2"], client)
+        assert client.smax_pull.call_args_list == [call("subsystem_a", "sensor2")]
+
+
 class TestWrite:
     def test_write_calls_smax_share(self, ms):
         client = MagicMock()

@@ -149,6 +149,17 @@ Uniform rule, engine-enforced (computations don't hand-roll it):
   `INVALID_NO_DATA`.
 - Input older than a configurable staleness window → treated as
   `INVALID_NO_DATA` (window per computation, with a global default).
+  - **Per-input override** (added for the arrayMonitor port): a dict-form
+    input may be written `{"name": "<pattern>", "staleness_s": <n|null>}`,
+    and `null` means "never stale". This exists because the RM→SMAX bridge
+    writes many status points (drive status, fault words, lock flags)
+    **only when their value changes**. Their SMAX timestamp can be days
+    old while the value is still correct: `RM_ANTENNA_DRIVE_STATUS_B` had
+    about 4.4k writes in the 2026-09-22 snapshot, against 226M for
+    `RM_ACTUAL_AZ_DEG_F`. Such inputs are exempted, and the function
+    checks freshness against an RM heartbeat input instead (e.g.
+    `RM_SERVO_TIMESTAMP_L`, whose *value* is a Unix time), using
+    `ctx.wall_clock`. Entry and default `staleness_s` also accept `null`.
 - Each computation declares a policy for invalid inputs:
   `"skip"` (compute over the valid subset — right for medians/counts) or
   `"propagate"` (output becomes `INVALID_NO_DATA` — right for physics

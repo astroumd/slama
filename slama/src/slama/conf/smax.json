@@ -7804,6 +7804,21 @@
           "size": "1",
           "smax_type": "int16"
         },
+        "RM_ACTIVE_HIGH_RECEIVER_C10": {
+          "description": "Receiver selection for high-band Rx",
+          "size": "1",
+          "smax_type": "string",
+          "valid_strings": [
+            "A1",
+            "B1",
+            "C",
+            "E",
+            "A2",
+            "B2",
+            "D",
+            "F"
+          ]
+        },
         "RM_ACTIVE_LOW_RECEIVER_C10": {
           "description": "Receiver selection for low-band Rx",
           "size": "1",
@@ -12320,6 +12335,11 @@
         "smax_type": "integer",
         "warn_low": 6,
         "err_low": 4
+      },
+      "focus_curve_count": {
+        "description": "Number of antennas with a fresh chopper status and focus curve on (arrayMonitor.c chopperStatus[0]), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "integer"
       }
     },
     "antenna": {
@@ -12333,6 +12353,76 @@
             "unit": "deg",
             "warn_low": 45,
             "err_low": 40
+          },
+          "track_age": {
+            "description": "Seconds since antenna {i}'s RM_TRACK_TIMESTAMP_L (arrayMonitor.c trackStatus), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "s",
+            "err_low": -3,
+            "err_high": 3
+          },
+          "servo_age": {
+            "description": "Seconds since antenna {i}'s RM_SERVO_TIMESTAMP_L (arrayMonitor.c SrvS), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "s",
+            "err_low": -10,
+            "err_high": 10
+          },
+          "on_source": {
+            "description": "Antenna {i} tracking error < 1 arcsec and radio refraction on (arrayMonitor.c onSource), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "drive_status": {
+            "description": "Antenna {i} drive status label (arrayMonitor.c driveStatus/dstat[]), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "on": "GOOD",
+              "off": "WARNING",
+              "fault": "ERROR",
+              "lockout": "ERROR",
+              "one mot": "ERROR",
+              "EL LMT": "ERROR",
+              "AZ LMT": "ERROR",
+              "one tac": "ERROR",
+              "ESTOP": "ERROR",
+              "AZBRAKE": "ERROR"
+            },
+            "unknown_state": "ERROR"
+          },
+          "chopper_status": {
+            "description": "Antenna {i} chopper status: OK/FC, OK/NFC, stale, or XYZ(C|T) error letters (arrayMonitor.c chopperStatus), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "focus_curve": {
+            "description": "Antenna {i} chopper focus curve on (RM_CHOPPER_STATUS_BITS_V16_B[10] == 1), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "deice_status": {
+            "description": "Antenna {i} deicer status: ok, deicing, or fault (arrayMonitor.c deiceChar), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "ok": "GOOD",
+              "deicing": "WARNING",
+              "fault": "ERROR"
+            },
+            "unknown_state": "ERROR"
+          },
+          "clock_offset_s": {
+            "description": "SMAX write time minus antenna {i}'s RM_UTC_HR_D, in seconds (arrayMonitor.c timeDifferential), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "s",
+            "warn_low": -0.5,
+            "warn_high": 0.5,
+            "err_low": -1.0,
+            "err_high": 1.0
           }
         }
       }
