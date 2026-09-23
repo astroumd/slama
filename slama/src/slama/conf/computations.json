@@ -3,7 +3,11 @@
     "See docs/monitorsystem_writer_design.md for the full design.",
     "Each entry writes 'output' (declared under the 'monitorsystem' subtree",
     "in smax.json) by applying 'function' (registered in",
-    "slama.monitor.compute.functions) to 'inputs'."
+    "slama.monitor.compute.functions) to 'inputs'.",
+    "Inputs written as {\"name\": ..., \"staleness_s\": null} are exempt from",
+    "the SMAX-timestamp staleness check: either an RM heartbeat whose *value*",
+    "is a Unix time (the function checks its age), or a status point the",
+    "RM/DSM bridge writes only when its value changes."
   ],
   "defaults": {
     "interval_s": 2,
@@ -31,8 +35,109 @@
             "sunaz": "RM:acc{i}:RM_SUN_AZ_DEG_F",
             "sunel": "RM:acc{i}:RM_SUN_EL_DEG_F",
             "antaz": "RM:acc{i}:RM_ACTUAL_AZ_DEG_F",
-            "antel": "RM:acc{i}:RM_ACTUAL_EL_DEG_F"
+            "antel": "RM:acc{i}:RM_ACTUAL_EL_DEG_F",
+            "track_ts": {"name": "RM:acc{i}:RM_TRACK_TIMESTAMP_L", "staleness_s": null}
           }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:track_age",
+          "function": "timestamp_age",
+          "inputs": {"ts": {"name": "RM:acc{i}:RM_TRACK_TIMESTAMP_L", "staleness_s": null}}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:servo_age",
+          "function": "timestamp_age",
+          "inputs": {"ts": {"name": "RM:acc{i}:RM_SERVO_TIMESTAMP_L", "staleness_s": null}}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:on_source",
+          "function": "on_source",
+          "inputs": {
+            "tracking_error": "RM:acc{i}:RM_TRACKING_ERROR_ARCSEC_F",
+            "refraction_flag": {"name": "RM:acc{i}:RM_REFRACTION_RADIO_FLAG_B", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:drive_status",
+          "function": "drive_status",
+          "inputs": {
+            "drive": {"name": "RM:acc{i}:RM_ANTENNA_DRIVE_STATUS_B", "staleness_s": null},
+            "fault_state": {"name": "RM:acc{i}:RM_SERVO_FAULT_STATE_B", "staleness_s": null},
+            "faultword": {"name": "RM:acc{i}:RM_SCB_FAULTWORD_L", "staleness_s": null},
+            "servo_ts": {"name": "RM:acc{i}:RM_SERVO_TIMESTAMP_L", "staleness_s": null},
+            "tracking_error": "RM:acc{i}:RM_TRACKING_ERROR_ARCSEC_F",
+            "enc_az": "RM:acc{i}:RM_ENCODER_AZ_F",
+            "enc_el": "RM:acc{i}:RM_ENCODER_EL_F",
+            "up_limit": {"name": "RM:acc{i}:RM_SCB_UP_LIMIT_F", "staleness_s": null},
+            "low_limit": {"name": "RM:acc{i}:RM_SCB_LOW_LIMIT_F", "staleness_s": null},
+            "cw_limit": {"name": "RM:acc{i}:RM_SCB_CW_LIMIT_F", "staleness_s": null},
+            "ccw_limit": {"name": "RM:acc{i}:RM_SCB_CCW_LIMIT_F", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": {
+            "status": "monitorsystem:antenna:{i}:chopper_status",
+            "focus_curve": "monitorsystem:antenna:{i}:focus_curve"
+          },
+          "function": "chopper_status",
+          "inputs": {
+            "bits": {"name": "RM:acc{i}:RM_CHOPPER_STATUS_BITS_V16_B", "staleness_s": null},
+            "ts": {"name": "RM:acc{i}:RM_CHOPPER_MONITOR_TIMESTAMP_L", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "output": "monitorsystem:array:focus_curve_count",
+      "function": "count_true",
+      "inputs": ["monitorsystem:antenna:1-8:focus_curve"],
+      "invalid_inputs": "skip"
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:deice_status",
+          "function": "deice_status",
+          "inputs": {
+            "ts": {"name": "RM:acc{i}:RM_DEICE_TIMESTAMP_L", "staleness_s": null},
+            "bits": {"name": "RM:acc{i}:RM_DEICE_STATUS_BITS_L", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:clock_offset_s",
+          "function": "clock_offset",
+          "inputs": {"utc_hr": "RM:acc{i}:RM_UTC_HR_D"}
         }
       }
     }

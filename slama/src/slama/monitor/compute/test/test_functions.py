@@ -8,6 +8,12 @@ from slama.monitor.compute.functions import (
     _array_elem,
     _label,
     _severity_score,
+    chopper_status,
+    clock_offset,
+    deice_status,
+    drive_status,
+    on_source,
+    timestamp_age,
     count_true,
     count_valid,
     get_function,
@@ -305,3 +311,166 @@ class TestSunDistance:
         }
         distance = sun_distance_degrees(inputs, ctx())
         assert isinstance(distance, float)
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port: per-antenna tracking / drive
+# ---------------------------------------------------------------------------
+
+class TestTimestampAge:
+    def test_age(self):
+        assert timestamp_age({"ts": ri("RM:acc1:RM_TRACK_TIMESTAMP_L", int(WALL_NOW) - 2)},
+                             ctx()) == pytest.approx(2.0)
+
+    def test_garbage_timestamp_is_huge(self):
+        assert timestamp_age({"ts": ri("x", -1274676992)}, ctx()) > 1e9
+
+
+class TestOnSource:
+    def _run(self, err, flag):
+        return on_source({"tracking_error": ri("e", err), "refraction_flag": ri("f", flag)}, ctx())
+
+    def test_on_source(self):
+        assert self._run(0.4, 1) is True
+
+    def test_threshold_is_exclusive(self):
+        assert self._run(1.0, 1) is False
+
+    def test_refraction_flag_off_forces_false(self):
+        assert self._run(0.1, 0) is False
+
+
+class TestDriveStatus:
+    BASE = dict(drive=1, fault_state=0, faultword=0, servo_ts=WALL_NOW - 1,
+                tracking_error=0.2, enc_az=100.0, enc_el=45.0,
+                up_limit=87.46, low_limit=14.32, cw_limit=349.72, ccw_limit=-170.72)
+
+    def _run(self, **over):
+        vals = dict(self.BASE, **over)
+        return drive_status({k: ri(k, v) for k, v in vals.items()}, ctx())
+
+    def test_on(self):
+        assert self._run() == "on"
+
+    def test_off(self):
+        assert self._run(drive=0, fault_state=3) == "off"
+
+    def test_fault_state_shifts_code(self):
+        # f > 0 and d != 0 -> f + 1: f=1 -> "fault", f=3 -> "one mot"
+        assert self._run(fault_state=1) == "fault"
+        assert self._run(fault_state=3) == "one mot"
+
+    def test_negative_fault_state_is_unknown_not_undefined(self):
+        assert self._run(fault_state=-1) == "???"
+
+    def test_el_limit_only_when_off_source(self):
+        assert self._run(enc_el=87.5) == "on"
+        assert self._run(enc_el=87.5, tracking_error=5.0) == "EL LMT"
+        assert self._run(enc_el=14.0, tracking_error=5.0) == "EL LMT"
+
+    def test_az_limit_wins_over_el(self):
+        assert self._run(enc_el=87.5, enc_az=350.0, tracking_error=5.0) == "AZ LMT"
+
+    def test_estop_bit_overrides(self):
+        assert self._run(faultword=1 << 21, enc_az=350.0, tracking_error=5.0) == "ESTOP"
+
+    def test_azbrake_only_when_off(self):
+        assert self._run(drive=0, faultword=1 << 30) == "AZBRAKE"
+        assert self._run(drive=1, faultword=1 << 30) == "on"
+
+    def test_negative_int32_faultword_bits_read_unsigned(self):
+        # 0x80200000 as a signed int32: ESTOP bit set, sign bit set
+        assert self._run(faultword=-2145386496) == "ESTOP"
+
+    def test_stale_servo(self):
+        assert self._run(servo_ts=WALL_NOW - 11) == ("stale", Validity.INVALID_NO_DATA)
+
+    def test_garbage_code(self):
+        assert self._run(drive=-702, fault_state=0) == "???"
+
+
+class TestChopperStatus:
+    def _bits(self, p20=0, pos_err=0, update=0):
+        b = np.zeros(16, dtype=np.int8)
+        b[4], b[5], b[10] = p20, pos_err, update
+        return b
+
+    def _run(self, bits, age=1.0):
+        return chopper_status({"bits": ri("b", bits), "ts": ri("t", WALL_NOW - age)}, ctx())
+
+    def test_ok_focus_curve(self):
+        out = self._run(self._bits(update=1))
+        assert out == {"status": ("OK/FC", Validity.VALID_GOOD), "focus_curve": True}
+
+    def test_ok_no_focus_curve_is_warning(self):
+        assert self._run(self._bits())["status"] == ("OK/NFC", Validity.VALID_WARNING)
+
+    def test_chopping_only_is_good(self):
+        assert self._run(self._bits(p20=2))["status"] == ("---C", Validity.VALID_GOOD)
+
+    def test_position_errors(self):
+        assert self._run(self._bits(pos_err=15))["status"] == ("XYZT", Validity.VALID_ERROR)
+        assert self._run(self._bits(pos_err=4, p20=2))["status"] == ("-Y-C", Validity.VALID_ERROR)
+
+    def test_stale_invalidates_both_roles(self):
+        out = self._run(self._bits(update=1), age=5.0)
+        assert out["status"] == ("stale", Validity.INVALID_NO_DATA)
+        assert out["focus_curve"] == (True, Validity.INVALID_NO_DATA)
+
+
+class TestDeiceStatus:
+    def _run(self, bits, age=10.0):
+        return deice_status({"ts": ri("t", WALL_NOW - age), "bits": ri("b", bits)}, ctx())
+
+    def test_ok(self):
+        assert self._run(0) == "ok"
+
+    def test_deicing(self):
+        assert self._run(0x2000) == "deicing"
+        assert self._run(0x4000) == "deicing"
+
+    def test_fault_bit_as_signed_int32(self):
+        assert self._run(-2147483648) == "fault"
+
+    def test_stale_is_fault(self):
+        assert self._run(0, age=301) == "fault"
+
+
+class TestClockOffset:
+    def _run(self, utc_hr, ts):
+        return clock_offset({"utc_hr": ResolvedInput("u", utc_hr, Validity.VALID_GOOD, ts)}, ctx())
+
+    def test_uses_write_timestamp(self):
+        # 1790035200 is 2026-09-22T00:00:00Z
+        assert self._run(16.5, 1790035200 + 16.5 * 3600 + 0.08) == pytest.approx(0.08)
+
+    def test_antenna_ahead_is_negative(self):
+        assert self._run(10.0 + 0.2 / 3600, 1790035200 + 36000) == pytest.approx(-0.2)
+
+    def test_midnight_wrap(self):
+        # antenna still at 23:59:59.9, write time just past midnight
+        assert self._run(24 - 0.1 / 3600, 1790035200 + 0.05) == pytest.approx(0.15)
+
+    def test_falls_back_to_wall_clock(self):
+        wall_hr = (WALL_NOW % 86400) / 3600
+        assert self._run(wall_hr, None) == pytest.approx(0.0, abs=1e-6)
+
+
+class TestSunDistanceTrackGate:
+    def _inputs(self, track_age):
+        d = {"sunaz": ri("a", 100.0), "sunel": ri("b", 30.0),
+             "antaz": ri("c", 100.0), "antel": ri("d", 60.0)}
+        if track_age is not None:
+            d["track_ts"] = ri("t", WALL_NOW - track_age)
+        return d
+
+    def test_fresh_track_returns_bare_value(self):
+        assert sun_distance_degrees(self._inputs(1.0), ctx()) == pytest.approx(30.0)
+
+    def test_stale_track_invalidates(self):
+        value, validity = sun_distance_degrees(self._inputs(10.0), ctx())
+        assert value == pytest.approx(30.0)
+        assert validity == Validity.INVALID_NO_DATA
+
+    def test_track_ts_optional(self):
+        assert sun_distance_degrees(self._inputs(None), ctx()) == pytest.approx(30.0)

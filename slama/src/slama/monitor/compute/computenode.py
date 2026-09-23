@@ -157,11 +157,18 @@ class ResolvedInput:
         ``staleness_s``, otherwise the point's own ``validity``
         (hardware thresholds, or another node's already-computed
         result this same tick).
+    timestamp : float or None
+        Epoch seconds of the input's last SMAX write, or ``None`` if
+        unknown (e.g. a same-tick computed output). Lets a function
+        compare a value against *when it was written* rather than
+        against "now", which includes the engine's own read lag (see
+        ``clock_offset``).
     """
 
     canonical_name: str
     value: Any
     validity: Validity
+    timestamp: float | None = None
 
 
 @dataclass

@@ -551,3 +551,24 @@ class TestReadsOnlyInputs:
                                wall_clock=lambda: 1_700_000_000.0)
         engine.tick()
         assert ms.read_calls == [["antenna:1:is_online", "antenna:2:is_online"]]
+
+
+@compute_function("_test_input_timestamp")
+def _test_input_timestamp(inputs, ctx):
+    """Test-only: return the input's SMAX write timestamp."""
+    return float(inputs["x"].timestamp)
+
+
+class TestInputTimestamp:
+    def test_resolved_input_carries_smax_write_time(self):
+        src = make_mp("RM:acc1:RM_UTC_HR_D", smax_type="double")
+        set_value(src, 16.5, ts=datetime.fromtimestamp(1_700_000_000.25, tz=timezone.utc))
+        out = make_mp("monitorsystem:antenna:1:clock_offset_s", smax_type="float")
+        ms = FakeMonitorSystem([src, out])
+        cfg = ComputeConfig.from_dict({"computations": [{
+            "output": "monitorsystem:antenna:1:clock_offset_s",
+            "function": "_test_input_timestamp",
+            "inputs": {"x": "RM:acc1:RM_UTC_HR_D"},
+        }]}, ms)
+        engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: 1_700_000_001.0)
+        assert engine.tick()[0].value == pytest.approx(1_700_000_000.25)

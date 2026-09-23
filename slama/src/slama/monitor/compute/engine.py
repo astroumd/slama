@@ -412,6 +412,20 @@ class ComputeEngine:
 
         return value, mp.validity
 
+    def _timestamp_of(self, name: str) -> float | None:
+        """Epoch seconds of ``name``'s last SMAX write, or ``None``.
+
+        ``None`` for a same-tick computed output (its write time is
+        this tick, not meaningful to a consumer), a missing point, or
+        a point with no usable timestamp.
+        """
+        if name in self._tick_outputs:
+            return None
+        try:
+            return float(self._monitor_system.get_monitor_point(name).time.unix)
+        except (KeyError, AttributeError, TypeError, ValueError):
+            return None
+
     def _resolve_inputs(self, node: ComputeNode, now_wall: float):
         """Resolve every input for ``node``, applying its invalid-input policy.
 
@@ -446,7 +460,7 @@ class ComputeEngine:
                 value, validity = self._resolve_one(name, now_wall, node.staleness_for(key))
                 if validity == Validity.INVALID_NO_DATA:
                     return None
-                resolved[key] = ResolvedInput(name, value, validity)
+                resolved[key] = ResolvedInput(name, value, validity, self._timestamp_of(name))
             return resolved
 
         resolved_list: list[ResolvedInput] = []
@@ -456,7 +470,7 @@ class ComputeEngine:
                 if node.invalid_inputs == "propagate":
                     return None
                 continue
-            resolved_list.append(ResolvedInput(name, value, validity))
+            resolved_list.append(ResolvedInput(name, value, validity, self._timestamp_of(name)))
         if not resolved_list:
             return None
         return resolved_list
