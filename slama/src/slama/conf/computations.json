@@ -428,6 +428,50 @@
           "staleness_s": null
         }
       }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:hour_angle",
+          "function": "hour_angle",
+          "inputs": {
+            "lst": "RM:acc{i}:RM_LST_HOURS_F",
+            "ra": "RM:acc{i}:RM_RA_APP_HR_D",
+            "dec": {
+              "name": "RM:acc{i}:RM_DEC_APP_DEG_D",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "output": "monitorsystem:array:source_type_flags",
+      "function": "source_type_flags",
+      "inputs": {
+        "type": {
+          "name": "DSM:hal9000:DSM_AS_SOURCE_TYPE_L",
+          "staleness_s": null
+        }
+      }
+    },
+    {
+      "_comment": "Ages come from the inputs' SMAX write times, so no engine staleness.",
+      "output": {
+        "status": "monitorsystem:array:swarm_scan_status",
+        "progress_s": "monitorsystem:array:swarm_progress_s",
+        "length_s": "monitorsystem:array:swarm_length_s",
+        "scan_age_s": "monitorsystem:array:scan_age_s"
+      },
+      "function": "swarm_scan",
+      "inputs": {
+        "length": "DSM:roach2-01:SWARM_SCAN_X:LENGTH_L",
+        "progress": "DSM:roach2-01:SWARM_SCAN_X:PROGRESS_L",
+        "scan_source": "DSM:hcn:DSM_AS_SCAN_SOURCE_C24"
+      },
+      "staleness_s": null
     }
   ]
 }

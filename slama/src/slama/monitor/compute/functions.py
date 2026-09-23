@@ -1347,3 +1347,139 @@ def tau_standout(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         return tau, Validity.VALID_ERROR
     limit = _standout_tau(float(_array_elem(inputs["rest_freq"].value, 0)))
     return tau, (Validity.VALID_WARNING if tau > limit else Validity.VALID_GOOD)
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port — source / scan (goals/monsubsys_arrayMonitor.md)
+# ---------------------------------------------------------------------------
+
+HOUR_ANGLE_WACKO_H = 100.0
+"""``arrayMonitor.c:1042-1051``: an hour angle this large is "wacko"."""
+
+SOURCE_TYPE_FLAGS = ((1, "F"), (2, "B"), (4, "G"), (8, "I"))
+"""``DSM_AS_SOURCE_TYPE_L`` bit -> letter (``arrayMonitor.c:921-930``).
+
+The C doesn't say what the letters stand for (possibly flux, bandpass,
+gain, ipoint).
+"""
+
+SWARM_TICK_S = 128 * 2 * 16384 / (2 * 2.288e9)
+"""``arrayMonitor.c`` ``SWARM_TICK``: seconds per SWARM scan length/progress unit."""
+
+SWARM_SCAN_GRACE_S = 15.0
+"""``arrayMonitor.c:1282``: a scan is current if newer than scan length + this."""
+
+SCAN_AGE_WACKO_S = 8640000.0
+"""``arrayMonitor.c:1330-1348``: ages at or above this (100 days) are "wacko"."""
+
+
+@compute_function("hour_angle")
+def hour_angle(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Source hour angle for one antenna (``arrayMonitor.c:1042-1051``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"lst"``: ``RM_LST_HOURS_F``; ``"ra"``: ``RM_RA_APP_HR_D``;
+        ``"dec"``: ``RM_DEC_APP_DEG_D``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    float or tuple of (float or None, Validity)
+        ``LST - RA`` in hours, wrapped to [-12, 12). ``(None,
+        INVALID_NO_DATA)`` if RA and Dec are both 0 (no source; the C
+        shows nothing). ``(ha, VALID_ERROR)`` if ``|ha| >=``
+        :data:`HOUR_ANGLE_WACKO_H` — only reachable with a non-finite
+        or garbage input, since the wrap bounds real values; the C
+        wrapped once, so its check could fire on bad RA/LST.
+    """
+    ra = float(inputs["ra"].value)
+    if ra == 0.0 and float(inputs["dec"].value) == 0.0:
+        return None, Validity.INVALID_NO_DATA
+    ha = float(inputs["lst"].value) - ra
+    if not np.isfinite(ha) or abs(ha) >= HOUR_ANGLE_WACKO_H:
+        return ha, Validity.VALID_ERROR
+    return (ha + 12.0) % 24.0 - 12.0
+
+
+@compute_function("source_type_flags")
+def source_type_flags(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Source-type letters from ``DSM_AS_SOURCE_TYPE_L`` (``arrayMonitor.c:921-930``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"type"``: ``DSM_AS_SOURCE_TYPE_L`` bit field.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        Letters for each set bit in :data:`SOURCE_TYPE_FLAGS` order,
+        e.g. ``"FG"``; ``""`` when no bits are set (the C prints
+        nothing then).
+    """
+    bits = int(inputs["type"].value)
+    return "".join(letter for bit, letter in SOURCE_TYPE_FLAGS if bits & bit)
+
+
+def _swarm_age(age: float):
+    """Age in seconds, as ``(age, VALID_ERROR)`` if outside the C's wacko bounds."""
+    if age >= SCAN_AGE_WACKO_S or age < -100:
+        return age, Validity.VALID_ERROR
+    return age
+
+
+@compute_function("swarm_scan")
+def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
+    """SWARM correlator scan status (``arrayMonitor.c:1270-1348``).
+
+    ``lastScan`` is the age of the last ``DSM:hcn`` scan-source write
+    (the data catcher), ``lastCorr`` the age of the last
+    ``SWARM_SCAN_X`` write (the correlator). Both are taken from the
+    inputs' SMAX write times (:attr:`ResolvedInput.timestamp`), standing
+    in for the C's DSM read timestamps.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"length"``, ``"progress"``: ``SWARM_SCAN_X`` ``LENGTH_L``/
+        ``PROGRESS_L`` in SWARM ticks; ``"scan_source"``:
+        ``DSM_AS_SCAN_SOURCE_C24`` (only its write time is used).
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    dict
+        ``"status"``: ``("SWARM", VALID_GOOD)`` if the last scan is
+        newer than scan length + :data:`SWARM_SCAN_GRACE_S`; else
+        ``("no dataCatcher", VALID_ERROR)`` if the correlator is still
+        that current (correlator running, nothing catching data); else
+        ``("SWARM offline", VALID_WARNING)``. ``"progress_s"``,
+        ``"length_s"``: scan progress and length in seconds.
+        ``"scan_age_s"``: ``lastScan``, ERROR outside the C's wacko
+        bounds.
+    """
+    length_s = float(inputs["length"].value) * SWARM_TICK_S
+    progress_s = float(inputs["progress"].value) * SWARM_TICK_S
+    now = ctx.wall_clock()
+    scan_ts = inputs["scan_source"].timestamp
+    corr_ts = inputs["length"].timestamp
+    last_scan = now - scan_ts if scan_ts is not None else float("inf")
+    last_corr = now - corr_ts if corr_ts is not None else float("inf")
+
+    limit = SWARM_SCAN_GRACE_S + length_s
+    if last_scan < limit:
+        status = ("SWARM", Validity.VALID_GOOD)
+    elif last_corr < limit:
+        status = ("no dataCatcher", Validity.VALID_ERROR)
+    else:
+        status = ("SWARM offline", Validity.VALID_WARNING)
+    scan_age = (_swarm_age(last_scan) if np.isfinite(last_scan)
+                else (None, Validity.INVALID_NO_DATA))
+    return {"status": status, "progress_s": progress_s, "length_s": length_s,
+            "scan_age_s": scan_age}
