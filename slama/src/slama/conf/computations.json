@@ -140,6 +140,177 @@
           "inputs": {"utc_hr": "RM:acc{i}:RM_UTC_HR_D"}
         }
       }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:yig1_locked",
+          "function": "yig_locked",
+          "inputs": {"locked": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null}}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:yig2_locked",
+          "function": "yig_locked",
+          "inputs": {"locked": {"name": "RM:acc{i}:RM_YIG2_LOCKED_S", "staleness_s": null}}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "2-6", "as": "i",
+        "template": {
+          "_comment": "Tune6 receivers only (antennas 2-6 per rxtype.conf, 2026-09-22); wSMA LO lock (1, 7, 8) not yet ported.",
+          "output": "monitorsystem:antenna:{i}:lo_status",
+          "function": "lo_status",
+          "inputs": {
+            "busy": {"name": "RM:acc{i}:RM_TUNE6_COMMAND_BUSY_S", "staleness_s": null},
+            "gunn1": {"name": "RM:acc{i}:RM_GUNN1_LOCKED_S", "staleness_s": null},
+            "gunn2": {"name": "RM:acc{i}:RM_GUNN2_LOCKED_S", "staleness_s": null},
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "yig2": {"name": "RM:acc{i}:RM_YIG2_LOCKED_S", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "2-6", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:lo_lock_ok",
+          "function": "lo_lock_ok",
+          "inputs": {
+            "gunn1": {"name": "RM:acc{i}:RM_GUNN1_LOCKED_S", "staleness_s": null},
+            "gunn2": {"name": "RM:acc{i}:RM_GUNN2_LOCKED_S", "staleness_s": null},
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "gunn1_ts": {"name": "RM:acc{i}:RM_GUNN1_LOCKED_TIMESTAMP_L", "staleness_s": null},
+            "rest_freq": {"name": "DSM:hal9000:DSM_REQUESTED_FREQUENCY_V2_D", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "2-6", "as": "i",
+        "template": {
+          "_comment": "Tune6 antennas check the optics board first (arrayMonitor.c 2338-2341).",
+          "output": "monitorsystem:antenna:{i}:hotload_position",
+          "function": "hotload_position",
+          "inputs": {
+            "status": {"name": "RM:acc{i}:RM_UNHEATEDLOAD_STATUS_S", "staleness_s": null},
+            "busy": {"name": "RM:acc{i}:RM_TUNE6_COMMAND_BUSY_S", "staleness_s": null},
+            "optics_board": {"name": "RM:acc{i}:RM_OPTICS_BOARD_PRESENT_S", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1,7,8", "as": "i",
+        "template": {
+          "_comment": "wSMA-load antennas: no optics-board check (arrayMonitor.c 2335-2336).",
+          "output": "monitorsystem:antenna:{i}:hotload_position",
+          "function": "hotload_position",
+          "inputs": {
+            "status": {"name": "RM:acc{i}:RM_UNHEATEDLOAD_STATUS_S", "staleness_s": null},
+            "busy": {"name": "RM:acc{i}:RM_TUNE6_COMMAND_BUSY_S", "staleness_s": null}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:rx_low_label",
+          "function": "rx_label",
+          "inputs": {"code": {"name": "RM:acc{i}:RM_ACTIVE_LOW_RECEIVER_C10", "staleness_s": null}},
+          "params": {"default": "A"}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:rx_high_label",
+          "function": "rx_label",
+          "inputs": {"code": {"name": "RM:acc{i}:RM_ACTIVE_HIGH_RECEIVER_C10", "staleness_s": null}},
+          "params": {"default": "B"}
+        }
+      }
+    },
+    {
+      "_comment": "Receiver slot 1 = low (vector index 0), 2 = high (index 1).",
+      "output": "monitorsystem:rx:1:line_name",
+      "function": "line_name",
+      "inputs": {
+        "names": {"name": "DSM:hal9000:DSM_AS_IFLO_LINE_NAME_V2_C41", "staleness_s": null},
+        "chunks": {"name": "DSM:hal9000:DSM_REQUESTED_CHUNK_V2_S", "staleness_s": null},
+        "mrg_locked": {"name": "DSM:m5:MRG_CONTROL_X:YIG_LOCKED_V2_S", "staleness_s": null}
+      },
+      "params": {"index": 0}
+    },
+    {
+      "output": "monitorsystem:rx:2:line_name",
+      "function": "line_name",
+      "inputs": {
+        "names": {"name": "DSM:hal9000:DSM_AS_IFLO_LINE_NAME_V2_C41", "staleness_s": null},
+        "chunks": {"name": "DSM:hal9000:DSM_REQUESTED_CHUNK_V2_S", "staleness_s": null},
+        "mrg_locked": {"name": "DSM:m5:MRG_CONTROL_X:YIG_LOCKED_V2_S", "staleness_s": null}
+      },
+      "params": {"index": 1}
+    },
+    {
+      "_comment": "Tune6 dewars. sensor = dewarTemp.conf ch4 - 1 (cursesmonitor/cfg/dewarTemp.conf): ant2 ch9, ant4 ch3, ants 3/5/6 ch11.",
+      "output": "monitorsystem:antenna:2:dewar_4k_temp",
+      "function": "dewar_4k_temp",
+      "inputs": {
+        "temps": {"name": "RM:acc2:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
+        "ts": {"name": "RM:acc2:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
+      },
+      "params": {"sensor": 8}
+    },
+    {
+      "output": "monitorsystem:antenna:4:dewar_4k_temp",
+      "function": "dewar_4k_temp",
+      "inputs": {
+        "temps": {"name": "RM:acc4:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
+        "ts": {"name": "RM:acc4:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
+      },
+      "params": {"sensor": 2}
+    },
+    {
+      "__each__": {
+        "over": "3,5,6", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:dewar_4k_temp",
+          "function": "dewar_4k_temp",
+          "inputs": {
+            "temps": {"name": "RM:acc{i}:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
+            "ts": {"name": "RM:acc{i}:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
+          },
+          "params": {"sensor": 10}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1,7,8", "as": "i",
+        "template": {
+          "_comment": "wSMA dewars: SMAX-native 4K plate; 60 s = arrayMonitor.c LAKESHORE_STALE applied to its SMAX timestamp.",
+          "output": "monitorsystem:antenna:{i}:dewar_4k_temp",
+          "function": "dewar_4k_temp",
+          "inputs": {
+            "temp": {"name": "antenna:{i}:receiver:wsma:cryostat:temperatures:4K-plate", "staleness_s": 60}
+          }
+        }
+      }
     }
   ]
 }
