@@ -1871,18 +1871,12 @@
         "smax_type": "int8"
       },
       "DSM_CSO_225GHZ_TAU_F": {
+        "description": "Legacy CSO 225 GHz tau slot. The CSO is decommissioned; colossus now fills this with the GFS forecast (same value as weather:forecast:gfs:tau225, 2026-09-22 snapshot). Prefer weather:forecast:gfs:tau225.",
         "size": "1",
         "smax_type": "float"
       },
       "DSM_CSO_225GHZ_TAU_TSTAMP_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
-      "DSM_CSO_350MICRON_TAU_SCALED_F": {
-        "size": "1",
-        "smax_type": "float"
-      },
-      "DSM_CSO_350MICRON_TAU_TSTAMP_L": {
+        "description": "Minute of the UT day of DSM_CSO_225GHZ_TAU_F (legacy CSO slot, now GFS-filled).",
         "size": "1",
         "smax_type": "int32"
       },
@@ -1971,32 +1965,6 @@
         "smax_type": "string"
       },
       "CFHT_METEOROLOGY_X": {
-        "HUMIDITY_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "MBAR_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "SERVER_TIMESTAMP_L": {
-          "size": "1",
-          "smax_type": "int32"
-        },
-        "TEMP_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "WINDDIR_F": {
-          "size": "1",
-          "smax_type": "float"
-        },
-        "WINDSPEED_F": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      },
-      "CSO_METEOROLOGY_X": {
         "HUMIDITY_F": {
           "size": "1",
           "smax_type": "float"
@@ -3893,18 +3861,6 @@
       }
     },
     "obscon": {
-      "DSM_CSO_225GHZ_TAU_F": {
-        "size": "1",
-        "smax_type": "float"
-      },
-      "DSM_CSO_225GHZ_TAU_RMS_F": {
-        "size": "1",
-        "smax_type": "float"
-      },
-      "DSM_CSO_225GHZ_TAU_TSTAMP_L": {
-        "size": "1",
-        "smax_type": "int32"
-      },
       "DSM_SUMMIT_ROAD_STATUS_S": {
         "size": "1",
         "smax_type": "int16"
@@ -7954,7 +7910,6 @@
         "smax_type": "float64"
       }
     },
-    "cso": {},
     "jcmt": {
       "RM_ANTENNA_STATUS_S": {
         "size": "1",
@@ -11894,12 +11849,6 @@
   },
   "weather": {
     "forecast": {
-      "cso": {
-        "tau225": {
-          "size": "1",
-          "smax_type": "float"
-        }
-      },
       "gfs": {
         "test_tau": {
           "size": "1",

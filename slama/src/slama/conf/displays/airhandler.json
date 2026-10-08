@@ -33,9 +33,9 @@
       "type": "table",
       "title": "Site Weather",
       "columns": {
-        "labels": ["SMA", "JCMT", "Subaru", "UKIRT", "CFHT", "UH88", "Keck", "VLBA"],
+        "labels": ["SMA", "JCMT", "Subaru", "CFHT", "UH88", "Keck", "VLBA"],
         "var": "site",
-        "values": ["SMA", "JCMT", "SUBARU", "UKIRT", "CFHT", "UH88", "KECK", "VLBA"]
+        "values": ["SMA", "JCMT", "SUBARU", "CFHT", "UH88", "KECK", "VLBA"]
       },
       "rows": [
         {"label": "Temperature (C)",     "points": "DSM:colossus:{site}_METEOROLOGY_X:TEMP_F", "format": "{:.2f}" },
