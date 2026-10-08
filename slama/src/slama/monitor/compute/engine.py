@@ -129,7 +129,8 @@ class ComputeEngine:
         4), which is what lets a downstream node see an upstream
         node's *this-tick* result rather than last tick's SMAX value.
     client : SmaxRedisClient or None, optional
-        Used to refresh inputs (:meth:`MonitorSystem.read_all`) and to
+        Used to refresh inputs (:meth:`MonitorSystem.read`, for just the
+        points some node reads) and to
         write outputs (``smax_share`` for the value, ``smax_push_meta``
         for validity). If ``None``, :meth:`tick` still computes and
         updates the in-memory tree but performs no I/O — useful for
@@ -165,6 +166,7 @@ class ComputeEngine:
         self._nodes: list[ComputeNode] = []
         self._interval_s: float = 5.0
         self._tick_outputs: dict[str, tuple[Any, Validity]] = {}
+        self._read_names: list[str] = []
 
         self._apply_config(config)
 
@@ -274,7 +276,10 @@ class ComputeEngine:
         """Run one evaluation pass over every node, in dependency order.
 
         1. If a client was provided, refresh source values via
-           :meth:`MonitorSystem.read_all`.
+           :meth:`MonitorSystem.read`, for only the canonical names some
+           node reads (:attr:`_read_names`) -- not the whole tree, which
+           takes ~13 s against the full ``smax.json`` and would set the
+           real tick cadence far above ``interval_s``.
         2. For each node, in topological order: resolve its inputs
            (see :meth:`_resolve_inputs`), call its registered function
            and validate its result (see :meth:`_evaluate_node`), unless
@@ -304,7 +309,7 @@ class ComputeEngine:
             see design doc §8), in topological order of the owning node.
         """
         if self._client is not None:
-            self._monitor_system.read_all(self._client)
+            self._monitor_system.read(self._read_names, self._client)
 
         now_wall = self._wall_clock()
         self._tick_outputs = {}
@@ -336,8 +341,15 @@ class ComputeEngine:
         """
         self._nodes = config.nodes
         self._interval_s = config.default_interval_s
+        names: dict[str, None] = {}
+        for node in config.nodes:
+            ins = node.inputs.values() if isinstance(node.inputs, dict) else node.inputs
+            names.update(dict.fromkeys(ins))
+        self._read_names = list(names)
 
-    def _resolve_one(self, name: str, now_wall: float, staleness_s: float) -> tuple[Any, Validity]:
+    def _resolve_one(
+        self, name: str, now_wall: float, staleness_s: float | None
+    ) -> tuple[Any, Validity]:
         """Resolve a single input name to ``(value, effective_validity)``.
 
         Checks ``self._tick_outputs`` first (an already-computed node
@@ -355,10 +367,11 @@ class ComputeEngine:
         now_wall : float
             Current wall-clock epoch seconds, used for the staleness
             comparison against the point's own timestamp.
-        staleness_s : float
-            The owning node's :attr:`ComputeNode.staleness_s` — an
-            input older than this is treated as invalid regardless of
-            its own validity.
+        staleness_s : float or None
+            This input's limit from :meth:`ComputeNode.staleness_for`
+            — an input older than this is treated as invalid regardless
+            of its own validity. ``None`` skips the age check (for
+            points written to SMAX only on change).
 
         Returns
         -------
@@ -381,6 +394,9 @@ class ComputeEngine:
         if value is None:
             return None, Validity.INVALID_NO_DATA
 
+        if staleness_s is None:
+            return value, mp.validity
+
         try:
             stale = (now_wall - mp.time.unix) > staleness_s
         except (AttributeError, TypeError, ValueError):
@@ -395,6 +411,20 @@ class ComputeEngine:
             return value, Validity.INVALID_NO_DATA
 
         return value, mp.validity
+
+    def _timestamp_of(self, name: str) -> float | None:
+        """Epoch seconds of ``name``'s last SMAX write, or ``None``.
+
+        ``None`` for a same-tick computed output (its write time is
+        this tick, not meaningful to a consumer), a missing point, or
+        a point with no usable timestamp.
+        """
+        if name in self._tick_outputs:
+            return None
+        try:
+            return float(self._monitor_system.get_monitor_point(name).time.unix)
+        except (KeyError, AttributeError, TypeError, ValueError):
+            return None
 
     def _resolve_inputs(self, node: ComputeNode, now_wall: float):
         """Resolve every input for ``node``, applying its invalid-input policy.
@@ -427,20 +457,20 @@ class ComputeEngine:
         if isinstance(node.inputs, dict):
             resolved: dict[str, ResolvedInput] = {}
             for key, name in node.inputs.items():
-                value, validity = self._resolve_one(name, now_wall, node.staleness_s)
+                value, validity = self._resolve_one(name, now_wall, node.staleness_for(key))
                 if validity == Validity.INVALID_NO_DATA:
                     return None
-                resolved[key] = ResolvedInput(name, value, validity)
+                resolved[key] = ResolvedInput(name, value, validity, self._timestamp_of(name))
             return resolved
 
         resolved_list: list[ResolvedInput] = []
         for name in node.inputs:
-            value, validity = self._resolve_one(name, now_wall, node.staleness_s)
+            value, validity = self._resolve_one(name, now_wall, node.staleness_for(None))
             if validity == Validity.INVALID_NO_DATA:
                 if node.invalid_inputs == "propagate":
                     return None
                 continue
-            resolved_list.append(ResolvedInput(name, value, validity))
+            resolved_list.append(ResolvedInput(name, value, validity, self._timestamp_of(name)))
         if not resolved_list:
             return None
         return resolved_list
@@ -511,7 +541,10 @@ class ComputeEngine:
             return {name: (None, Validity.INVALID_NO_DATA) for name in node.output_names}
 
         try:
-            ctx = ComputeContext(clock=self._clock, state=node.state, params=node.params)
+            ctx = ComputeContext(
+                clock=self._clock, state=node.state, params=node.params,
+                wall_clock=self._wall_clock,
+            )
             fn = get_function(node.function)
             outcome = fn(resolved, ctx)
 

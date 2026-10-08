@@ -163,7 +163,42 @@ class MonitorSystem(treelib.Tree):
 
     def read_all(self, client: SmaxRedisClient) -> None:
         """Pull current values from SMAX for every MonitorPoint in the tree."""
-        for mp in self.all_monitor_points():
+        self._pull(self.all_monitor_points(), client)
+
+    def read(self, canonical_names, client: SmaxRedisClient) -> None:
+        """Pull current values from SMAX for only the named MonitorPoints.
+
+        :meth:`read_all` walks the whole tree (~12k points for the full
+        ``smax.json``, ~13 s against valkey), which is far too slow for a
+        consumer on a seconds-scale tick that only needs a few hundred
+        points, e.g. :class:`slama.monitor.compute.engine.ComputeEngine`.
+
+        Parameters
+        ----------
+        canonical_names : iterable of str
+            Canonical names to refresh. Names not in the tree are
+            skipped silently (load-time config validation is where an
+            unknown name should be caught).
+        client : SmaxRedisClient
+            Client used for ``smax_pull``.
+        """
+        mps = []
+        for name in canonical_names:
+            try:
+                mps.append(self.get_monitor_point(name))
+            except KeyError:
+                continue
+        self._pull(mps, client)
+
+    @staticmethod
+    def _pull(mps, client: SmaxRedisClient) -> None:
+        """``smax_pull`` each MonitorPoint in ``mps`` and update it in place.
+
+        A failed pull is reported and skipped; the point keeps its
+        previous value (and timestamp, so staleness checks still see
+        its true age).
+        """
+        for mp in mps:
             try:
                 result = client.smax_pull(mp.table, mp.key)
             except Exception as exc:
