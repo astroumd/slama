@@ -568,6 +568,33 @@ def drive_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     return _label(code, DRIVE_STATUS_LABELS, unknown="???")
 
 
+def _decode_chopper(bits, ts, ctx: ComputeContext) -> tuple[int, bool, bool, bool]:
+    """Decode ``RM_CHOPPER_STATUS_BITS_V16_B`` as ``arrayMonitor.c:469-482`` does.
+
+    Parameters
+    ----------
+    bits : array-like
+        The 16-byte chopper status vector.
+    ts : int or float
+        ``RM_CHOPPER_MONITOR_TIMESTAMP_L`` (Unix seconds).
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    tuple of (int, bool, bool, bool)
+        ``(pos_err, chopping, focus_curve, stale)``: position-error bits
+        from byte 5 (X=8, Y=4, Z=2, tilt=1), chopping when byte 4 == 2,
+        focus curve on when byte 10 == 1, and heartbeat older than
+        :data:`CHOPPER_STALE_S`.
+    """
+    pos_err = int(_array_elem(bits, _CHOP_POS_ERR_BITS)) & 0x0F
+    chopping = int(_array_elem(bits, _CHOP_P20)) == 2
+    focus_curve = int(_array_elem(bits, _CHOP_UPDATE_STATUS)) == 1
+    stale = abs(_age_s(ts, ctx)) > CHOPPER_STALE_S
+    return pos_err, chopping, focus_curve, stale
+
+
 @compute_function("chopper_status")
 def chopper_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
     """Chopper status label and focus-curve flag (``arrayMonitor.c:469-482, 2015-2058``).
@@ -604,13 +631,10 @@ def chopper_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dic
         stale -> ``INVALID_NO_DATA`` for both roles, so a stale
         antenna drops out of the array focus-curve count.
     """
-    focus_curve = int(_array_elem(inputs["bits"].value, _CHOP_UPDATE_STATUS)) == 1
-    if abs(_age_s(inputs["ts"].value, ctx)) > CHOPPER_STALE_S:
+    pos_err, chopping, focus_curve, stale = _decode_chopper(inputs["bits"].value, inputs["ts"].value, ctx)
+    if stale:
         return {"status": ("stale", Validity.INVALID_NO_DATA),
                 "focus_curve": (focus_curve, Validity.INVALID_NO_DATA)}
-
-    pos_err = int(_array_elem(inputs["bits"].value, _CHOP_POS_ERR_BITS)) & 0x0F
-    chopping = int(_array_elem(inputs["bits"].value, _CHOP_P20)) == 2
 
     if pos_err == 0 and not chopping:
         if focus_curve:
@@ -1443,3 +1467,284 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
                 else (None, Validity.INVALID_NO_DATA))
     return {"status": status, "progress_s": progress_s, "length_s": length_s,
             "scan_age_s": scan_age}
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port — validation checks (goals/monsubsys_arrayMonitor.md
+# "New point? = No" rows that need logic beyond a static threshold; the
+# "wacko" range checks are deferred pending the observatory team).
+# ---------------------------------------------------------------------------
+
+SUN_SAFE_CRITICAL_MIN = 10
+"""``arrayMonitor.c:1912-1926``: sun-safe minutes below this are dimmed (critical)."""
+
+POINTING_OFFSET_TOLERANCE_ARCSEC = 0.02
+"""``arrayMonitor.c:1060-1071``: RA/Dec offsets must agree across antennas to this."""
+
+PALM_OFF_BIT = 0x01000000
+"""``arrayMonitor.c:1750-1754``: SCB fault-word bit shown as "Palm Off"."""
+
+WAVEPLATE_LABELS = {1: "R", 2: "L"}
+"""``printWPOrientation()`` (``arrayMonitor.c:2648-2661``)."""
+
+M3_LABELS = {0: "???", 1: "close", 2: "open", 3: "moving", 4: "-----", 5: "close?", 6: "open?"}
+"""``RM_M3STATE_B`` labels (``arrayMonitor.c:2073``); out-of-range codes are clamped to 4."""
+
+M3_DOOR_OPEN_CODES = (2, 6)
+"""``mirrorDoorIsOpen()`` (``arrayMonitor.c:2792-2795``)."""
+
+EL_DRIVE_STUCK_S = 40.0
+"""``arrayMonitor.c:2024-2028``: elevation drive in state 3 for > 40 cycles (~s) beeps."""
+
+_EL_DRV_STATE_STUCK = 3
+
+
+def _antenna_index(ctx: ComputeContext) -> int:
+    """``ctx.params["ant"]`` (a ``"{i}"``-substituted string) as an int."""
+    return int(ctx.params["ant"])
+
+
+@compute_function("sun_safe_minutes")
+def sun_safe_minutes(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Minutes the antenna can stay sun-safe vs the required margin (``arrayMonitor.c:1912-1926``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"present"``: ``RM_PRESENT_SUN_SAFE_MINUTES_S``; ``"required"``:
+        ``RM_REQUIERD_SUN_SAFE_MINUTES_S`` (misspelling is the RM name).
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    tuple of (int, Validity)
+        The present minutes. Only ``0 < present < required`` is flagged,
+        as in the C (a value <= 0, e.g. the -1 seen when idle, means
+        "not applicable"): ``VALID_ERROR`` below
+        :data:`SUN_SAFE_CRITICAL_MIN`, else ``VALID_WARNING``. Otherwise
+        ``VALID_GOOD``.
+    """
+    present = int(inputs["present"].value)
+    required = int(inputs["required"].value)
+    if 0 < present < required:
+        return present, (Validity.VALID_ERROR if present < SUN_SAFE_CRITICAL_MIN
+                         else Validity.VALID_WARNING)
+    return present, Validity.VALID_GOOD
+
+
+@compute_function("pointing_offset_spread")
+def pointing_offset_spread(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Largest RA/Dec offset disagreement across online antennas (``arrayMonitor.c:1053-1071``).
+
+    The C compares antennas above a reference antenna against it and
+    stops at the first mismatch; this port takes the full spread
+    (max - min) over every online antenna, for RA and Dec separately,
+    and reports the larger.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"raoff{i}"``, ``"decoff{i}"`` (``RM_RAOFF_ARCSEC_D``,
+        ``RM_DECOFF_ARCSEC_D``) for each antenna in
+        ``ctx.params["antennas"]``, and ``"online"``
+        (``DSM_ONLINE_ANTENNAS_V11_B``, indexed by antenna number).
+    ctx : ComputeContext
+        ``ctx.params["antennas"]``: antenna numbers to consider.
+
+    Returns
+    -------
+    float or tuple of (float or None, Validity)
+        Spread in arcsec (the output's ``err_high`` applies
+        :data:`POINTING_OFFSET_TOLERANCE_ARCSEC`); ``(0.0, VALID_GOOD)``
+        with fewer than two online antennas.
+    """
+    ants = [a for a in ctx.params["antennas"] if _is_one(_array_elem(inputs["online"].value, a))]
+    if len(ants) < 2:
+        return 0.0, Validity.VALID_GOOD
+    spreads = []
+    for axis in ("raoff", "decoff"):
+        vals = [float(inputs[f"{axis}{a}"].value) for a in ants]
+        spreads.append(max(vals) - min(vals))
+    return max(spreads)
+
+
+@compute_function("scan_flagged")
+def scan_flagged(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Antenna data flagged by the scan flags (``arrayMonitor.c:1699, 1724-1739``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"flags"``: ``DSM_SCAN_FLAGS_V11_V2_L`` (11 x 2 int32, read
+        unsigned); ``"status"``: ``RM_ANTENNA_STATUS_S``; ``"online"``:
+        ``DSM_ONLINE_ANTENNAS_V11_B``.
+    ctx : ComputeContext
+        ``ctx.params["ant"]``: antenna number (row of the flag array).
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_WARNING)`` if the antenna is in interferometry
+        mode (status 1) and online, and any bit is set in *both* of its
+        two flag words; else ``(False, VALID_GOOD)``.
+    """
+    ant = _antenna_index(ctx)
+    if int(inputs["status"].value) != 1 or not _is_one(_array_elem(inputs["online"].value, ant)):
+        return False, Validity.VALID_GOOD
+    row = np.asarray(inputs["flags"].value).reshape(-1, 2)[ant]
+    flagged = (int(row[0]) & 0xFFFFFFFF) & (int(row[1]) & 0xFFFFFFFF) != 0
+    return flagged, (Validity.VALID_WARNING if flagged else Validity.VALID_GOOD)
+
+
+@compute_function("palm_off")
+def palm_off(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
+    """SCB "Palm Off" bit (``arrayMonitor.c:1750-1754``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"faultword"``: ``RM_SCB_FAULTWORD_L``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    bool
+        True if :data:`PALM_OFF_BIT` is set. Informational, as in the C
+        (which prints it without an alarm), so no validity is asserted.
+    """
+    return bool(int(inputs["faultword"].value) & PALM_OFF_BIT)
+
+
+@compute_function("antenna_online")
+def antenna_online(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Whether one antenna is online (``arrayMonitor.c:1794, 1809-1811``, "OFFLIN").
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"online"``: ``DSM_ONLINE_ANTENNAS_V11_B``.
+    ctx : ComputeContext
+        ``ctx.params["ant"]``: antenna number (vector index).
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_GOOD)`` or ``(False, VALID_WARNING)``.
+    """
+    online = _is_one(_array_elem(inputs["online"].value, _antenna_index(ctx)))
+    return online, (Validity.VALID_GOOD if online else Validity.VALID_WARNING)
+
+
+@compute_function("waveplate")
+def waveplate(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Waveplate orientation label (``printWPOrientation()``, ``arrayMonitor.c:2648-2661``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"status"``: ``RM_WAVEPLATE_ROTATION_STATUS_S``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"R"``, ``"L"``, or ``"?"``; validity from the output's
+        ``state_validity``.
+    """
+    return _label(inputs["status"].value, WAVEPLATE_LABELS)
+
+
+@compute_function("m3_state")
+def m3_state(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
+    """M3 mirror door state (``arrayMonitor.c:467-468, 2073-2125, 2792-2795``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"state"``: ``RM_M3STATE_B``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    dict
+        ``"state"``: a :data:`M3_LABELS` label (codes outside 0..6 are
+        clamped to 4, ``"-----"``, as in the C; validity from the
+        output's ``state_validity``); ``"door_open"``: True for codes in
+        :data:`M3_DOOR_OPEN_CODES`.
+    """
+    code = int(inputs["state"].value)
+    if code < 0 or code > 6:
+        code = 4
+    return {"state": M3_LABELS[code], "door_open": code in M3_DOOR_OPEN_CODES}
+
+
+@compute_function("el_drive_fault")
+def el_drive_fault(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Elevation drive stuck in state 3 while the chopper reports a problem (``arrayMonitor.c:2016-2028``).
+
+    The C counts refresh cycles with ``RM_EL_DRV_STATE_B == 3`` while
+    the chopper status is not OK (position error, chopping, or stale)
+    and beeps after 40; a state above 3 resets it. This port uses
+    elapsed time (:data:`EL_DRIVE_STUCK_S`), and also resets when the
+    chopper is OK or the state leaves 3 (the C's static counter never
+    reset otherwise).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"el_state"``: ``RM_EL_DRV_STATE_B``; ``"bits"``, ``"ts"``:
+        the chopper status vector and heartbeat (see
+        :func:`_decode_chopper`).
+    ctx : ComputeContext
+        ``ctx.state["since"]``: monotonic time the condition began.
+
+    Returns
+    -------
+    tuple of (bool, Validity)
+        ``(True, VALID_ERROR)`` once the condition has held longer than
+        :data:`EL_DRIVE_STUCK_S`; else ``(False, VALID_GOOD)``.
+    """
+    pos_err, chopping, _, stale = _decode_chopper(inputs["bits"].value, inputs["ts"].value, ctx)
+    chopper_not_ok = bool(pos_err) or chopping or stale
+    now = ctx.clock()
+    if chopper_not_ok and int(inputs["el_state"].value) == _EL_DRV_STATE_STUCK:
+        since = ctx.state.setdefault("since", now)
+        fault = now - since > EL_DRIVE_STUCK_S
+    else:
+        ctx.state.pop("since", None)
+        fault = False
+    return fault, (Validity.VALID_ERROR if fault else Validity.VALID_GOOD)
+
+
+@compute_function("equipment_room_temp")
+def equipment_room_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Summit equipment-room temperature alarm (``arrayMonitor.c:2470-2502``).
+
+    The C's second check, the Hilo over-temperature alarm signalled by
+    the existence of ``/global/hiloOverTemperatureAlarm``, is not
+    ported (it is a file, not an SMAX point).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"temp"``, ``"limit"``, ``"alarm"``:
+        ``DSM_ANALOG_ROOM_TEMPERATURE_F``, ``_HITEMPLIMIT_F``,
+        ``_HITEMPALARM_S`` on colossus. The C's 600 s staleness is the
+        engine's ``staleness_s`` on ``"temp"`` and ``"alarm"``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    float or tuple of (float, Validity)
+        The temperature (degC); ``VALID_ERROR`` if the alarm flag is 1
+        and the temperature is above the limit (strict, as in the C).
+    """
+    temp = float(inputs["temp"].value)
+    if _is_one(inputs["alarm"].value) and temp > float(inputs["limit"].value):
+        return temp, Validity.VALID_ERROR
+    return temp
