@@ -1,8 +1,12 @@
 """Unit tests for DataBridge (no SMAX server required)."""
+from datetime import datetime, timezone
+
 import pytest
 from pathlib import Path
+from slama.monitor.monitorpoint import Validity
 from slama.web.data_bridge import (
     DataBridge, CSS_GOOD, CSS_WARNING, CSS_ERROR, CSS_NODATA, CSS_UNCHECKED,
+    validity_to_css,
 )
 
 SMAX_JSON = Path(__file__).parents[2] / "conf" / "smax.json"
@@ -150,3 +154,78 @@ class TestLoadThresholdsFromSmaxJson:
         db = DataBridge(smax_path=SMAX_JSON)
         # RM_TRACK_EL_F warn_low=15.0 — value of 10.0 should be CSS_WARNING
         assert db._compute_css_class("RM:acc1:RM_TRACK_EL_F", 10.0) == CSS_WARNING
+
+
+# ---------------------------------------------------------------------------
+# Compute-engine (monitorsystem:) points — pushed validity, freshness-gated
+# ---------------------------------------------------------------------------
+
+class _FakeResult(float):
+    """Stand-in for an ``SmaxFloat`` pulled from SMAX: a value with ``.timestamp``."""
+
+    def __new__(cls, value, epoch):
+        obj = super().__new__(cls, value)
+        obj.timestamp = None if epoch is None else datetime.fromtimestamp(epoch, tz=timezone.utc)
+        return obj
+
+
+class _FakeMetaClient:
+    """Minimal client exposing only ``smax_pull_meta`` for validity."""
+
+    def __init__(self, meta):
+        self.meta = meta
+
+    def smax_pull_meta(self, meta, table):
+        return self.meta.get((meta, table))
+
+
+NAME = "monitorsystem:antenna:1:drive_status"
+NOW = 1_790_000_000.0
+
+
+class TestValidityToCss:
+    @pytest.mark.parametrize("validity, css", [
+        (Validity.INVALID_NO_DATA, CSS_NODATA),
+        (Validity.INVALID_NO_HW, CSS_NODATA),
+        (Validity.VALID_GOOD, CSS_GOOD),
+        (Validity.VALID, CSS_GOOD),
+        (Validity.VALID_WARNING_HIGH, CSS_WARNING),
+        (Validity.VALID_ERROR, CSS_ERROR),
+        (Validity.VALID_ERROR_LOW, CSS_ERROR),
+        (Validity.VALID_NOT_CHECKED, CSS_UNCHECKED),
+    ])
+    def test_mapping(self, validity, css):
+        assert validity_to_css(validity) == css
+
+
+class TestComputedCssClass:
+    def test_fresh_point_uses_pushed_validity(self):
+        client = _FakeMetaClient({("validity", NAME): str(int(Validity.VALID_ERROR))})
+        css = DataBridge()._computed_css_class(client, NAME, _FakeResult(1.0, NOW - 1), now=NOW)
+        assert css == CSS_ERROR
+
+    def test_stale_point_is_nodata_even_if_last_verdict_good(self):
+        """A stopped engine leaves its last verdict in <validity>; the timestamp must gate it."""
+        client = _FakeMetaClient({("validity", NAME): str(int(Validity.VALID_GOOD))})
+        css = DataBridge()._computed_css_class(client, NAME, _FakeResult(1.0, NOW - 60), now=NOW)
+        assert css == CSS_NODATA
+
+    def test_max_age_is_configurable(self):
+        client = _FakeMetaClient({("validity", NAME): str(int(Validity.VALID_GOOD))})
+        db = DataBridge(computed_max_age_s=120.0)
+        assert db._computed_css_class(client, NAME, _FakeResult(1.0, NOW - 60), now=NOW) == CSS_GOOD
+
+    def test_missing_timestamp_is_nodata(self):
+        client = _FakeMetaClient({("validity", NAME): str(int(Validity.VALID_GOOD))})
+        css = DataBridge()._computed_css_class(client, NAME, _FakeResult(1.0, None), now=NOW)
+        assert css == CSS_NODATA
+
+    def test_missing_metadata_is_nodata(self):
+        css = DataBridge()._computed_css_class(
+            _FakeMetaClient({}), NAME, _FakeResult(1.0, NOW), now=NOW)
+        assert css == CSS_NODATA
+
+    def test_garbage_metadata_is_nodata(self):
+        client = _FakeMetaClient({("validity", NAME): "banana"})
+        css = DataBridge()._computed_css_class(client, NAME, _FakeResult(1.0, NOW), now=NOW)
+        assert css == CSS_NODATA

@@ -76,21 +76,34 @@ def main(argv: list[str] | None = None) -> int:
         help="Run a single tick and exit, instead of looping",
     )
     parser.add_argument(
+        "--as-of", type=float, default=None, metavar="EPOCH",
+        help="Evaluate as if the wall clock read EPOCH (Unix seconds), for "
+             "replaying a static SMAX snapshot whose inputs would otherwise "
+             "all be stale. Outputs are written with that timestamp.",
+    )
+    parser.add_argument(
         "--log-level", default="INFO",
         help="stdlib logging level (default: INFO)",
     )
     args = parser.parse_args(argv)
 
+    # force=True: smax-python calls logging.basicConfig() at import time,
+    # which would otherwise make this call a silent no-op (and hide the
+    # --once results, logged at INFO).
     logging.basicConfig(
         level=args.log_level.upper(),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        force=True,
     )
 
     monitor_system = MonitorSystem(args.smax_json)
     config = ComputeConfig.from_file(args.config, monitor_system)
     client = SmaxRedisClient(args.host, redis_port=args.port)
 
-    engine = ComputeEngine(config, monitor_system, client=client)
+    engine_kwargs = {}
+    if args.as_of is not None:
+        engine_kwargs["wall_clock"] = lambda: args.as_of
+    engine = ComputeEngine(config, monitor_system, client=client, **engine_kwargs)
     if args.interval is not None:
         engine.set_interval(args.interval)
 

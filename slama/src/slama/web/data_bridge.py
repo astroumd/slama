@@ -25,6 +25,43 @@ CSS_UNCHECKED = "cell-unchecked"
 # Maximum history entries per canonical name (~1 hour at 2s interval)
 _HISTORY_MAXLEN = 1800
 
+# Canonical-name prefix of points written by slama.monitor.compute.
+COMPUTED_PREFIX = "monitorsystem:"
+
+# Default age limit for a computed point before its pushed validity is
+# distrusted: 3 x the 2 s default ComputeEngine interval.
+DEFAULT_COMPUTED_MAX_AGE_S = 6.0
+
+
+def validity_to_css(validity) -> str:
+    """Map a :class:`~slama.monitor.monitorpoint.Validity` to a cell CSS class.
+
+    Parameters
+    ----------
+    validity : Validity
+        A validity state, e.g. as pushed by the compute engine.
+
+    Returns
+    -------
+    str
+        ``CSS_NODATA`` for any ``INVALID_*`` state, ``CSS_ERROR`` /
+        ``CSS_WARNING`` for any ``VALID_ERROR*`` / ``VALID_WARNING*``
+        state, ``CSS_UNCHECKED`` for ``VALID_NOT_CHECKED``, and
+        ``CSS_GOOD`` for ``VALID`` / ``VALID_GOOD``.
+    """
+    name = validity.name
+    if name.startswith("INVALID"):
+        return CSS_NODATA
+    if name.startswith("VALID_ERROR"):
+        return CSS_ERROR
+    if name.startswith("VALID_WARNING"):
+        return CSS_WARNING
+    if name == "VALID_NOT_CHECKED":
+        return CSS_UNCHECKED
+    if name in ("VALID", "VALID_GOOD"):
+        return CSS_GOOD
+    return CSS_UNCHECKED
+
 
 @dataclass
 class CellData:
@@ -55,7 +92,8 @@ class DataBridge:
     """Fetches SMAX data and computes validity for web display cells."""
 
     def __init__(self, host: str = "localhost", port: int = 6380,
-                 smax_path: Path = None):
+                 smax_path: Path = None,
+                 computed_max_age_s: float = DEFAULT_COMPUTED_MAX_AGE_S):
         """Initialize the DataBridge.
 
         Parameters
@@ -68,9 +106,18 @@ class DataBridge:
             Path to ``smax.json`` for loading validity thresholds from the
             MonitorSystem hierarchy. If None, no thresholds are loaded and
             all numeric values receive ``cell-good``.
+        computed_max_age_s : float, optional
+            For ``monitorsystem:`` (compute-engine) points only: the
+            maximum age, in seconds, of the point's SMAX timestamp for
+            its pushed ``<validity>`` metadata to be trusted. The engine
+            re-writes every output each tick, so an older timestamp
+            means the engine has stopped or the computation is failing,
+            and the cell is shown as no-data. Default is
+            :data:`DEFAULT_COMPUTED_MAX_AGE_S`.
         """
         self._host = host
         self._port = port
+        self._computed_max_age_s = computed_max_age_s
         self._client = None  # lazy connection
         self._thresholds: dict[str, dict] = {}
         self._history: dict[str, deque] = {}  # canonical_name → deque of (timestamp, value)
@@ -211,6 +258,53 @@ class DataBridge:
             return CSS_GOOD
 
         return CSS_UNCHECKED
+
+    def _computed_css_class(self, client, canonical_name: str, result,
+                            now: float = None) -> str:
+        """CSS class for a compute-engine point, from its pushed validity.
+
+        Engine outputs carry their verdict in the ``<validity>``
+        metadata hash, which can express things the output's value alone
+        cannot (a stale heartbeat input, a function-asserted
+        ``(value, Validity)``). That verdict is only as current as the
+        engine, though: ``<validity>`` is never cleared, so a stopped
+        engine would leave its last verdict on screen indefinitely. The
+        point's own SMAX timestamp, refreshed by the engine every tick,
+        gates it.
+
+        Parameters
+        ----------
+        client : SmaxRedisClient
+            Connected client, used to pull the ``validity`` metadata.
+        canonical_name : str
+            ``monitorsystem:...`` canonical name.
+        result : SmaxVarBase
+            The value just pulled for ``canonical_name``; its
+            ``.timestamp`` (a ``datetime``) is the engine's last write.
+        now : float or None, optional
+            Epoch seconds to compare against; defaults to
+            :func:`time.time`. Injectable for tests.
+
+        Returns
+        -------
+        str
+            ``CSS_NODATA`` if the timestamp is missing or older than
+            ``computed_max_age_s``, or the metadata is missing or
+            unparseable; otherwise :func:`validity_to_css` of the pushed
+            validity.
+        """
+        from slama.monitor.monitorpoint import Validity
+
+        now = time.time() if now is None else now
+        ts = getattr(result, "timestamp", None)
+        if ts is None or now - ts.timestamp() > self._computed_max_age_s:
+            return CSS_NODATA
+        raw = client.smax_pull_meta("validity", canonical_name)
+        try:
+            validity = Validity(int(raw))
+        except (TypeError, ValueError):
+            return CSS_NODATA
+        return validity_to_css(validity)
 
     def _record_history(self, canonical_name: str, raw_value) -> None:
         """Append a numeric value to the history ring buffer.
@@ -356,10 +450,20 @@ class DataBridge:
 
         self._record_history(canonical_name, raw_value)
 
+        if canonical_name.startswith(COMPUTED_PREFIX):
+            try:
+                css_class = self._computed_css_class(client, canonical_name, result)
+            except Exception:
+                logger.debug("Failed to fetch validity for %s", canonical_name,
+                             exc_info=True)
+                css_class = CSS_NODATA
+        else:
+            css_class = self._compute_css_class(canonical_name, raw_value)
+
         return CellData(
             canonical_name=canonical_name,
             value=self._format_value(raw_value, fmt),
-            css_class=self._compute_css_class(canonical_name, raw_value),
+            css_class=css_class,
             cell_id=self._make_cell_id(canonical_name),
             is_numeric=isinstance(raw_value, Number) and not isinstance(raw_value, bool),
         )

@@ -108,7 +108,7 @@ class ComputeConfig:
         """
         defaults = raw.get("defaults", {}) or {}
         default_interval = float(defaults.get("interval_s", 5.0))
-        default_staleness = float(defaults.get("staleness_s", 30.0))
+        default_staleness = _parse_staleness(defaults.get("staleness_s", 30.0), "defaults")
         default_invalid_inputs = defaults.get("invalid_inputs", "skip")
 
         flat_entries: list[dict] = []
@@ -142,6 +142,7 @@ class ComputeConfig:
             raw_inputs = entry.get("inputs")
             if raw_inputs is None:
                 raise ValueError(f"computation {output!r} missing 'inputs'")
+            raw_inputs, input_staleness = _split_input_staleness(output, raw_inputs)
             inputs = _resolve_inputs_spec(output, raw_inputs, monitor_system)
 
             if "interval_s" in entry:
@@ -159,8 +160,11 @@ class ComputeConfig:
                 inputs=inputs,
                 params=dict(entry.get("params", {})),
                 invalid_inputs=entry.get("invalid_inputs", default_invalid_inputs),
-                staleness_s=float(entry.get("staleness_s", default_staleness)),
+                staleness_s=_parse_staleness(
+                    entry.get("staleness_s", default_staleness), output
+                ),
                 interval_s=entry.get("interval_s"),
+                input_staleness=input_staleness,
             ))
 
         ordered = _build_dependency_order(nodes)
@@ -402,6 +406,89 @@ def _resolve_pattern(pattern: str, monitor_system: MonitorSystem) -> list[str]:
                 )
             resolved.append(candidate)
     return resolved
+
+
+def _parse_staleness(raw, where) -> float | None:
+    """Coerce a config ``staleness_s`` value to ``float`` or ``None``.
+
+    Parameters
+    ----------
+    raw : int, float, or None
+        The raw JSON value. ``null`` (``None``) means "never stale".
+    where : str or dict
+        Identifies the owning entry (or ``"defaults"``) in error
+        messages only.
+
+    Returns
+    -------
+    float or None
+        ``float(raw)``, or ``None`` if ``raw`` is ``None``.
+
+    Raises
+    ------
+    ValueError
+        If ``raw`` is not ``None`` and not convertible to ``float``, or
+        is negative.
+    """
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        raise ValueError(f"computation {where!r}: staleness_s must be a number or null, got {raw!r}")
+    if value < 0:
+        raise ValueError(f"computation {where!r}: staleness_s must be >= 0, got {raw!r}")
+    return value
+
+
+def _split_input_staleness(output, raw_inputs):
+    """Separate per-input ``staleness_s`` overrides from dict-form input patterns.
+
+    A dict-form input value may be either a plain pattern string or
+    ``{"name": <pattern>, "staleness_s": <number|null>}``. The object
+    form exists for RM status points that are written to SMAX only on
+    change: their SMAX timestamp can be days old while the value is
+    still correct, so they are exempted (``null``) and the compute
+    function checks an RM heartbeat input instead.
+
+    Parameters
+    ----------
+    output : str or dict
+        The owning entry's ``"output"``, for error messages only.
+    raw_inputs : list or dict
+        The entry's raw ``"inputs"``. List form is returned unchanged
+        (per-input overrides are dict-form only).
+
+    Returns
+    -------
+    tuple of (list or dict, dict of str to (float or None))
+        ``raw_inputs`` with every object-form value replaced by its
+        ``"name"`` pattern, and the role -> staleness override map.
+
+    Raises
+    ------
+    ValueError
+        If an object-form input lacks ``"name"``, has keys other than
+        ``"name"``/``"staleness_s"``, or has an invalid ``staleness_s``.
+    """
+    if not isinstance(raw_inputs, dict):
+        return raw_inputs, {}
+    patterns: dict = {}
+    overrides: dict[str, float | None] = {}
+    for role, spec in raw_inputs.items():
+        if isinstance(spec, dict):
+            extra = set(spec) - {"name", "staleness_s"}
+            if "name" not in spec or extra:
+                raise ValueError(
+                    f"computation {output!r} input {role!r}: object form must be "
+                    f'{{"name": ..., "staleness_s": ...}}, got {spec!r}'
+                )
+            patterns[role] = spec["name"]
+            if "staleness_s" in spec:
+                overrides[role] = _parse_staleness(spec["staleness_s"], output)
+        else:
+            patterns[role] = spec
+    return patterns, overrides
 
 
 def _resolve_inputs_spec(output: str, raw_inputs, monitor_system: MonitorSystem):

@@ -405,3 +405,74 @@ class TestMultiOutput:
         multi_pos = node_positions[("monitorsystem:weather:temp_max", "monitorsystem:weather:temp_min")]
         downstream_pos = node_positions["monitorsystem:array:worst_status"]
         assert multi_pos < downstream_pos
+
+
+# ---------------------------------------------------------------------------
+# Per-input staleness_s (object-form dict inputs)
+# ---------------------------------------------------------------------------
+
+class TestPerInputStaleness:
+    def _cfg(self, inputs, **entry):
+        return ComputeConfig.from_dict({
+            "computations": [dict({
+                "output": "monitorsystem:rx:H:tuning_status",
+                "function": "sequence_validity",
+                "inputs": inputs,
+                "params": {"stuck_timeout_s": 90},
+            }, **entry)],
+        }, make_ms())
+
+    def test_object_form_resolves_name_and_records_override(self):
+        cfg = self._cfg({"state": {"name": "rx:H:tuning_state", "staleness_s": None}})
+        node = cfg.nodes[0]
+        assert node.inputs == {"state": "rx:H:tuning_state"}
+        assert node.input_staleness == {"state": None}
+        assert node.staleness_for("state") is None
+
+    def test_numeric_override(self):
+        node = self._cfg({"state": {"name": "rx:H:tuning_state", "staleness_s": 600}}).nodes[0]
+        assert node.staleness_for("state") == 600.0
+
+    def test_role_without_override_falls_back_to_entry(self):
+        node = self._cfg({"state": {"name": "rx:H:tuning_state"}}, staleness_s=45).nodes[0]
+        assert node.input_staleness == {}
+        assert node.staleness_for("state") == 45.0
+        assert node.staleness_for(None) == 45.0
+
+    def test_entry_level_null(self):
+        node = self._cfg({"state": "rx:H:tuning_state"}, staleness_s=None).nodes[0]
+        assert node.staleness_s is None
+
+    def test_defaults_level_null(self):
+        cfg = ComputeConfig.from_dict({
+            "defaults": {"staleness_s": None},
+            "computations": [{
+                "output": "monitorsystem:array:antennas_online",
+                "function": "count_true",
+                "inputs": ["antenna:1-2:is_online"],
+            }],
+        }, make_ms())
+        assert cfg.nodes[0].staleness_s is None
+
+    @pytest.mark.parametrize("spec", [
+        {"staleness_s": 5},                                  # no name
+        {"name": "rx:H:tuning_state", "stale": 5},           # unknown key
+        {"name": "rx:H:tuning_state", "staleness_s": "x"},   # not a number
+        {"name": "rx:H:tuning_state", "staleness_s": -1},    # negative
+    ])
+    def test_bad_object_form_rejected(self, spec):
+        with pytest.raises(ValueError):
+            self._cfg({"state": spec})
+
+    def test_each_substitutes_nested_name(self):
+        cfg = ComputeConfig.from_dict({
+            "computations": [{"__each__": {"over": "H,V", "as": "rx", "template": {
+                "output": "monitorsystem:rx:{rx}:tuning_status",
+                "function": "sequence_validity",
+                "inputs": {"state": {"name": "rx:{rx}:tuning_state", "staleness_s": None}},
+                "params": {"stuck_timeout_s": 90},
+            }}}],
+        }, make_ms())
+        by_output = {n.output: n for n in cfg.nodes}
+        assert by_output["monitorsystem:rx:V:tuning_status"].inputs == {"state": "rx:V:tuning_state"}
+        assert by_output["monitorsystem:rx:V:tuning_status"].input_staleness == {"state": None}
