@@ -167,7 +167,7 @@ class MonitorSystem(treelib.Tree):
             try:
                 result = client.smax_pull(mp.table, mp.key)
             except Exception as exc:
-                print(f"Failed to read {mp.table}:{mp.key} because {exc}")
+                #print(f"Failed to read {mp.table}:{mp.key} because {exc}")
                 continue
             mp.update(result)
 
