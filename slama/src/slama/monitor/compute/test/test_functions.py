@@ -11,7 +11,14 @@ from slama.monitor.compute.functions import (
     chopper_status,
     clock_offset,
     deice_status,
+    dewar_4k_temp,
     drive_status,
+    hotload_position,
+    line_name,
+    lo_lock_ok,
+    lo_status,
+    rx_label,
+    yig_locked,
     on_source,
     timestamp_age,
     count_true,
@@ -474,3 +481,137 @@ class TestSunDistanceTrackGate:
 
     def test_track_ts_optional(self):
         assert sun_distance_degrees(self._inputs(None), ctx()) == pytest.approx(30.0)
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port: receiver / LO
+# ---------------------------------------------------------------------------
+
+class TestYigLocked:
+    def test_locked(self):
+        assert yig_locked({"locked": ri("y", 1)}, ctx()) == (True, Validity.VALID_GOOD)
+
+    def test_garbage_is_unlocked(self):
+        assert yig_locked({"locked": ri("y", -2113)}, ctx()) == (False, Validity.VALID_WARNING)
+
+
+class TestLoStatus:
+    def _run(self, busy=0, g1=1, y1=1, g2=1, y2=1):
+        vals = {"busy": busy, "gunn1": g1, "yig1": y1, "gunn2": g2, "yig2": y2}
+        return lo_status({k: ri(k, v) for k, v in vals.items()}, ctx())
+
+    def test_all_locked(self):
+        assert self._run() == ("1-1/1-1", Validity.VALID_GOOD)
+
+    def test_tri_state(self):
+        assert self._run(g1=0, g2=-18799) == ("0-1/w-1", Validity.VALID_WARNING)
+
+    @pytest.mark.parametrize("busy, label", [(1, "tuningL"), (2, "tuningH"), (3, "LO adjL"), (4, "LO adjH")])
+    def test_whole_field_busy(self, busy, label):
+        assert self._run(busy=busy) == (label, Validity.VALID_WARNING)
+
+    def test_iv_and_pb_sides(self):
+        assert self._run(busy=6)[0] == "IV/1-1"
+        assert self._run(busy=7)[0] == "1-1/IV"
+        assert self._run(busy=8)[0] == "PB/1-1"
+        assert self._run(busy=9)[0] == "1-1/PB"   # C bug: tested 8 twice
+
+    def test_other_known_busy_shows_locks(self):
+        assert self._run(busy=12)[0] == "1-1/1-1"
+
+    def test_garbage_busy(self):
+        assert self._run(busy=-702) == ("?", Validity.VALID_ERROR)
+        assert self._run(busy=30334) == ("?", Validity.VALID_ERROR)
+
+
+class TestLoLockOk:
+    def _run(self, g1=1, g2=1, y1=1, rest=230e9, age=10.0):
+        return lo_lock_ok({
+            "gunn1": ri("g1", g1), "gunn2": ri("g2", g2), "yig1": ri("y1", y1),
+            "gunn1_ts": ri("t", WALL_NOW - age),
+            "rest_freq": ri("f", np.array([rest, rest])),
+        }, ctx())
+
+    def test_all_locked(self):
+        assert self._run() == (True, Validity.VALID_GOOD)
+
+    def test_low_band_needs_gunn1(self):
+        assert self._run(g2=0) == (True, Validity.VALID_GOOD)
+        assert self._run(g1=0) == (False, Validity.VALID_ERROR)
+
+    def test_high_band_needs_gunn2(self):
+        assert self._run(g1=0, rest=690e9) == (True, Validity.VALID_GOOD)
+        assert self._run(g2=0, rest=690e9) == (False, Validity.VALID_ERROR)
+
+    def test_yig1_always_required(self):
+        assert self._run(y1=0) == (False, Validity.VALID_ERROR)
+
+    def test_stale_heartbeat_is_error_even_if_locked(self):
+        assert self._run(age=91) == (True, Validity.VALID_ERROR)
+
+
+class TestHotloadPosition:
+    def _run(self, status, busy=0, board=None):
+        d = {"status": ri("s", status), "busy": ri("b", busy)}
+        if board is not None:
+            d["optics_board"] = ri("o", board)
+        return hotload_position(d, ctx())
+
+    @pytest.mark.parametrize("status, label", [(1, "Sky"), (3, "Sky"), (2, "Amb"), (4, "Amb"), (5, "Mov"), (0, "?"), (-17101, "?")])
+    def test_labels(self, status, label):
+        assert self._run(status) == label
+
+    def test_linear_load_busy(self):
+        assert self._run(1, busy=12) == "LinLoad"
+
+    def test_no_optics_board(self):
+        assert self._run(1, board=0) == "NoB"
+        assert self._run(1, board=1) == "Sky"
+
+
+class TestRxLabel:
+    @pytest.mark.parametrize("code, label", [("A1", "230"), ("E", "240"), ("B1", "345"), ("C", "400"), ("A2", "A"), ("", "A")])
+    def test_labels(self, code, label):
+        assert rx_label({"code": ri("c", code)}, ctx(params={"default": "A"})) == label
+
+
+class TestLineName:
+    def _run(self, idx, names=("CO2-1", "unknown"), chunks=(1, 3), mrg=(1, 1)):
+        return line_name({"names": ri("n", list(names)), "chunks": ri("c", np.array(chunks)),
+                          "mrg_locked": ri("m", np.array(mrg))}, ctx(params={"index": idx}))
+
+    def test_name(self):
+        assert self._run(0) == ("CO2-1", Validity.VALID_GOOD)
+
+    def test_chunk_fallback(self):
+        assert self._run(1) == ("s03", Validity.VALID_GOOD)
+
+    def test_chunk_out_of_range_is_empty(self):
+        assert self._run(1, chunks=(1, 9)) == ("", Validity.VALID_GOOD)
+
+    def test_yig_unlocked(self):
+        assert self._run(0, mrg=(0, 1)) == ("YIG Unlkd", Validity.VALID_WARNING)
+
+    def test_truncated_to_12(self):
+        assert self._run(0, names=("ABCDEFGHIJKLMNOP", "x"))[0] == "ABCDEFGHIJKL"
+
+
+class TestDewar4kTemp:
+    def _tune6(self, temps, age=5.0, sensor=8):
+        return dewar_4k_temp({"temps": ri("t", np.array(temps, dtype=np.float32)),
+                              "ts": ri("ts", WALL_NOW - age)}, ctx(params={"sensor": sensor}))
+
+    def test_tune6_sensor_index(self):
+        temps = [480, 15.0, 0, 67.8, 1, 1, 1, 1, 3.998, 475, 4.037, 1.4, 1.4, 1.4, 1.4, 1.4]
+        assert self._tune6(temps) == pytest.approx(3.998, abs=1e-4)
+
+    def test_stale_lakeshore(self):
+        t, v = self._tune6([4.0] * 16, age=61)
+        assert v == Validity.INVALID_NO_DATA
+
+    def test_wacko_low(self):
+        t, v = self._tune6([1.4] * 16)
+        assert v == Validity.VALID_ERROR
+
+    def test_wsma_shape(self):
+        assert dewar_4k_temp({"temp": ri("w", 4.076)}, ctx()) == pytest.approx(4.076)
