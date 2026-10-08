@@ -68,7 +68,15 @@
         {"label": "YIG1 locked",         "points": "monitorsystem:antenna:{ant}:yig1_locked"},
         {"label": "YIG2 locked",         "points": "monitorsystem:antenna:{ant}:yig2_locked"},
         {"label": "Load",                "points": "monitorsystem:antenna:{ant}:hotload_position"},
-        {"label": "Dewar 4K (K)",        "points": "monitorsystem:antenna:{ant}:dewar_4k_temp", "format": "{:.2f}"}
+        {"label": "Dewar 4K (K)",        "points": "monitorsystem:antenna:{ant}:dewar_4k_temp", "format": "{:.2f}"},
+        {"label": "Online",              "points": "monitorsystem:antenna:{ant}:online"},
+        {"label": "Scan flagged",        "points": "monitorsystem:antenna:{ant}:scan_flagged"},
+        {"label": "Sun-safe (min)",      "points": "monitorsystem:antenna:{ant}:sun_safe_minutes"},
+        {"label": "M3 door",             "points": "monitorsystem:antenna:{ant}:m3_state"},
+        {"label": "M3 door open",        "points": "monitorsystem:antenna:{ant}:m3_door_open"},
+        {"label": "Waveplate",           "points": "monitorsystem:antenna:{ant}:waveplate"},
+        {"label": "Palm off",            "points": "monitorsystem:antenna:{ant}:palm_off"},
+        {"label": "El drive fault",      "points": "monitorsystem:antenna:{ant}:el_drive_fault"}
       ]
     },
     {
@@ -83,7 +91,9 @@
         {"label": "SWARM scan",         "point": "monitorsystem:array:swarm_scan_status"},
         {"label": "SWARM progress (s)", "point": "monitorsystem:array:swarm_progress_s", "format": "{:.1f}"},
         {"label": "SWARM length (s)",   "point": "monitorsystem:array:swarm_length_s", "format": "{:.1f}"},
-        {"label": "Last scan age (s)",  "point": "monitorsystem:array:scan_age_s", "format": "{:.0f}"}
+        {"label": "Last scan age (s)",  "point": "monitorsystem:array:scan_age_s", "format": "{:.0f}"},
+        {"label": "Pointing offset spread (\")", "point": "monitorsystem:array:pointing_offset_spread_arcsec", "format": "{:.3f}"},
+        {"label": "Equipment room (C)",  "point": "monitorsystem:array:equipment_room_temp", "format": "{:.1f}"}
       ]
     },
     {

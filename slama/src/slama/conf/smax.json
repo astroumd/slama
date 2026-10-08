@@ -5466,7 +5466,8 @@
         },
         "RM_ANTENNA_SMOKE_WARNING_B": {
           "size": "1",
-          "smax_type": "int8"
+          "smax_type": "int8",
+          "err_high": 1
         },
         "RM_ANTENNA_STATUS_S": {
           "size": "1",
@@ -5490,7 +5491,9 @@
         },
         "RM_AZ1_MOT_CUR_AMP_F": {
           "size": "1",
-          "smax_type": "float"
+          "smax_type": "float",
+          "warn_high": 50.0,
+          "err_high": 100.0
         },
         "RM_AZ1_MOT_TEMP_C_F": {
           "size": "1",
@@ -5498,7 +5501,9 @@
         },
         "RM_AZ2_MOT_CUR_AMP_F": {
           "size": "1",
-          "smax_type": "float"
+          "smax_type": "float",
+          "warn_high": 50.0,
+          "err_high": 100.0
         },
         "RM_AZ2_MOT_TEMP_C_F": {
           "size": "1",
@@ -5718,7 +5723,8 @@
         },
         "RM_CHECK_EL_COLLISION_LIMIT_B": {
           "size": "1",
-          "smax_type": "int8"
+          "smax_type": "int8",
+          "err_high": 1
         },
         "RM_CHILLER_TANK_LOW_LEVEL_FAULT_D": {
           "size": "1",
@@ -6534,7 +6540,9 @@
         },
         "RM_IRIG_LOCK_ERROR_B": {
           "size": "1",
-          "smax_type": "int8"
+          "smax_type": "int8",
+          "err_low": -1,
+          "err_high": 1
         },
         "RM_IRIG_MINUS_SYS_TIME_D": {
           "size": "1",
@@ -6754,7 +6762,9 @@
         },
         "RM_PAD_ID_B": {
           "size": "1",
-          "smax_type": "int8"
+          "smax_type": "int8",
+          "err_low": 0,
+          "err_high": 25
         },
         "RM_PAD_ID_IS_FAKE_B": {
           "size": "1",
@@ -7935,7 +7945,9 @@
         "RM_WEATHER_HUMIDITY_F": {
           "description": "Relative Humidity",
           "size": "1",
-          "smax_type": "float"
+          "smax_type": "float",
+          "warn_low": -1,
+          "warn_high": 90
         },
         "RM_WEATHER_MBAR_F": {
           "description": "Atmospheric Pressure",
@@ -12336,6 +12348,19 @@
         "size": "1",
         "smax_type": "boolean"
       },
+      "pointing_offset_spread_arcsec": {
+        "description": "Largest spread of RM_RAOFF/DECOFF_ARCSEC_D across online antennas (arrayMonitor.c offsets inconsistent), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "arcsec",
+        "err_high": 0.02
+      },
+      "equipment_room_temp": {
+        "description": "Summit equipment-room temperature (DSM_ANALOG_ROOM_TEMPERATURE_F); ERROR when its alarm flag is set and it exceeds DSM_ANALOG_ROOM_HITEMPLIMIT_F (arrayMonitor.c 2470-2502), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "C"
+      },
       "source_type_flags": {
         "description": "Source-type letters from DSM_AS_SOURCE_TYPE_L bits 1/2/4/8 -> F/B/G/I (arrayMonitor.c 921-930), from slama.monitor.compute",
         "size": "1",
@@ -12451,6 +12476,62 @@
             "warn_high": 0.5,
             "err_low": -1.0,
             "err_high": 1.0
+          },
+          "sun_safe_minutes": {
+            "description": "Antenna {i} RM_PRESENT_SUN_SAFE_MINUTES_S; WARNING if below RM_REQUIERD_SUN_SAFE_MINUTES_S, ERROR if also < 10 (arrayMonitor.c 1912-1926), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "integer",
+            "unit": "min"
+          },
+          "scan_flagged": {
+            "description": "Antenna {i} in interferometry mode and online with a bit set in both DSM_SCAN_FLAGS_V11_V2_L words (arrayMonitor.c Flagged), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "palm_off": {
+            "description": "Antenna {i} SCB fault word bit 0x01000000 (arrayMonitor.c Palm Off; informational), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "online": {
+            "description": "Antenna {i} online per DSM_ONLINE_ANTENNAS_V11_B (arrayMonitor.c OFFLIN), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "waveplate": {
+            "description": "Antenna {i} waveplate orientation R, L, or ? (arrayMonitor.c printWPOrientation), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "R": "GOOD",
+              "L": "GOOD"
+            },
+            "unknown_state": "ERROR"
+          },
+          "m3_state": {
+            "description": "Antenna {i} M3 door state from RM_M3STATE_B: ???, close, open, moving, -----, close?, open? (arrayMonitor.c), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "open": "GOOD",
+              "moving": "WARNING",
+              "close": "WARNING",
+              "close?": "WARNING",
+              "open?": "WARNING",
+              "???": "ERROR",
+              "-----": "ERROR"
+            },
+            "unknown_state": "ERROR"
+          },
+          "m3_door_open": {
+            "description": "Antenna {i} M3 door open (RM_M3STATE_B 2 or 6; arrayMonitor.c mirrorDoorIsOpen), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "el_drive_fault": {
+            "description": "Antenna {i} elevation drive in state 3 for > 40 s while the chopper is not OK (arrayMonitor.c CHOPPER_FAULT beep), from slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
           },
           "hour_angle": {
             "description": "Antenna {i} source hour angle, RM_LST_HOURS_F - RM_RA_APP_HR_D wrapped to +/-12 h (arrayMonitor.c 1042-1051), from slama.monitor.compute",
