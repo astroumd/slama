@@ -271,7 +271,7 @@ def count_true(inputs: list[ResolvedInput], ctx: ComputeContext) -> int:
     restricts counting, for any array-valued input, to just those
     positions. Needed for e.g. a "V11" SMA bit-vector: index 0 is
     always a placeholder, indices 1-8 are the standard antennas, and
-    9/10 are only meaningful when JCMT/CSO are patched into the array
+    9/10 are JCMT and the former CSO (decommissioned); 9 is only meaningful when JCMT is patched into the array
     (a rare, deliberately-configured case). Scalar inputs are
     unaffected -- ``indices`` only ever selects within an array.
     """
@@ -1272,47 +1272,6 @@ def genset_active(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     return active, (Validity.VALID_WARNING if active else Validity.VALID_GOOD)
 
 
-def _ut_stale(hours: float, margin: float, ut_hours: float) -> bool:
-    """Port of ``computeUTstale()`` (``arrayMonitor.c:2600-2608``).
-
-    ``hours`` is the measurement time as UT hours of day; it is stale if
-    older than ``ut_hours - margin``, with the C's handling of the
-    window crossing midnight.
-    """
-    lo = ut_hours - margin
-    if lo < 0:
-        if hours < ut_hours + 0.01:
-            return False
-        lo += 24
-    return hours < lo
-
-
-@compute_function("tau_stale")
-def tau_stale(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
-    """Whether a CSO/tipper tau measurement is stale (``arrayMonitor.c:1603-1609``).
-
-    ``DSM_CSO_*_TAU_TSTAMP_L`` is *minutes of the UT day*, not a Unix
-    time. The C compares it against ``RM_UTC_HOURS_F`` of a reference
-    antenna; this port uses the engine's wall-clock UT, which is the
-    same quantity without depending on an antenna being up.
-
-    Parameters
-    ----------
-    inputs : dict of str to ResolvedInput
-        ``"tstamp"``: the measurement's minute of the UT day.
-    ctx : ComputeContext
-        ``ctx.params["margin_h"]``: 1.0 for 225 GHz, 0.5 for 350 um.
-
-    Returns
-    -------
-    tuple of (bool, Validity)
-        ``(True, VALID_WARNING)`` if stale, else ``(False, VALID_GOOD)``.
-    """
-    ut_hours = (ctx.wall_clock() % 86400.0) / 3600.0
-    stale = _ut_stale(float(inputs["tstamp"].value) / 60.0, float(ctx.params["margin_h"]), ut_hours)
-    return stale, (Validity.VALID_WARNING if stale else Validity.VALID_GOOD)
-
-
 def _standout_tau(freq_hz: float) -> float:
     """``STANDOUT_TAU()`` (``arrayMonitor.c:2785-2790``): tau above which to highlight."""
     if freq_hz < 300e9:
@@ -1340,7 +1299,8 @@ def tau_standout(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         ``VALID_ERROR`` if tau is outside [0, 9.99] (C: "wack");
         ``VALID_WARNING`` above :func:`_standout_tau` for the observing
         frequency; else ``VALID_GOOD``. (The C tested the CSO tau even
-        when showing GFS; this port tests the value it reports.)
+        when showing GFS; this port tests the value it reports. The CSO has
+        since been decommissioned.)
     """
     tau = float(inputs["tau"].value)
     if not 0.0 <= tau <= 9.99:

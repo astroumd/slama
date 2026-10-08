@@ -222,8 +222,6 @@
         {"label": "Weather data age (s)", "point": "monitorsystem:weather:data_age_s", "format": "{:.0f}"},
         {"label": "Sun visible",          "point": "monitorsystem:weather:sun_visible"},
         {"label": "Tau225 GFS",           "point": "monitorsystem:weather:gfs_tau225", "format": "{:.3f}"},
-        {"label": "Tau225 stale",         "point": "monitorsystem:weather:tau225_stale"},
-        {"label": "Tau350 stale",         "point": "monitorsystem:weather:tau350_stale"},
         {"label": "Generator running",    "point": "monitorsystem:array:genset_active"}
       ]
     }

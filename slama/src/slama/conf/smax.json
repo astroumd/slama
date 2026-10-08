@@ -12529,16 +12529,6 @@
         "unit": "s",
         "err_high": 1200
       },
-      "tau225_stale": {
-        "description": "CSO/tipper 225 GHz tau older than 1 h of UT (arrayMonitor.c computeUTstale), from slama.monitor.compute",
-        "size": "1",
-        "smax_type": "boolean"
-      },
-      "tau350_stale": {
-        "description": "CSO 350 micron tau older than 0.5 h of UT (arrayMonitor.c computeUTstale), from slama.monitor.compute",
-        "size": "1",
-        "smax_type": "boolean"
-      },
       "gfs_tau225": {
         "description": "GFS forecast 225 GHz tau (weather:forecast:gfs:tau225), no-data if > 1800 s old; WARNING above the observing-frequency standout tau (arrayMonitor.c STANDOUT_TAU), from slama.monitor.compute",
         "size": "1",

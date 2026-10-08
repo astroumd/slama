@@ -20,7 +20,7 @@
       "function": "count_true",
       "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
       "params": {
-        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9/10 (JCMT/CSO) are omitted unless patched into the array. staleness_s null: DSM writes this only when array membership changes (19 h old in the 2026-09-22 snapshot), so its SMAX timestamp is not a freshness signal.",
+        "_comment": "V11 vector: index 0 is a placeholder, 1-8 are the standard antennas; 9 (JCMT) and 10 (the former CSO, decommissioned) are omitted. staleness_s null: DSM writes this only when array membership changes (19 h old in the 2026-09-22 snapshot), so its SMAX timestamp is not a freshness signal.",
         "indices": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "staleness_s": null
@@ -389,29 +389,6 @@
         "l1": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL1_F",
         "l2": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL2_F",
         "l3": "DSM:obscon:DSM_IWATCH_DATA_X:CURRENTL3_F"
-      },
-      "staleness_s": 90
-    },
-    {
-      "_comment": "TSTAMP is minutes of the UT day; compared against wall-clock UT in the function.",
-      "output": "monitorsystem:weather:tau225_stale",
-      "function": "tau_stale",
-      "inputs": {
-        "tstamp": "DSM:colossus:DSM_CSO_225GHZ_TAU_TSTAMP_L"
-      },
-      "params": {
-        "margin_h": 1.0
-      },
-      "staleness_s": 90
-    },
-    {
-      "output": "monitorsystem:weather:tau350_stale",
-      "function": "tau_stale",
-      "inputs": {
-        "tstamp": "DSM:colossus:DSM_CSO_350MICRON_TAU_TSTAMP_L"
-      },
-      "params": {
-        "margin_h": 0.5
       },
       "staleness_s": 90
     },

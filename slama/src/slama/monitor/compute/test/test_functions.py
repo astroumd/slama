@@ -15,13 +15,11 @@ from slama.monitor.compute.functions import (
     drive_status,
     genset_active,
     sun_visible,
-    tau_stale,
     tau_standout,
     weather_data_age,
     weather_server_label,
     wind,
     _circular_mean_deg,
-    _ut_stale,
     hotload_position,
     line_name,
     lo_lock_ok,
@@ -186,7 +184,7 @@ class TestCounts:
 
     def test_count_true_vector_input_with_indices_param(self):
         # V11 vector: index 0 is a placeholder (here truthy, but must
-        # be excluded), 1-8 are the standard antennas, 9/10 (JCMT/CSO)
+        # be excluded), 1-8 are the standard antennas, 9/10 (JCMT/former CSO)
         # are excluded here too since this entry isn't configured for
         # them.
         vector = np.array([1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1], dtype=np.int8)
@@ -770,25 +768,6 @@ class TestGensetActive:
         assert self._run(None, clock, state, 5.0) == (True, Validity.VALID_WARNING)
         assert self._run(None, clock, state, 0.0) == (False, Validity.VALID_GOOD)
         assert "nonzero_since" not in state
-
-
-class TestTauStale:
-    @pytest.mark.parametrize("hours, margin, ut, stale", [
-        (16.5, 1.0, 16.5, False),
-        (15.4, 1.0, 16.5, True),
-        (23.8, 1.0, 0.3, False),    # window crosses midnight: 23.3..0.3
-        (22.0, 1.0, 0.3, True),
-        (0.2, 1.0, 0.3, False),
-        (-1e8 / 60, 0.5, 16.5, True),
-    ])
-    def test_ut_stale(self, hours, margin, ut, stale):
-        assert _ut_stale(hours, margin, ut) is stale
-
-    def test_uses_wall_clock_ut(self):
-        ut_min = (WALL_NOW % 86400) / 60
-        c = ctx(params={"margin_h": 1.0})
-        assert tau_stale({"tstamp": ri("t", ut_min)}, c) == (False, Validity.VALID_GOOD)
-        assert tau_stale({"tstamp": ri("t", ut_min - 90)}, c) == (True, Validity.VALID_WARNING)
 
 
 class TestTauStandout:
