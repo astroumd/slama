@@ -4,6 +4,7 @@
 .PHONY:  help install
 
 DEBUG = --debug
+LOOKUP_SERVER = -S localhost
 
 ## help:     this help
 help: Makefile
@@ -32,13 +33,13 @@ time:
 
 ## test3:    a few "lookup" runs
 test3:
-	lookup -t "14 Dec 2010 12:40:15" -s sun
+	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -s sun
 	@echo "102.397216 -56.489765 0.000000"
-	lookup -t "14 Dec 2010 12:40:15" -s moon
+	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -s moon
 	@echo "285.892403 -24.044336 99.411429"
-	lookup -t "14 Dec 2010 12:40:15" -s mars
+	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -s mars
 	@echo "106.175843 -68.953021 12.577175"
-	lookup -t "14 Dec 2010 12:40:15" -r 267.25 -d 70.117
+	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -r 267.25 -d 70.117
 	@echo "339.448921 25.808073 129.295149"
 
 ## test4:    a few "calfind" runs
