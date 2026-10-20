@@ -11,7 +11,7 @@
         {"label": "Observer",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
         {"label": "Location",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
         {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L",  "format":"{:d}", "display_min":0, "display_max":1000},
-        {"label": "Tau225 (CSO)",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F", "format":"{:.3f}"},
+        {"label": "Tau225",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F", "format":"{:.3f}"},
         {"label": "Tau225 (GFS)",        "point": "weather:forecast:gfs:tau225", "format":"{:.3f}"}
       ]
     },
@@ -57,6 +57,7 @@
         {"label": "Track age (s)",       "points": "monitorsystem:antenna:{ant}:track_age", "format": "{:.0f}"},
         {"label": "Servo age (s)",       "points": "monitorsystem:antenna:{ant}:servo_age", "format": "{:.0f}"},
         {"label": "Sun distance (deg)",  "points": "monitorsystem:antenna:{ant}:sun_distance", "format": "{:.1f}"},
+        {"label": "Hour angle (h)",      "points": "monitorsystem:antenna:{ant}:hour_angle", "format": "{:+.3f}"},
         {"label": "Chopper",             "points": "monitorsystem:antenna:{ant}:chopper_status"},
         {"label": "Deice",               "points": "monitorsystem:antenna:{ant}:deice_status"},
         {"label": "Clock offset (s)",    "points": "monitorsystem:antenna:{ant}:clock_offset_s", "format": "{:+.2f}"},
@@ -77,7 +78,12 @@
         {"label": "# Antennas online",        "point": "monitorsystem:array:antennas_online"},
         {"label": "# Antennas focus curve on", "point": "monitorsystem:array:focus_curve_count"},
         {"label": "Rx 1 (low) line",           "point": "monitorsystem:rx:1:line_name"},
-        {"label": "Rx 2 (high) line",          "point": "monitorsystem:rx:2:line_name"}
+        {"label": "Rx 2 (high) line",          "point": "monitorsystem:rx:2:line_name"},
+        {"label": "Source type flags",  "point": "monitorsystem:array:source_type_flags"},
+        {"label": "SWARM scan",         "point": "monitorsystem:array:swarm_scan_status"},
+        {"label": "SWARM progress (s)", "point": "monitorsystem:array:swarm_progress_s", "format": "{:.1f}"},
+        {"label": "SWARM length (s)",   "point": "monitorsystem:array:swarm_length_s", "format": "{:.1f}"},
+        {"label": "Last scan age (s)",  "point": "monitorsystem:array:scan_age_s", "format": "{:.0f}"}
       ]
     },
     {
@@ -221,7 +227,7 @@
         {"label": "Weather servers",      "point": "monitorsystem:weather:server_label"},
         {"label": "Weather data age (s)", "point": "monitorsystem:weather:data_age_s", "format": "{:.0f}"},
         {"label": "Sun visible",          "point": "monitorsystem:weather:sun_visible"},
-        {"label": "Tau225 GFS",           "point": "monitorsystem:weather:gfs_tau225", "format": "{:.3f}"},
+        {"label": "Tau225 (GFS)",           "point": "monitorsystem:weather:gfs_tau225", "format": "{:.3f}"},
         {"label": "Generator running",    "point": "monitorsystem:array:genset_active"}
       ]
     }
