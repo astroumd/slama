@@ -27,6 +27,7 @@ from pathlib import Path
 from smax import SmaxRedisClient
 
 from slama import site_paths
+from slama.smax_logging import configure_smax_logging
 from slama.monitor.monitorsystem import MonitorSystem
 
 from .computeconfig import ComputeConfig
@@ -114,6 +115,12 @@ def _build_parser(environ=None) -> argparse.ArgumentParser:
         "--log-level", default="INFO",
         help="stdlib logging level (default: INFO)",
     )
+    parser.add_argument(
+        "--smax-log-level", default="WARNING",
+        help="Level for the smax-python library's own logging (default: "
+             "WARNING; INFO logs every pull and share). Repeated 'Could not "
+             "find <key>' errors are logged once per key, then hourly.",
+    )
     return parser
 
 
@@ -137,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     Recognised arguments mirror ``slama.fault``'s CLI:
     ``config`` (positional path to ``computations.json``),
     ``--smax-json``, ``--host``, ``--port``, ``--interval``,
-    ``--log-level``, ``--site-root``, plus ``--once`` (run a single :meth:`ComputeEngine.tick`
+    ``--log-level``, ``--smax-log-level``, ``--site-root``, plus ``--once`` (run a single :meth:`ComputeEngine.tick`
     and exit — useful for manual verification without a long-running
     process) and ``--as-of``. ``--host``/``--port`` default to the
     ``SMAX_HOST``/``SMAX_PORT`` environment variables (see
@@ -153,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
         force=True,
     )
+    configure_smax_logging(args.smax_log_level)
 
     if args.site_root is not None:
         os.environ[site_paths.SITE_ROOT_ENV] = str(args.site_root)

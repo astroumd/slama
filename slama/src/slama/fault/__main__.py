@@ -28,6 +28,7 @@ from pathlib import Path
 from smax import SmaxRedisClient
 
 from slama.monitor.monitorsystem import MonitorSystem
+from slama.smax_logging import configure_smax_logging
 
 from .faultconfig import FaultConfig
 from .faultsystem import FaultSystem
@@ -72,6 +73,11 @@ def main(argv: list[str] | None = None) -> int:
     ``--log-level LEVEL``
         stdlib logging level (``DEBUG``, ``INFO``, ``WARNING``,
         ...). Defaults to ``INFO``.
+    ``--smax-log-level LEVEL``
+        Level for the smax-python library's own logging. Defaults to
+        ``WARNING`` (``INFO`` logs every pull and share); repeated
+        missing-key errors are deduplicated (see
+        :mod:`slama.smax_logging`).
 
     On ``KeyboardInterrupt`` the loop's :meth:`FaultSystem.stop` is
     invoked so the current tick finishes cleanly before the process
@@ -103,12 +109,22 @@ def main(argv: list[str] | None = None) -> int:
         "--log-level", default="INFO",
         help="stdlib logging level (default: INFO)",
     )
+    parser.add_argument(
+        "--smax-log-level", default="WARNING",
+        help="Level for the smax-python library's own logging (default: "
+             "WARNING; INFO logs every pull and share)",
+    )
     args = parser.parse_args(argv)
 
+    # force=True: smax-python calls logging.basicConfig() at import time,
+    # which would otherwise make this call a silent no-op and leave the
+    # root logger at WARNING, hiding --log-level INFO output.
     logging.basicConfig(
         level=args.log_level.upper(),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        force=True,
     )
+    configure_smax_logging(args.smax_log_level)
 
     config = FaultConfig.from_file(args.config)
     monitor_system = MonitorSystem(args.smax_json)

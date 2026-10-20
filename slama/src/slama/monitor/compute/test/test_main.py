@@ -41,3 +41,8 @@ class TestSmaxHostPort:
         monkeypatch.delenv("SMAX_PORT", raising=False)
         args = _build_parser().parse_args(["conf/computations.json"])
         assert (args.host, args.port) == ("from-os-environ", DEFAULT_SMAX_PORT)
+
+
+def test_smax_log_level_defaults_to_warning():
+    assert _parse([], {}).smax_log_level == "WARNING"
+    assert _parse(["--smax-log-level", "INFO"], {}).smax_log_level == "INFO"
