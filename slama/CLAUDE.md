@@ -82,6 +82,7 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 - `src/slama/conf/smax.json` — Large hierarchical SMAX system configuration used to build `MonitorSystem`.
 - `src/slama/conf/displays/*.json` — One JSON file per display page (e.g. `tracking.json`, `rxH.json`). Discovered automatically by the server — adding a new file requires no code changes.
 - `src/slama/tables/` — Source catalogs (`SystemSource.cat`, `mpound.cat`).
+- `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. `slama.site_paths.site_path("/global/...")` resolves C paths against `$SLAMA_SITE_ROOT`, else live `/` when `/global/configFiles` exists, else this mirror; `slama.sitefiles` ports the C parsers (`rxtype.conf`, `loadtype.conf`, `dewarTemp.conf`, `wselect.conf`). `computations.json` reads them via `"over": "@rxtype:wsma"` / `"@loadtype:!wsma"` and `"@dewarTemp:{i}:ch4_index"` params. Provenance in `site/README.md`; tests pin the root to the mirror (`conftest.py`).
 
 ### Validity States (`monitor/monitorpoint.py`)
 

@@ -163,9 +163,9 @@
     },
     {
       "__each__": {
-        "over": "2-6", "as": "i",
+        "over": "@rxtype:!wsma", "as": "i",
         "template": {
-          "_comment": "Tune6 receivers only (antennas 2-6 per rxtype.conf, 2026-09-22); wSMA LO lock (1, 7, 8) not yet ported.",
+          "_comment": "Non-wSMA receivers (rxtype.conf; the C's else branch, arrayMonitor.c 491-505). wSMA LO lock not yet ported.",
           "output": "monitorsystem:antenna:{i}:lo_status",
           "function": "lo_status",
           "inputs": {
@@ -180,7 +180,7 @@
     },
     {
       "__each__": {
-        "over": "2-6", "as": "i",
+        "over": "@rxtype:!wsma", "as": "i",
         "template": {
           "output": "monitorsystem:antenna:{i}:lo_lock_ok",
           "function": "lo_lock_ok",
@@ -196,9 +196,9 @@
     },
     {
       "__each__": {
-        "over": "2-6", "as": "i",
+        "over": "@loadtype:!wsma", "as": "i",
         "template": {
-          "_comment": "Tune6 antennas check the optics board first (arrayMonitor.c 2338-2341).",
+          "_comment": "Non-wSMA loads (loadtype.conf) check the optics board first (arrayMonitor.c 2338-2341).",
           "output": "monitorsystem:antenna:{i}:hotload_position",
           "function": "hotload_position",
           "inputs": {
@@ -211,9 +211,9 @@
     },
     {
       "__each__": {
-        "over": "1,7,8", "as": "i",
+        "over": "@loadtype:wsma", "as": "i",
         "template": {
-          "_comment": "wSMA-load antennas: no optics-board check (arrayMonitor.c 2335-2336).",
+          "_comment": "wSMA-load antennas (loadtype.conf): no optics-board check (arrayMonitor.c 2335-2336).",
           "output": "monitorsystem:antenna:{i}:hotload_position",
           "function": "hotload_position",
           "inputs": {
@@ -267,43 +267,25 @@
       "params": {"index": 1}
     },
     {
-      "_comment": "Tune6 dewars. sensor = dewarTemp.conf ch4 - 1 (cursesmonitor/cfg/dewarTemp.conf): ant2 ch9, ant4 ch3, ants 3/5/6 ch11.",
-      "output": "monitorsystem:antenna:2:dewar_4k_temp",
-      "function": "dewar_4k_temp",
-      "inputs": {
-        "temps": {"name": "RM:acc2:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
-        "ts": {"name": "RM:acc2:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
-      },
-      "params": {"sensor": 8}
-    },
-    {
-      "output": "monitorsystem:antenna:4:dewar_4k_temp",
-      "function": "dewar_4k_temp",
-      "inputs": {
-        "temps": {"name": "RM:acc4:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
-        "ts": {"name": "RM:acc4:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
-      },
-      "params": {"sensor": 2}
-    },
-    {
       "__each__": {
-        "over": "3,5,6", "as": "i",
+        "over": "@rxtype:!wsma", "as": "i",
         "template": {
+          "_comment": "Non-wSMA dewars (arrayMonitor.c 517-521). sensor = dewarTemp.conf ch4 - 1, read per antenna.",
           "output": "monitorsystem:antenna:{i}:dewar_4k_temp",
           "function": "dewar_4k_temp",
           "inputs": {
             "temps": {"name": "RM:acc{i}:RM_DEWAR_TEMPS_V16_F", "staleness_s": null},
             "ts": {"name": "RM:acc{i}:RM_LAKESHORE_TIMESTAMP_L", "staleness_s": null}
           },
-          "params": {"sensor": 10}
+          "params": {"sensor": "@dewarTemp:{i}:ch4_index"}
         }
       }
     },
     {
       "__each__": {
-        "over": "1,7,8", "as": "i",
+        "over": "@rxtype:wsma", "as": "i",
         "template": {
-          "_comment": "wSMA dewars: SMAX-native 4K plate; 60 s = arrayMonitor.c LAKESHORE_STALE applied to its SMAX timestamp.",
+          "_comment": "wSMA dewars (rxtype.conf): SMAX-native 4K plate; 60 s = arrayMonitor.c LAKESHORE_STALE applied to its SMAX timestamp.",
           "output": "monitorsystem:antenna:{i}:dewar_4k_temp",
           "function": "dewar_4k_temp",
           "inputs": {
