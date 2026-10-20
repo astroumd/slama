@@ -11,7 +11,6 @@
         {"label": "Observer",      "point": "DSM:hal9000:DSM_AS_PROJECT_OBSERVER_C30"},
         {"label": "Location",      "point": "DSM:hal9000:DSM_AS_PROJECT_OPERATINGLOCATION_C256"},
         {"label": "Scans remaining",  "point": "DSM:hal9000:DSM_AS_SCANS_REMAINING_L",  "format":"{:d}", "display_min":0, "display_max":1000},
-        {"label": "Tau225 (CSO)",        "point": "DSM:colossus:DSM_CSO_225GHZ_TAU_F", "format":"{:.3f}"},
         {"label": "Tau225 (GFS)",        "point": "weather:forecast:gfs:tau225", "format":"{:.3f}"}
       ]
     },
