@@ -13,6 +13,15 @@ from slama.monitor.compute.functions import (
     deice_status,
     dewar_4k_temp,
     drive_status,
+    antenna_online,
+    el_drive_fault,
+    equipment_room_temp,
+    m3_state,
+    palm_off,
+    pointing_offset_spread,
+    scan_flagged,
+    sun_safe_minutes,
+    waveplate,
     genset_active,
     hour_angle,
     source_type_flags,
@@ -851,3 +860,157 @@ class TestSwarmScan:
         }, ctx())
         assert out["status"] == ("SWARM offline", Validity.VALID_WARNING)
         assert out["scan_age_s"] == (None, Validity.INVALID_NO_DATA)
+
+
+# ---------------------------------------------------------------------------
+# arrayMonitor.c port: validation checks
+# ---------------------------------------------------------------------------
+
+ONLINE_ALL = np.array([0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], dtype=np.int8)
+
+
+class TestSunSafeMinutes:
+    def _run(self, present, required):
+        return sun_safe_minutes({"present": ri("p", present), "required": ri("r", required)}, ctx())
+
+    def test_not_applicable(self):
+        assert self._run(-1, 120) == (-1, Validity.VALID_GOOD)
+        assert self._run(0, 120) == (0, Validity.VALID_GOOD)
+
+    def test_enough(self):
+        assert self._run(150, 120) == (150, Validity.VALID_GOOD)
+
+    def test_short(self):
+        assert self._run(60, 120) == (60, Validity.VALID_WARNING)
+
+    def test_critical(self):
+        assert self._run(9, 120) == (9, Validity.VALID_ERROR)
+
+
+class TestPointingOffsetSpread:
+    def _run(self, ra, dec, online=ONLINE_ALL):
+        d = {"online": ri("o", online)}
+        for a in range(1, 9):
+            d[f"raoff{a}"] = ri(f"r{a}", ra.get(a, 0.0))
+            d[f"decoff{a}"] = ri(f"d{a}", dec.get(a, 0.0))
+        return pointing_offset_spread(d, ctx(params={"antennas": list(range(1, 9))}))
+
+    def test_consistent(self):
+        assert self._run({a: 5.0 for a in range(1, 9)}, {}) == pytest.approx(0.0)
+
+    def test_spread_is_larger_axis(self):
+        assert self._run({3: 0.01}, {5: -0.05}) == pytest.approx(0.05)
+
+    def test_offline_antenna_ignored(self):
+        online = ONLINE_ALL.copy()
+        online[4] = 0
+        assert self._run({4: 30.0}, {}, online) == pytest.approx(0.0)
+
+    def test_fewer_than_two_online(self):
+        online = np.zeros(11, dtype=np.int8)
+        online[2] = 1
+        assert self._run({2: 30.0}, {}, online) == (0.0, Validity.VALID_GOOD)
+
+
+class TestScanFlagged:
+    def _run(self, row, status=1, online=ONLINE_ALL, ant=3):
+        flags = np.zeros((11, 2), dtype=np.int32)
+        flags[ant] = row
+        return scan_flagged({"flags": ri("f", flags.ravel()), "status": ri("s", status),
+                             "online": ri("o", online)}, ctx(params={"ant": str(ant)}))
+
+    def test_common_bit_flags(self):
+        assert self._run([0b0110, 0b0100]) == (True, Validity.VALID_WARNING)
+
+    def test_no_common_bit(self):
+        assert self._run([0b0010, 0b0100]) == (False, Validity.VALID_GOOD)
+
+    def test_sign_bit_as_unsigned(self):
+        assert self._run([-2147483648, -2147483648])[0] is True
+
+    def test_gated_on_interferometry_mode(self):
+        assert self._run([1, 1], status=0) == (False, Validity.VALID_GOOD)
+
+    def test_gated_on_online(self):
+        online = ONLINE_ALL.copy()
+        online[3] = 0
+        assert self._run([1, 1], online=online) == (False, Validity.VALID_GOOD)
+
+
+class TestPalmOffOnlineWaveplate:
+    def test_palm_off(self):
+        assert palm_off({"faultword": ri("f", 0x01000000)}, ctx()) is True
+        assert palm_off({"faultword": ri("f", 8388608)}, ctx()) is False   # bit 23, not 24
+
+    def test_online(self):
+        online = ONLINE_ALL.copy()
+        online[6] = 0
+        assert antenna_online({"online": ri("o", online)}, ctx(params={"ant": "5"})) == (True, Validity.VALID_GOOD)
+        assert antenna_online({"online": ri("o", online)}, ctx(params={"ant": "6"})) == (False, Validity.VALID_WARNING)
+
+    @pytest.mark.parametrize("code, label", [(1, "R"), (2, "L"), (0, "?"), (23695, "?"), (-27084, "?")])
+    def test_waveplate(self, code, label):
+        assert waveplate({"status": ri("w", code)}, ctx()) == label
+
+
+class TestM3State:
+    @pytest.mark.parametrize("code, state, door_open", [
+        (0, "???", False), (1, "close", False), (2, "open", True), (3, "moving", False),
+        (5, "close?", False), (6, "open?", True), (7, "-----", False), (-3, "-----", False),
+    ])
+    def test(self, code, state, door_open):
+        assert m3_state({"state": ri("m", code)}, ctx()) == {"state": state, "door_open": door_open}
+
+
+class TestElDriveFault:
+    def _bits(self, pos_err=0, p20=0):
+        b = np.zeros(16, dtype=np.int8)
+        b[4], b[5] = p20, pos_err
+        return b
+
+    def _run(self, clock, state, el_state, bits, age=1.0):
+        return el_drive_fault({"el_state": ri("e", el_state), "bits": ri("b", bits),
+                               "ts": ri("t", WALL_NOW - age)}, ctx(clock=clock, state=state))
+
+    def test_stuck_with_chopper_error(self):
+        clock, state = FakeClock(), {}
+        assert self._run(clock, state, 3, self._bits(pos_err=8)) == (False, Validity.VALID_GOOD)
+        clock.advance(41)
+        assert self._run(clock, state, 3, self._bits(pos_err=8)) == (True, Validity.VALID_ERROR)
+
+    def test_chopper_ok_resets(self):
+        clock, state = FakeClock(), {}
+        self._run(clock, state, 3, self._bits(pos_err=8))
+        clock.advance(41)
+        assert self._run(clock, state, 3, self._bits()) == (False, Validity.VALID_GOOD)
+        assert "since" not in state
+
+    def test_stale_chopper_counts_as_not_ok(self):
+        clock, state = FakeClock(), {}
+        self._run(clock, state, 3, self._bits(), age=10)
+        clock.advance(41)
+        assert self._run(clock, state, 3, self._bits(), age=10)[0] is True
+
+    def test_other_el_state_resets(self):
+        clock, state = FakeClock(), {}
+        self._run(clock, state, 3, self._bits(p20=2))
+        clock.advance(41)
+        assert self._run(clock, state, 4, self._bits(p20=2))[0] is False
+
+
+class TestEquipmentRoomTemp:
+    def _run(self, temp, limit=29.0, alarm=1):
+        return equipment_room_temp({"temp": ri("t", temp), "limit": ri("l", limit),
+                                    "alarm": ri("a", alarm)}, ctx())
+
+    def test_normal(self):
+        assert self._run(20.0) == pytest.approx(20.0)
+
+    def test_alarm_over_limit(self):
+        assert self._run(30.0) == (30.0, Validity.VALID_ERROR)
+
+    def test_limit_is_strict(self):
+        assert self._run(29.0) == pytest.approx(29.0)
+
+    def test_alarm_disabled(self):
+        assert self._run(35.0, alarm=0) == pytest.approx(35.0)
