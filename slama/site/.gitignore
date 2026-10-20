@@ -1,0 +1,6 @@
+# Observatory files that must not be committed (see README.md).
+global/projects/antennaUser
+global/configFiles/fullPolarization
+global/hiloOverTemperatureAlarm
+# Internal network addresses; slama is a public repo.
+global/configFiles/ups-central.conf

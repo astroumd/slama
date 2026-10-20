@@ -350,6 +350,13 @@ if __name__ == "__main__":
         help="SMAX/Redis server port",
     )
     parser.add_argument(
+        "--site-root",
+        default=os.environ.get("SLAMA_SITE_ROOT"),
+        metavar="DIR",
+        help="Root that /global and /otherInstances paths resolve against "
+             "(default: auto-detect, see slama.site_paths)",
+    )
+    parser.add_argument(
         "--web-port",
         type=int,
         default=8000,
@@ -371,6 +378,8 @@ if __name__ == "__main__":
     # Set env vars so the module-level DataBridge picks them up on import
     os.environ["SMAX_HOST"] = args.smax_host
     os.environ["SMAX_PORT"] = str(args.smax_port)
+    if args.site_root:
+        os.environ["SLAMA_SITE_ROOT"] = args.site_root
     if args.verbose:
         print(args)
 

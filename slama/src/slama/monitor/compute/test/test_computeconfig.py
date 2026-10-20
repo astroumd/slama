@@ -476,3 +476,55 @@ class TestPerInputStaleness:
         by_output = {n.output: n for n in cfg.nodes}
         assert by_output["monitorsystem:rx:V:tuning_status"].inputs == {"state": "rx:V:tuning_state"}
         assert by_output["monitorsystem:rx:V:tuning_status"].input_staleness == {"state": None}
+
+
+# ---------------------------------------------------------------------------
+# Site-file selectors ("@rxtype:...") and param tokens ("@dewarTemp:...")
+# ---------------------------------------------------------------------------
+
+class TestSiteFileTokens:
+    @pytest.fixture
+    def site(self, monkeypatch, tmp_path):
+        from slama import site_paths
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))
+        site_paths.reset_site_root()
+        conf = tmp_path / "global" / "configFiles"
+        conf.mkdir(parents=True)
+        return conf
+
+    def _each(self, over, params=None):
+        template = {"output": "monitorsystem:antenna:{i}:tsys_min",
+                    "function": "count_true", "inputs": ["antenna:{i}:is_online"]}
+        if params is not None:
+            template["params"] = params
+        return {"__each__": {"over": over, "template": template}}
+
+    def test_each_over_rxtype_selector(self, site):
+        (site / "rxtype.conf").write_text("1 1\n")
+        result = _expand_entry(self._each("@rxtype:wsma"))
+        assert [r["output"] for r in result] == ["monitorsystem:antenna:1:tsys_min"]
+
+    def test_each_over_selector_missing_file_raises(self, site):
+        with pytest.raises(ValueError, match="rxtype.conf"):
+            _expand_entry(self._each("@rxtype:wsma"))
+
+    def test_dewar_param_token_resolved_per_antenna(self, site):
+        # Only antenna 1 is non-wSMA (an unlisted antenna would default to Tune6).
+        (site / "rxtype.conf").write_text("".join(f"{a} 1\n" for a in range(2, 9)))
+        (site / "dewarTemp.conf").write_text("1 1 2 11 5.2\n2 1 2 9 5.2\n")
+        raw = {"computations": [self._each("@rxtype:!wsma",
+                                           {"sensor": "@dewarTemp:{i}:ch4_index", "k": 3})]}
+        cfg = ComputeConfig.from_dict(raw, make_ms())
+        assert [(n.output, n.params) for n in cfg.nodes] == [
+            ("monitorsystem:antenna:1:tsys_min", {"sensor": 10, "k": 3}),
+        ]
+
+    @pytest.mark.parametrize("token", ["@dewarTemp:x:ch4", "@other:1:ch4", "@dewarTemp:1"])
+    def test_bad_param_token_raises(self, site, token):
+        (site / "dewarTemp.conf").write_text("1 1 2 11 5.2\n")
+        raw = {"computations": [{"output": "monitorsystem:antenna:1:tsys_min",
+                                 "function": "count_true",
+                                 "inputs": ["antenna:1:is_online"],
+                                 "params": {"sensor": token}}]}
+        with pytest.raises(ValueError, match="bad site token"):
+            ComputeConfig.from_dict(raw, make_ms())

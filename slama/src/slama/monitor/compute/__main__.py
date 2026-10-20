@@ -26,6 +26,7 @@ from pathlib import Path
 
 from smax import SmaxRedisClient
 
+from slama import site_paths
 from slama.monitor.monitorsystem import MonitorSystem
 
 from .computeconfig import ComputeConfig
@@ -104,6 +105,12 @@ def _build_parser(environ=None) -> argparse.ArgumentParser:
              "all be stale. Outputs are written with that timestamp.",
     )
     parser.add_argument(
+        "--site-root", type=Path, default=None, metavar="DIR",
+        help="Root that /global and /otherInstances paths resolve against "
+             "(sets $SLAMA_SITE_ROOT; default: auto-detect, see "
+             "slama.site_paths)",
+    )
+    parser.add_argument(
         "--log-level", default="INFO",
         help="stdlib logging level (default: INFO)",
     )
@@ -130,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     Recognised arguments mirror ``slama.fault``'s CLI:
     ``config`` (positional path to ``computations.json``),
     ``--smax-json``, ``--host``, ``--port``, ``--interval``,
-    ``--log-level``, plus ``--once`` (run a single :meth:`ComputeEngine.tick`
+    ``--log-level``, ``--site-root``, plus ``--once`` (run a single :meth:`ComputeEngine.tick`
     and exit — useful for manual verification without a long-running
     process) and ``--as-of``. ``--host``/``--port`` default to the
     ``SMAX_HOST``/``SMAX_PORT`` environment variables (see
@@ -146,6 +153,11 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
         force=True,
     )
+
+    if args.site_root is not None:
+        os.environ[site_paths.SITE_ROOT_ENV] = str(args.site_root)
+        site_paths.reset_site_root()
+    site_paths.site_root()  # logs the chosen root before the config reads site files
 
     monitor_system = MonitorSystem(args.smax_json)
     config = ComputeConfig.from_file(args.config, monitor_system)

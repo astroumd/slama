@@ -716,10 +716,11 @@ def clock_offset(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> float
 # ---------------------------------------------------------------------------
 # arrayMonitor.c port — receiver / LO (goals/monsubsys_arrayMonitor.md)
 #
-# Antenna receiver types (/global/configFiles/rxtype.conf, per Marc
-# 2026-09-22): wSMA on 1, 7, 8; old Tune6 receivers on 2-6. The wSMA LO
+# Antenna receiver and load types come from /global/configFiles/rxtype.conf
+# and loadtype.conf (see slama.sitefiles), through "@rxtype:..." /
+# "@loadtype:..." __each__ selectors in computations.json. The wSMA LO
 # lock (wsmaSelection/wsmaIsLocked) is not ported yet, so LO points exist
-# only for the Tune6 antennas in computations.json.
+# only for the non-wSMA antennas.
 # ---------------------------------------------------------------------------
 
 PHASE_LOCK_IS_STALE_S = 90.0

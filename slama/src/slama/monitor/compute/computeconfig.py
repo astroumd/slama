@@ -23,6 +23,7 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from slama import sitefiles
 from slama.monitor.monitorsystem import MonitorSystem, _parse_index_set
 
 from .computenode import ComputeNode
@@ -31,6 +32,11 @@ from .functions import get_function
 
 logger = logging.getLogger(__name__)
 
+
+SITE_TOKEN_PREFIX: str = "@"
+"""Marks an ``__each__`` ``"over"`` or a param value that is read from a
+site file (see :mod:`slama.sitefiles`) instead of written literally.
+"""
 
 DEFAULT_PLACEHOLDER_VAR: str = "i"
 """Default ``__each__`` template placeholder name — matches
@@ -158,7 +164,7 @@ class ComputeConfig:
                 output=output,
                 function=function,
                 inputs=inputs,
-                params=dict(entry.get("params", {})),
+                params=_resolve_site_params(entry.get("params", {}), output),
                 invalid_inputs=entry.get("invalid_inputs", default_invalid_inputs),
                 staleness_s=_parse_staleness(
                     entry.get("staleness_s", default_staleness), output
@@ -197,13 +203,18 @@ def _expand_entry(entry: dict) -> list[dict]:
     list of dict
         ``[entry]`` unchanged if there is no ``__each__`` key;
         otherwise one substituted copy of ``__each__["template"]`` per
-        index in ``__each__["over"]``.
+        index in ``__each__["over"]``. An ``"over"`` that starts with
+        ``"@"`` names a site-file antenna set (``"@rxtype:tune6"``,
+        ``"@loadtype:wsma"``; see :func:`slama.sitefiles.antenna_set`)
+        instead of a literal index set.
 
     Raises
     ------
     ValueError
         If ``__each__`` has sibling keys, is not a dict, is missing
-        ``"over"`` or ``"template"``, or ``"template"`` is not a dict.
+        ``"over"`` or ``"template"``, or ``"template"`` is not a dict;
+        or if an ``"@"`` selector is malformed or its site file is
+        missing.
     """
     if "__each__" in entry:
         if set(entry.keys()) != {"__each__"}:
@@ -219,9 +230,56 @@ def _expand_entry(entry: dict) -> list[dict]:
         if not isinstance(template, dict):
             raise ValueError(f"__each__ template must be a dict: {entry!r}")
         var = each.get("as", DEFAULT_PLACEHOLDER_VAR)
-        indices = _parse_index_set(each["over"])
+        over = each["over"]
+        if isinstance(over, str) and over.startswith(SITE_TOKEN_PREFIX):
+            indices = [str(a) for a in sitefiles.antenna_set(over[len(SITE_TOKEN_PREFIX):])]
+        else:
+            indices = _parse_index_set(over)
         return [_substitute(template, var, idx) for idx in indices]
     return [entry]
+
+
+def _resolve_site_params(params: dict, output) -> dict:
+    """Replace site-file tokens in an entry's ``params`` with their values.
+
+    A string value ``"@dewarTemp:<ant>:<field>"`` (written with
+    ``{i}`` for ``<ant>`` in a template, then substituted) becomes
+    :func:`slama.sitefiles.dewar_param` for that antenna and field,
+    e.g. ``"@dewarTemp:{i}:ch4_index"``. Other values pass through.
+
+    Parameters
+    ----------
+    params : dict
+        The entry's raw ``params`` (after ``__each__`` substitution).
+    output : str or dict
+        The entry's ``output``, for error messages.
+
+    Returns
+    -------
+    dict
+        A new dict with every token resolved.
+
+    Raises
+    ------
+    ValueError
+        Unknown token source, a malformed token, or an unreadable site
+        file.
+    """
+    resolved = {}
+    for key, value in params.items():
+        if isinstance(value, str) and value.startswith(SITE_TOKEN_PREFIX):
+            parts = value[len(SITE_TOKEN_PREFIX):].split(":")
+            if len(parts) != 3 or parts[0] != "dewarTemp" or not parts[1].isdigit():
+                raise ValueError(
+                    f"computation {output!r} param {key!r}: bad site token "
+                    f"{value!r} (expected '@dewarTemp:<ant>:<field>')"
+                )
+            try:
+                value = sitefiles.dewar_param(int(parts[1]), parts[2])
+            except ValueError as exc:
+                raise ValueError(f"computation {output!r} param {key!r}: {exc}") from exc
+        resolved[key] = value
+    return resolved
 
 
 def _substitute(obj, var: str, value: str):
