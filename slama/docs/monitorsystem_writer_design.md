@@ -160,6 +160,13 @@ Uniform rule, engine-enforced (computations don't hand-roll it):
     checks freshness against an RM heartbeat input instead (e.g.
     `RM_SERVO_TIMESTAMP_L`, whose *value* is a Unix time), using
     `ctx.wall_clock`. Entry and default `staleness_s` also accept `null`.
+  - **Optional inputs** (added for the wSMA LO lock port): the same
+    object form takes `"optional": true`. A dict-form input normally
+    short-circuits the whole node to `INVALID_NO_DATA` when missing or
+    stale; an optional one instead reaches the function with
+    `value=None`, so the function can apply the C's default (e.g.
+    `smaxLazyPullLong(..., FALSE)`). Used where a table may legitimately
+    not exist, such as antenna 1's `receiver:a`/`b` overrides.
 - Each computation declares a policy for invalid inputs:
   `"skip"` (compute over the valid subset — right for medians/counts) or
   `"propagate"` (output becomes `INVALID_NO_DATA` — right for physics
@@ -360,7 +367,9 @@ subtree is the other half of the change. No engine code changes.
 - **Mini-language risk.** Input patterns, `__each__`, per-entry
   policies… the config vocabulary can creep toward a bad programming
   language. Mitigation: hard rule that *anything beyond wiring* is a
-  registered Python function — no expressions in JSON, ever.
+  registered Python function — no expressions in JSON, ever. The
+  site-file tokens added in §9 (`@rxtype:wsma`, `@dewarTemp:{i}:…`) stay
+  inside that rule: each is a lookup in one file, not an expression.
 - **Indirection when debugging.** Following a value requires reading
   config + registry function, not one class. Log lines carrying
   `output ← function(inputs)` context mitigate.
@@ -800,3 +809,93 @@ tick rather than silently reading a stale tree value.
 Fully backward compatible: every existing entry has `output: str`, hits
 the unchanged single-output path, zero behavior change.
 
+---
+
+## 9. Addendum: site-file tokens (2026-10-20)
+
+The arrayMonitor port hard-coded facts that the C reads from observatory
+files under `/global/configFiles`: which antennas have wSMA receivers or
+loads, each dewar's 4K sensor channel, and the wSMA selector-wheel
+modes. Site-file tokens let `computations.json` read those files
+instead. They are a deliberate, closed extension of the config language
+(see "Mini-language risk", §4.4): each token is **a lookup in one file**,
+never an expression, and the vocabulary grows only by adding a parser in
+`slama.sitefiles`.
+
+Files are found through `slama.site_paths.site_path()`: the live
+`/global` on-site, the repo's `site/` mirror offsite (details in
+`site/README.md`).
+
+### 9.1 Antenna-set selectors (`__each__` `"over"`)
+
+An `"over"` that starts with `@` names a set of antennas instead of a
+literal index set:
+
+```
+"@" <file> ":" ["!"] <type>
+<file> = rxtype | loadtype              (rxtype.conf, loadtype.conf)
+<type> = tune6 | wsma | none            (case-insensitive)
+```
+
+| Selector | Antennas, with the live 2026-10-20 files |
+|---|---|
+| `@rxtype:wsma` | 1, 7, 8 |
+| `@rxtype:tune6` | 2–6 |
+| `@rxtype:!wsma` | 2–6, plus any antenna coded -1 (NONE) |
+| `@loadtype:wsma` | 1, 7, 8 |
+
+```json
+{"__each__": {"over": "@rxtype:wsma", "as": "i", "template": { ... }}}
+```
+
+- **Use `!wsma`, not `tune6`, to port a C `else` branch.** The C always
+  tests `if (type == WSMA) … else …` (`arrayMonitor.c:491, 508, 2336`),
+  so its Tune6 code also runs for antennas coded -1 (NONE). `tune6`
+  would silently drop those antennas.
+- **The parser keeps the C's quirks** (`rxtype.c`): an antenna missing
+  from the file counts as Tune6, and any negative type counts as NONE.
+
+### 9.2 Param tokens (`params` values)
+
+A string `params` value that starts with `@` is replaced by a value read
+from a file. Write `{i}` for the antenna in an `__each__` template; it
+is substituted before the token is resolved.
+
+| Token | Value | Source |
+|---|---|---|
+| `@dewarTemp:<ant>:<field>` | `ch77`, `ch12`, `ch4` (1-based Lakeshore channels), `limit4k` (K), or `ch4_index` (`ch4 − 1`, the 0-based index into `RM_DEWAR_TEMPS_V16_F`) | `dewarTemp.conf`, C defaults applied (`dewarpage.c`) |
+| `@wselect:<ant>` | `{"1": "G", "2": "H", "3": "D", "4": "L"}`: wheel position (string key) → mode. `{}` if the antenna has no line. | `wselect.conf` (`wsma.c`) |
+
+```json
+"params": {"sensor": "@dewarTemp:{i}:ch4_index"}
+"params": {"wselect": "@wselect:{i}"}
+```
+
+### 9.3 Rules common to both
+
+- **Resolved once, at config load** (`ComputeConfig.from_dict`). The
+  engine's node set and params are fixed for the life of the process, so
+  a change to a site file takes effect after an engine restart (Marc,
+  2026-10-20). The C also reads `rxtype.conf` once per process.
+- **A missing or unreadable file fails config load** with a
+  `ValueError` that names the path. The engine refuses to start rather
+  than run with antennas silently missing. Every file a token uses must
+  therefore exist on-site; Marc confirmed this for all four.
+- **Malformed tokens fail config load** too (`bad antenna-set selector`
+  / `bad site token`).
+- Tests pin the site root to the repo mirror (`conftest.py`), so results
+  never depend on the live files.
+
+### 9.4 Touch points
+
+- `sitefiles.py`: one parser per file (`read_rxtypes`,
+  `read_loadtypes`, `read_dewar_sensors`, `read_wsma_selection`), plus
+  the token resolvers `antenna_set`, `dewar_param` and `wselect_param`.
+  A new token means a new parser and resolver here.
+- `computeconfig.py`: `_expand_entry` sends an `@` `"over"` to
+  `antenna_set`; `_resolve_site_params` sends `@` param values to the
+  matching resolver. Anything else passes through unchanged, so every
+  config without tokens behaves exactly as before.
+- Related, same release: optional dict-form inputs
+  (`{"name": ..., "optional": true}`, §3.4), first used by the wSMA LO
+  lock to read tables that may not exist on every antenna.

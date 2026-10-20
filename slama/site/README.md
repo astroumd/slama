@@ -35,7 +35,7 @@ Live copies taken by Marc on 2026-10-20 (file mtimes preserved).
 | `global/configFiles/rxtype.conf` | `@rxtype:` | wSMA on 1, 7, 8; Tune6 on 2–6 |
 | `global/configFiles/loadtype.conf` | `@loadtype:` | Same as `rxtype.conf`; antenna 3 is commented "load assembly offline" but coded 0 (Tune6) |
 | `global/configFiles/dewarTemp.conf` | `@dewarTemp:` | 4K limit 5.2 K on every antenna |
-| `global/configFiles/wselect.conf` | `read_wsma_selection()` (not wired up yet) | Antennas 1, 7, 8: positions G H D L |
+| `global/configFiles/wselect.conf` | `@wselect:` | Antennas 1, 7, 8: positions G H D L |
 | `global/configFiles/phaseMonitorBaselinesSorted` | not yet | SAO seeing |
 | `global/configFiles/badPhasemonBaselines` | not yet | SAO seeing |
 | `global/configFiles/fire/ignoreAntSmoking.txt` | not yet | All zeros (no antenna ignored) |
@@ -59,6 +59,7 @@ Copy with `cp -p` so modification times survive (some checks, e.g. the
 cp -p /global/configFiles/rxtype.conf site/global/configFiles/
 ```
 
-A config that reads a file through an `@rxtype:` / `@loadtype:` /
-`@dewarTemp:` token fails to load if that file is missing, instead of
+The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` tokens are
+specified in `docs/monitorsystem_writer_design.md` §9. A config that reads a
+file through one of them fails to load if that file is missing, instead of
 silently dropping antennas.

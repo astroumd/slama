@@ -572,3 +572,52 @@ class TestInputTimestamp:
         }]}, ms)
         engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: 1_700_000_001.0)
         assert engine.tick()[0].value == pytest.approx(1_700_000_000.25)
+
+
+# ---------------------------------------------------------------------------
+# Optional dict-form inputs ({"name": ..., "optional": true})
+# ---------------------------------------------------------------------------
+
+@compute_function("_test_optional_echo")
+def _test_optional_echo(inputs, ctx):
+    """Test-only: ``"req"`` plus 100 if ``"opt"`` arrived as ``None``."""
+    return float(inputs["req"].value) + (100.0 if inputs["opt"].value is None else float(inputs["opt"].value))
+
+
+class TestOptionalInputs:
+    NOW = 1_700_000_000.0
+
+    def _setup(self, opt_spec, opt_value=None, opt_age=0.0):
+        req = make_mp("antenna:1:air:temperature", smax_type="float")
+        set_value(req, 5.0, ts=datetime.fromtimestamp(self.NOW, tz=timezone.utc))
+        opt = make_mp("antenna:1:receiver:a:mixer_index", smax_type="int")
+        if opt_value is not None:
+            set_value(opt, opt_value, ts=datetime.fromtimestamp(self.NOW - opt_age, tz=timezone.utc))
+        out = make_mp("monitorsystem:antenna:1:tsys_min", smax_type="float")
+        ms = FakeMonitorSystem([req, opt, out])
+        cfg = ComputeConfig.from_dict({
+            "computations": [{
+                "output": "monitorsystem:antenna:1:tsys_min",
+                "function": "_test_optional_echo",
+                "inputs": {"req": "antenna:1:air:temperature", "opt": opt_spec},
+            }],
+        }, ms)
+        return ComputeEngine(cfg, ms, client=None, wall_clock=lambda: self.NOW)
+
+    def test_missing_optional_input_reaches_function_as_none(self):
+        engine = self._setup({"name": "antenna:1:receiver:a:mixer_index", "optional": True})
+        assert engine.tick()[0].value == pytest.approx(105.0)
+
+    def test_stale_optional_input_reaches_function_as_none(self):
+        engine = self._setup({"name": "antenna:1:receiver:a:mixer_index", "optional": True},
+                             opt_value=2, opt_age=3600)
+        assert engine.tick()[0].value == pytest.approx(105.0)
+
+    def test_present_optional_input_passes_its_value(self):
+        engine = self._setup({"name": "antenna:1:receiver:a:mixer_index", "optional": True},
+                             opt_value=2)
+        assert engine.tick()[0].value == pytest.approx(7.0)
+
+    def test_missing_required_input_still_short_circuits(self):
+        engine = self._setup({"name": "antenna:1:receiver:a:mixer_index", "optional": False})
+        assert engine.tick()[0].validity == Validity.INVALID_NO_DATA

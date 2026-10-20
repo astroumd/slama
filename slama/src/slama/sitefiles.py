@@ -379,3 +379,32 @@ def dewar_param(ant: int, field_name: str) -> int | float:
     if ant not in sensors:
         raise ValueError(f"antenna {ant} out of range 1-{SMA_N_ANTENNAS}")
     return getattr(sensors[ant], field_name)
+
+
+def wselect_param(ant: int) -> dict[str, str]:
+    """One antenna's ``wselect.conf`` row for a compute-config param token.
+
+    Parameters
+    ----------
+    ant : int
+        Antenna number 1-8.
+
+    Returns
+    -------
+    dict of str to str
+        Selector-wheel position (``"1"``-``"4"``, as strings so the
+        param survives JSON round-trips) to mode letter. Empty if the
+        antenna has no line, so every position is unknown, as for an
+        unset ``rxsel`` row in ``wsma.c``.
+
+    Raises
+    ------
+    ValueError
+        Antenna outside 1-8, or the file is missing.
+    """
+    if not 1 <= ant <= SMA_N_ANTENNAS:
+        raise ValueError(f"antenna {ant} out of range 1-{SMA_N_ANTENNAS}")
+    selection = read_wsma_selection()
+    if selection is None:
+        raise ValueError(f"{site_path(WSMA_SELECT_FILE)} cannot be read")
+    return {str(pos): mode for pos, mode in selection.get(ant, {}).items()}

@@ -528,3 +528,41 @@ class TestSiteFileTokens:
                                  "params": {"sensor": token}}]}
         with pytest.raises(ValueError, match="bad site token"):
             ComputeConfig.from_dict(raw, make_ms())
+
+
+class TestOptionalInputSpec:
+    def _cfg(self, spec):
+        return ComputeConfig.from_dict({"computations": [{
+            "output": "monitorsystem:antenna:1:tsys_min", "function": "count_true",
+            "inputs": {"x": spec},
+        }]}, make_ms())
+
+    def test_optional_roles_recorded(self):
+        node = self._cfg({"name": "antenna:1:is_online", "optional": True}).nodes[0]
+        assert node.optional_inputs == frozenset({"x"})
+
+    def test_optional_false_and_plain_string_are_required(self):
+        assert self._cfg({"name": "antenna:1:is_online", "optional": False}).nodes[0].optional_inputs == frozenset()
+        assert self._cfg("antenna:1:is_online").nodes[0].optional_inputs == frozenset()
+
+    def test_non_boolean_optional_raises(self):
+        with pytest.raises(ValueError, match="'optional' must be true or false"):
+            self._cfg({"name": "antenna:1:is_online", "optional": "yes"})
+
+    def test_wselect_param_token(self, monkeypatch, tmp_path):
+        from slama import site_paths
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))
+        site_paths.reset_site_root()
+        conf = tmp_path / "global" / "configFiles"
+        conf.mkdir(parents=True)
+        (conf / "wselect.conf").write_text("1 G H D L\n")
+        raw = {"computations": [{
+            "output": "monitorsystem:antenna:1:tsys_min", "function": "count_true",
+            "inputs": ["antenna:1:is_online"], "params": {"w": "@wselect:1"},
+        }, {
+            "output": "monitorsystem:antenna:2:tsys_min", "function": "count_true",
+            "inputs": ["antenna:2:is_online"], "params": {"w": "@wselect:2"},
+        }]}
+        params = {n.output: n.params["w"] for n in ComputeConfig.from_dict(raw, make_ms()).nodes}
+        assert params == {"monitorsystem:antenna:1:tsys_min": {"1": "G", "2": "H", "3": "D", "4": "L"},
+                          "monitorsystem:antenna:2:tsys_min": {}}
