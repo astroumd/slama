@@ -449,6 +449,253 @@
         "scan_source": "DSM:hcn:DSM_AS_SCAN_SOURCE_C24"
       },
       "staleness_s": null
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "_comment": "Validation checks (arrayMonitor.c 'New point? = No' rows). RM status points here are written only on change, so staleness_s null.",
+          "output": "monitorsystem:antenna:{i}:sun_safe_minutes",
+          "function": "sun_safe_minutes",
+          "inputs": {
+            "present": {
+              "name": "RM:acc{i}:RM_PRESENT_SUN_SAFE_MINUTES_S",
+              "staleness_s": null
+            },
+            "required": {
+              "name": "RM:acc{i}:RM_REQUIERD_SUN_SAFE_MINUTES_S",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "output": "monitorsystem:array:pointing_offset_spread_arcsec",
+      "function": "pointing_offset_spread",
+      "inputs": {
+        "raoff1": {
+          "name": "RM:acc1:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff2": {
+          "name": "RM:acc2:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff3": {
+          "name": "RM:acc3:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff4": {
+          "name": "RM:acc4:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff5": {
+          "name": "RM:acc5:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff6": {
+          "name": "RM:acc6:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff7": {
+          "name": "RM:acc7:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "raoff8": {
+          "name": "RM:acc8:RM_RAOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff1": {
+          "name": "RM:acc1:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff2": {
+          "name": "RM:acc2:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff3": {
+          "name": "RM:acc3:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff4": {
+          "name": "RM:acc4:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff5": {
+          "name": "RM:acc5:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff6": {
+          "name": "RM:acc6:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff7": {
+          "name": "RM:acc7:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "decoff8": {
+          "name": "RM:acc8:RM_DECOFF_ARCSEC_D",
+          "staleness_s": null
+        },
+        "online": {
+          "name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B",
+          "staleness_s": null
+        }
+      },
+      "params": {
+        "antennas": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:scan_flagged",
+          "function": "scan_flagged",
+          "inputs": {
+            "flags": {
+              "name": "DSM:hal9000:DSM_SCAN_FLAGS_V11_V2_L",
+              "staleness_s": null
+            },
+            "status": {
+              "name": "RM:acc{i}:RM_ANTENNA_STATUS_S",
+              "staleness_s": null
+            },
+            "online": {
+              "name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B",
+              "staleness_s": null
+            }
+          },
+          "params": {
+            "ant": "{i}"
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:palm_off",
+          "function": "palm_off",
+          "inputs": {
+            "faultword": {
+              "name": "RM:acc{i}:RM_SCB_FAULTWORD_L",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:online",
+          "function": "antenna_online",
+          "inputs": {
+            "online": {
+              "name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B",
+              "staleness_s": null
+            }
+          },
+          "params": {
+            "ant": "{i}"
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:waveplate",
+          "function": "waveplate",
+          "inputs": {
+            "status": {
+              "name": "RM:acc{i}:RM_WAVEPLATE_ROTATION_STATUS_S",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": {
+            "state": "monitorsystem:antenna:{i}:m3_state",
+            "door_open": "monitorsystem:antenna:{i}:m3_door_open"
+          },
+          "function": "m3_state",
+          "inputs": {
+            "state": {
+              "name": "RM:acc{i}:RM_M3STATE_B",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:el_drive_fault",
+          "function": "el_drive_fault",
+          "inputs": {
+            "el_state": {
+              "name": "RM:acc{i}:RM_EL_DRV_STATE_B",
+              "staleness_s": null
+            },
+            "bits": {
+              "name": "RM:acc{i}:RM_CHOPPER_STATUS_BITS_V16_B",
+              "staleness_s": null
+            },
+            "ts": {
+              "name": "RM:acc{i}:RM_CHOPPER_MONITOR_TIMESTAMP_L",
+              "staleness_s": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "_comment": "600 s = arrayMonitor.c 'temp monitor is stale (colossus)'; the limit is written rarely.",
+      "output": "monitorsystem:array:equipment_room_temp",
+      "function": "equipment_room_temp",
+      "inputs": {
+        "temp": {
+          "name": "DSM:colossus:DSM_ANALOG_ROOM_TEMPERATURE_F",
+          "staleness_s": 600
+        },
+        "limit": {
+          "name": "DSM:colossus:DSM_ANALOG_ROOM_HITEMPLIMIT_F",
+          "staleness_s": null
+        },
+        "alarm": {
+          "name": "DSM:colossus:DSM_ANALOG_ROOM_HITEMPALARM_S",
+          "staleness_s": 600
+        }
+      }
     }
   ]
 }
