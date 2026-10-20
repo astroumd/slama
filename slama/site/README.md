@@ -59,6 +59,7 @@ Copy with `cp -p` so modification times survive (some checks, e.g. the
 cp -p /global/configFiles/rxtype.conf site/global/configFiles/
 ```
 
-A config that reads a file through an `@rxtype:` / `@loadtype:` /
-`@dewarTemp:` / `@wselect:` token fails to load if that file is missing, instead of
+The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` tokens are
+specified in `docs/monitorsystem_writer_design.md` §9. A config that reads a
+file through one of them fails to load if that file is missing, instead of
 silently dropping antennas.
