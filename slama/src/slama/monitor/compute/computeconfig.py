@@ -148,7 +148,7 @@ class ComputeConfig:
             raw_inputs = entry.get("inputs")
             if raw_inputs is None:
                 raise ValueError(f"computation {output!r} missing 'inputs'")
-            raw_inputs, input_staleness = _split_input_staleness(output, raw_inputs)
+            raw_inputs, input_staleness, optional_inputs = _split_input_specs(output, raw_inputs)
             inputs = _resolve_inputs_spec(output, raw_inputs, monitor_system)
 
             if "interval_s" in entry:
@@ -171,6 +171,7 @@ class ComputeConfig:
                 ),
                 interval_s=entry.get("interval_s"),
                 input_staleness=input_staleness,
+                optional_inputs=optional_inputs,
             ))
 
         ordered = _build_dependency_order(nodes)
@@ -242,10 +243,15 @@ def _expand_entry(entry: dict) -> list[dict]:
 def _resolve_site_params(params: dict, output) -> dict:
     """Replace site-file tokens in an entry's ``params`` with their values.
 
-    A string value ``"@dewarTemp:<ant>:<field>"`` (written with
-    ``{i}`` for ``<ant>`` in a template, then substituted) becomes
-    :func:`slama.sitefiles.dewar_param` for that antenna and field,
-    e.g. ``"@dewarTemp:{i}:ch4_index"``. Other values pass through.
+    String values that are site-file tokens (written with ``{i}`` for
+    ``<ant>`` in a template, then substituted) are replaced:
+
+    * ``"@dewarTemp:<ant>:<field>"`` -> :func:`slama.sitefiles.dewar_param`,
+      e.g. ``"@dewarTemp:{i}:ch4_index"``;
+    * ``"@wselect:<ant>"`` -> :func:`slama.sitefiles.wselect_param`, the
+      antenna's wheel-position -> mode map.
+
+    Other values pass through.
 
     Parameters
     ----------
@@ -269,13 +275,18 @@ def _resolve_site_params(params: dict, output) -> dict:
     for key, value in params.items():
         if isinstance(value, str) and value.startswith(SITE_TOKEN_PREFIX):
             parts = value[len(SITE_TOKEN_PREFIX):].split(":")
-            if len(parts) != 3 or parts[0] != "dewarTemp" or not parts[1].isdigit():
+            dewar = len(parts) == 3 and parts[0] == "dewarTemp"
+            wselect = len(parts) == 2 and parts[0] == "wselect"
+            if not (dewar or wselect) or not parts[1].isdigit():
                 raise ValueError(
                     f"computation {output!r} param {key!r}: bad site token "
-                    f"{value!r} (expected '@dewarTemp:<ant>:<field>')"
+                    f"{value!r} (expected '@dewarTemp:<ant>:<field>' or '@wselect:<ant>')"
                 )
             try:
-                value = sitefiles.dewar_param(int(parts[1]), parts[2])
+                if dewar:
+                    value = sitefiles.dewar_param(int(parts[1]), parts[2])
+                else:
+                    value = sitefiles.wselect_param(int(parts[1]))
             except ValueError as exc:
                 raise ValueError(f"computation {output!r} param {key!r}: {exc}") from exc
         resolved[key] = value
@@ -499,15 +510,19 @@ def _parse_staleness(raw, where) -> float | None:
     return value
 
 
-def _split_input_staleness(output, raw_inputs):
-    """Separate per-input ``staleness_s`` overrides from dict-form input patterns.
+def _split_input_specs(output, raw_inputs):
+    """Separate per-input options from dict-form input patterns.
 
     A dict-form input value may be either a plain pattern string or
-    ``{"name": <pattern>, "staleness_s": <number|null>}``. The object
-    form exists for RM status points that are written to SMAX only on
-    change: their SMAX timestamp can be days old while the value is
-    still correct, so they are exempted (``null``) and the compute
-    function checks an RM heartbeat input instead.
+    ``{"name": <pattern>, "staleness_s": <number|null>, "optional":
+    <bool>}`` (both option keys optional). ``staleness_s`` exists for
+    RM status points that are written to SMAX only on change: their
+    SMAX timestamp can be days old while the value is still correct,
+    so they are exempted (``null``) and the compute function checks an
+    RM heartbeat input instead. ``optional: true`` lets a missing or
+    stale input reach the function as ``value=None`` instead of
+    short-circuiting the node, for inputs the C reads with a default
+    (e.g. ``smaxLazyPullLong(..., default)``).
 
     Parameters
     ----------
@@ -519,34 +534,45 @@ def _split_input_staleness(output, raw_inputs):
 
     Returns
     -------
-    tuple of (list or dict, dict of str to (float or None))
+    tuple of (list or dict, dict of str to (float or None), frozenset of str)
         ``raw_inputs`` with every object-form value replaced by its
-        ``"name"`` pattern, and the role -> staleness override map.
+        ``"name"`` pattern, the role -> staleness override map, and the
+        set of optional roles.
 
     Raises
     ------
     ValueError
         If an object-form input lacks ``"name"``, has keys other than
-        ``"name"``/``"staleness_s"``, or has an invalid ``staleness_s``.
+        ``"name"``/``"staleness_s"``/``"optional"``, has an invalid
+        ``staleness_s``, or has a non-boolean ``optional``.
     """
     if not isinstance(raw_inputs, dict):
-        return raw_inputs, {}
+        return raw_inputs, {}, frozenset()
     patterns: dict = {}
     overrides: dict[str, float | None] = {}
+    optional: set[str] = set()
     for role, spec in raw_inputs.items():
         if isinstance(spec, dict):
-            extra = set(spec) - {"name", "staleness_s"}
+            extra = set(spec) - {"name", "staleness_s", "optional"}
             if "name" not in spec or extra:
                 raise ValueError(
                     f"computation {output!r} input {role!r}: object form must be "
-                    f'{{"name": ..., "staleness_s": ...}}, got {spec!r}'
+                    f'{{"name": ..., "staleness_s": ..., "optional": ...}}, got {spec!r}'
                 )
             patterns[role] = spec["name"]
             if "staleness_s" in spec:
                 overrides[role] = _parse_staleness(spec["staleness_s"], output)
+            if "optional" in spec:
+                if not isinstance(spec["optional"], bool):
+                    raise ValueError(
+                        f"computation {output!r} input {role!r}: 'optional' must be "
+                        f"true or false, got {spec['optional']!r}"
+                    )
+                if spec["optional"]:
+                    optional.add(role)
         else:
             patterns[role] = spec
-    return patterns, overrides
+    return patterns, overrides, frozenset(optional)
 
 
 def _resolve_inputs_spec(output: str, raw_inputs, monitor_system: MonitorSystem):

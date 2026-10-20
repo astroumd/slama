@@ -177,3 +177,17 @@ def test_mirror_contents():
         {2: 9, 3: 11, 4: 3, 5: 11, 6: 11}
     gh_dl = {1: "G", 2: "H", 3: "D", 4: "L"}
     assert sitefiles.read_wsma_selection() == {1: gh_dl, 7: gh_dl, 8: gh_dl}
+
+
+class TestWselectParam:
+    def test_string_keys_and_missing_antenna(self, site):
+        site(sitefiles.WSMA_SELECT_FILE, "7 L H G D\n")
+        assert sitefiles.wselect_param(7) == {"1": "L", "2": "H", "3": "G", "4": "D"}
+        assert sitefiles.wselect_param(1) == {}
+
+    def test_errors(self, site):
+        with pytest.raises(ValueError, match="wselect.conf"):
+            sitefiles.wselect_param(1)
+        site(sitefiles.WSMA_SELECT_FILE, "7 L H G D\n")
+        with pytest.raises(ValueError, match="out of range"):
+            sitefiles.wselect_param(9)

@@ -718,9 +718,9 @@ def clock_offset(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> float
 #
 # Antenna receiver and load types come from /global/configFiles/rxtype.conf
 # and loadtype.conf (see slama.sitefiles), through "@rxtype:..." /
-# "@loadtype:..." __each__ selectors in computations.json. The wSMA LO
-# lock (wsmaSelection/wsmaIsLocked) is not ported yet, so LO points exist
-# only for the non-wSMA antennas.
+# "@loadtype:..." __each__ selectors in computations.json. wSMA LO locks
+# come from wsma.c's wsmaSelection/wsmaIsLocked (see _wsma_gunn_locks),
+# with the selector-wheel modes from wselect.conf ("@wselect:{i}").
 # ---------------------------------------------------------------------------
 
 PHASE_LOCK_IS_STALE_S = 90.0
@@ -794,9 +794,110 @@ def yig_locked(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     return locked, (Validity.VALID_GOOD if locked else Validity.VALID_WARNING)
 
 
+WSMA_SELECTOR_POSITIONS = 4
+"""``wsma.c:21``: selector-wheel positions 1-4."""
+
+WSMA_N_MIXERS = 2
+"""``wsma.h`` ``WSMA_N_MIXERS``; also ``SMA_N_RECEIVERS`` for the mixer-index check."""
+
+_WSMA_LOCK_INPUTS = {("L", 1): "lock_L1", ("L", 2): "lock_L2", ("H", 1): "lock_H1"}
+"""``(band, mixer)`` -> input role holding that PLL's ``lock`` (H always uses mixer 1)."""
+
+
+def _wsma_selection(mode, rx: int, cartridge, mixer_index) -> tuple[str, int]:
+    """Band and mixer feeding receiver chain ``rx`` (``wsma.c:281-337``).
+
+    Parameters
+    ----------
+    mode : str or None
+        ``wselect.conf`` mode letter for the current selector position
+        (``L``, ``H``, ``G``, ``D``), or ``None``/anything else if the
+        position is unknown.
+    rx : int
+        Receiver chain: 1 (RxA) or 2 (RxB).
+    cartridge : str, bytes or None
+        SMAX ``antenna:N:receiver:{a,b}`` ``cartridge``; ``wsma:l-band``
+        or ``wsma:h-band`` (case-insensitive) overrides the mode's band.
+        SMAX stores it as type ``raw``, so it arrives as ``SmaxBytes``
+        and is decoded here.
+    mixer_index : int or None
+        SMAX ``mixer_index``; used if in 1-2, else the mixer is ``rx``.
+
+    Returns
+    -------
+    tuple of (str, int)
+        ``(band, mixer)`` with band ``"L"``/``"H"``, or ``("?", -1)``
+        for an unknown mode. As in the C, the overrides are never
+        consulted for an unknown mode.
+    """
+    if mode == "L":
+        band = "L"
+    elif mode == "H":
+        band = "H"
+    elif mode in ("G", "D"):
+        band = "H" if rx == 1 else "L"
+    else:
+        return "?", -1
+    if isinstance(cartridge, (bytes, bytearray)):
+        cartridge = cartridge.decode("utf-8", errors="replace")
+    if isinstance(cartridge, str):
+        if cartridge.strip().lower() == "wsma:l-band":
+            band = "L"
+        elif cartridge.strip().lower() == "wsma:h-band":
+            band = "H"
+    try:
+        m = int(mixer_index)
+    except (TypeError, ValueError):
+        m = -1
+    return band, (m if 0 < m <= WSMA_N_MIXERS else rx)
+
+
+def _wsma_gunn_locks(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> tuple:
+    """wSMA stand-ins for ``gunn1Status``/``gunn2Status`` (``arrayMonitor.c:491-500``).
+
+    Each chain's lock is ``wsmaIsLocked(wsmaSelection(...))``
+    (``wsma.c:513-530``): the selected PLL's raw ``lock`` value, or 0
+    if the band/mixer is unknown or the value is missing (the C's
+    ``smaxLazyPullLong(..., FALSE)`` default).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"selector"`` (wheel position); optional ``"cart_a"``,
+        ``"mix_a"``, ``"cart_b"``, ``"mix_b"``, ``"lock_L1"``,
+        ``"lock_L2"``, ``"lock_H1"`` (``value`` is ``None`` when missing).
+    ctx : ComputeContext
+        ``params["wselect"]``: position (``"1"``-``"4"``) -> mode, from
+        the ``@wselect:{i}`` token.
+
+    Returns
+    -------
+    tuple
+        ``(gunn1, gunn2)`` raw lock values for RxA and RxB.
+    """
+    try:
+        pos = int(inputs["selector"].value)
+    except (TypeError, ValueError):
+        pos = -1
+    mode = ctx.params.get("wselect", {}).get(str(pos)) if 1 <= pos <= WSMA_SELECTOR_POSITIONS else None
+
+    def value(role):
+        ri = inputs.get(role)
+        return None if ri is None else ri.value
+
+    locks = []
+    for rx, chain in ((1, "a"), (2, "b")):
+        band, mixer = _wsma_selection(mode, rx, value(f"cart_{chain}"), value(f"mix_{chain}"))
+        if band == "H":
+            mixer = 1
+        lock = value(_WSMA_LOCK_INPUTS.get((band, mixer), ""))
+        locks.append(0 if lock is None else lock)
+    return tuple(locks)
+
+
 @compute_function("lo_status")
 def lo_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
-    """Tune6 LO status field (``arrayMonitor.c:2160-2225``).
+    """LO status field (``arrayMonitor.c:2160-2225``).
 
     Busy codes 1-4 replace the whole field (``tuningL``, ``tuningH``,
     ``LO adjL``, ``LO adjH``). Otherwise the field is
@@ -810,12 +911,19 @@ def lo_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     2026-09-22 snapshot) gives ``"?"`` rather than the C's silent
     fall-through.
 
+    Two input shapes, one per receiver type:
+
+    * Tune6: ``"busy"``, ``"gunn1"``, ``"gunn2"``, ``"yig1"``, ``"yig2"``.
+    * wSMA (has ``"selector"``): the C forces ``busy = 0``
+      (``arrayMonitor.c:2160``) and takes the gunn values from
+      :func:`_wsma_gunn_locks`; ``"yig1"``/``"yig2"`` as for Tune6.
+
     Parameters
     ----------
     inputs : dict of str to ResolvedInput
-        ``"busy"``, ``"gunn1"``, ``"gunn2"``, ``"yig1"``, ``"yig2"``.
+        See above.
     ctx : ComputeContext
-        Unused.
+        ``params["wselect"]`` for the wSMA shape; otherwise unused.
 
     Returns
     -------
@@ -824,14 +932,20 @@ def lo_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         sweeping, or if any lock is not 1; ``VALID_GOOD`` for
         ``"1-1/1-1"``.
     """
-    busy_label = _label(inputs["busy"].value, {i: str(i) for i in range(_TUNE6_MAX_CODE + 1)})
-    if busy_label == "?":
-        return "?", Validity.VALID_ERROR
-    busy = int(busy_label)
-    if busy in TUNE6_BUSY_LABELS:
-        return TUNE6_BUSY_LABELS[busy], Validity.VALID_WARNING
+    if "selector" in inputs:
+        busy = 0
+        gunn1, gunn2 = _wsma_gunn_locks(inputs, ctx)
+    else:
+        busy_label = _label(inputs["busy"].value, {i: str(i) for i in range(_TUNE6_MAX_CODE + 1)})
+        if busy_label == "?":
+            return "?", Validity.VALID_ERROR
+        busy = int(busy_label)
+        if busy in TUNE6_BUSY_LABELS:
+            return TUNE6_BUSY_LABELS[busy], Validity.VALID_WARNING
+        gunn1, gunn2 = inputs["gunn1"].value, inputs["gunn2"].value
 
-    g1, y1, g2, y2 = (_tri_state(inputs[k].value) for k in ("gunn1", "yig1", "gunn2", "yig2"))
+    g1, g2 = _tri_state(gunn1), _tri_state(gunn2)
+    y1, y2 = _tri_state(inputs["yig1"].value), _tri_state(inputs["yig2"].value)
     left = {_TUNE6_IV_SWEEP: "IV", _TUNE6_PB_SWEEP: "PB"}.get(busy, f"{g1}-{y1}")
     right = {_TUNE6_IV_SWEEP_HIGH_FREQ: "IV", _TUNE6_PB_SWEEP_HIGH_FREQ: "PB"}.get(busy, f"{g2}-{y2}")
     label = f"{left}/{right}"
@@ -849,14 +963,20 @@ def lo_lock_ok(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     than :data:`PHASE_LOCK_IS_STALE_S` is also an error (the C
     highlights it).
 
+    Two input shapes, as for :func:`lo_status`: Tune6 has ``"gunn1"``,
+    ``"gunn2"`` and the ``"gunn1_ts"`` heartbeat; wSMA (has
+    ``"selector"``) takes the gunn values from :func:`_wsma_gunn_locks`
+    and has no heartbeat (the C sets ``delay = 0``,
+    ``arrayMonitor.c:2148-2149``).
+
     Parameters
     ----------
     inputs : dict of str to ResolvedInput
-        ``"gunn1"``, ``"gunn2"``, ``"yig1"``, ``"gunn1_ts"``, and
-        ``"rest_freq"`` (``DSM_REQUESTED_FREQUENCY_V2_D``; element
-        ``0``, as the C uses ``restFrequency[0]``).
+        ``"yig1"`` and ``"rest_freq"`` (``DSM_REQUESTED_FREQUENCY_V2_D``;
+        element ``0``, as the C uses ``restFrequency[0]``), plus the
+        shape-specific inputs above.
     ctx : ComputeContext
-        Supplies the wall clock.
+        Supplies the wall clock; ``params["wselect"]`` for wSMA.
 
     Returns
     -------
@@ -864,12 +984,17 @@ def lo_lock_ok(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         ``(ok, VALID_GOOD)`` or ``(ok, VALID_ERROR)``; ``VALID_ERROR``
         whenever the heartbeat is stale, regardless of ``ok``.
     """
-    g1, g2, y1 = (_is_one(inputs[k].value) for k in ("gunn1", "gunn2", "yig1"))
+    if "selector" in inputs:
+        gunn1, gunn2 = _wsma_gunn_locks(inputs, ctx)
+        stale = False
+    else:
+        gunn1, gunn2 = inputs["gunn1"].value, inputs["gunn2"].value
+        stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
+    g1, g2, y1 = _is_one(gunn1), _is_one(gunn2), _is_one(inputs["yig1"].value)
     rest = float(_array_elem(inputs["rest_freq"].value, 0))
     ok = (g1 and y1 and g2) \
         or (rest > HI_LO_FREQ_CUTOFF_HZ and g2 and y1) \
         or (rest < HI_LO_FREQ_CUTOFF_HZ and g1 and y1)
-    stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
     return ok, (Validity.VALID_GOOD if ok and not stale else Validity.VALID_ERROR)
 
 

@@ -8621,6 +8621,23 @@
                 }
               }
             },
+            "lo_plate": {
+              "mixer": {
+                "__each__": {
+                  "over": "1-2",
+                  "template": {
+                    "pll": {
+                      "description": "PLL data",
+                      "lock": {
+                        "description": "Whether the PLL is locked (nonzero = locked; read by wsma.c wsmaIsLocked)",
+                        "size": "1",
+                        "smax_type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
             "description": "Information on the L-band cartridge"
           },
           "H": {
@@ -8684,10 +8701,10 @@
                       "size": "1",
                       "smax_type": "int16"
                     },
-                    "is_locked": {
-                      "description": "Whether the PLL is locked",
+                    "lock": {
+                      "description": "Whether the PLL is locked (nonzero = locked; read by wsma.c wsmaIsLocked)",
                       "size": "1",
-                      "smax_type": "boolean"
+                      "smax_type": "integer"
                     },
                     "lock_command": {
                       "description": "Command to lock LO to desired frequency and PLL sideband. (Uses **`lo:frequency_set`**, and **`lo:pll:sideband_set`**, and updates **`lo:frequency`**`, lo:pll:sideband, and lo:pll_is_locked.`)",
@@ -8892,7 +8909,17 @@
             }
           },
           "b": {
-            "description": "Receiver \u2018B\u2019 chain (assembly)"
+            "cartridge": {
+              "description": "Cartridge ID for the RxB chain, e.g. \u201cwsma:l-band\u201d, or empty string if none is configured (wsma.c wsmaSelection).",
+              "size": "1",
+              "smax_type": "string"
+            },
+            "description": "Receiver \u2018B\u2019 chain (assembly)",
+            "mixer_index": {
+              "description": "1-based mixer index in associated physical receiver LO unit (default: 2 for RxB)",
+              "size": "1",
+              "smax_type": "int"
+            }
           },
           "description": "Dada on all physical receivers and receiver chains",
           "wsma": {
@@ -12499,12 +12526,12 @@
             "smax_type": "boolean"
           },
           "lo_status": {
-            "description": "Antenna {i} Tune6 LO field: gunn1-yig1/gunn2-yig2, tuningL/H, LO adjL/H, IV/PB, or ? (arrayMonitor.c 2160-2225). Tune6 antennas only; wSMA LO lock not yet ported. From slama.monitor.compute",
+            "description": "Antenna {i} LO field: gunn1-yig1/gunn2-yig2, tuningL/H, LO adjL/H, IV/PB, or ? (arrayMonitor.c 2160-2225). On wSMA antennas the gunn values are the selected PLL locks (wsma.c wsmaSelection/wsmaIsLocked) and there are no busy labels. From slama.monitor.compute",
             "size": "1",
             "smax_type": "string"
           },
           "lo_lock_ok": {
-            "description": "Antenna {i} LO locked for the observing band, with fresh gunn-lock heartbeat (arrayMonitor.c LO_FAULT). Tune6 antennas only. From slama.monitor.compute",
+            "description": "Antenna {i} LO locked for the observing band (arrayMonitor.c LO_FAULT), with a fresh gunn-lock heartbeat on Tune6 antennas (wSMA has no heartbeat check). From slama.monitor.compute",
             "size": "1",
             "smax_type": "boolean"
           },

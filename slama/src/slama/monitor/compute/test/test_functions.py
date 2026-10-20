@@ -35,6 +35,7 @@ from slama.monitor.compute.functions import (
     _circular_mean_deg,
     hotload_position,
     line_name,
+    _wsma_selection,
     lo_lock_ok,
     lo_status,
     rx_label,
@@ -568,6 +569,109 @@ class TestLoLockOk:
 
     def test_stale_heartbeat_is_error_even_if_locked(self):
         assert self._run(age=91) == (True, Validity.VALID_ERROR)
+
+
+WSELECT_GHDL = {"1": "G", "2": "H", "3": "D", "4": "L"}
+"""Live wselect.conf row for antennas 1, 7, 8 (2026-10-20)."""
+
+
+def wsma_inputs(pos, locks=None, cart_a=None, mix_a=None, cart_b=None, mix_b=None, **extra):
+    """wSMA-shape inputs; ``locks`` maps role (``lock_L1``...) -> value, others None."""
+    locks = locks or {}
+    vals = {"selector": pos, "cart_a": cart_a, "mix_a": mix_a, "cart_b": cart_b, "mix_b": mix_b,
+            **{r: locks.get(r) for r in ("lock_L1", "lock_L2", "lock_H1")}, **extra}
+    return {k: ri(k, v) for k, v in vals.items()}
+
+
+class TestWsmaSelection:
+    @pytest.mark.parametrize("mode, rx, expected", [
+        ("L", 1, ("L", 1)), ("L", 2, ("L", 2)),
+        ("H", 1, ("H", 1)), ("H", 2, ("H", 2)),
+        ("G", 1, ("H", 1)), ("G", 2, ("L", 2)),
+        ("D", 1, ("H", 1)), ("D", 2, ("L", 2)),
+    ])
+    def test_default_band_and_mixer(self, mode, rx, expected):
+        assert _wsma_selection(mode, rx, None, None) == expected
+
+    def test_cartridge_overrides_band(self):
+        assert _wsma_selection("H", 1, "wsma:l-band", None) == ("L", 1)
+        assert _wsma_selection("L", 2, " WSMA:H-Band ", None) == ("H", 2)
+        assert _wsma_selection("L", 1, "", None) == ("L", 1)          # empty -> default
+
+    def test_cartridge_as_smax_bytes(self):
+        # SMAX stores cartridge as type raw; MonitorSystem.read returns SmaxBytes
+        from smax.smax_data_types import SmaxBytes
+        assert _wsma_selection("H", 1, SmaxBytes(b"wsma:l-band"), None) == ("L", 1)
+        assert _wsma_selection("L", 2, b"wsma:h-band", None) == ("H", 2)
+
+    def test_mixer_index_override_and_range(self):
+        assert _wsma_selection("L", 1, None, 2) == ("L", 2)
+        assert _wsma_selection("L", 2, None, 3) == ("L", 2)            # out of range -> rx
+        assert _wsma_selection("L", 1, None, 0) == ("L", 1)
+
+    @pytest.mark.parametrize("mode", [None, "?", "", "X"])
+    def test_unknown_mode_ignores_overrides(self, mode):
+        assert _wsma_selection(mode, 1, "wsma:l-band", 1) == ("?", -1)
+
+
+class TestLoStatusWsma:
+    def _run(self, pos, y1=1, y2=1, wselect=WSELECT_GHDL, **kw):
+        return lo_status(wsma_inputs(pos, yig1=y1, yig2=y2, **kw), ctx(params={"wselect": wselect}))
+
+    def test_l_mode_reads_l_mixers_1_and_2(self):
+        assert self._run(4, locks={"lock_L1": 1, "lock_L2": 1}) == ("1-1/1-1", Validity.VALID_GOOD)
+        assert self._run(4, locks={"lock_L1": 1, "lock_L2": 0})[0] == "1-1/0-1"
+
+    def test_h_mode_forces_mixer_1_on_both_chains(self):
+        assert self._run(2, locks={"lock_H1": 1})[0] == "1-1/1-1"
+
+    def test_grid_mode_rx1_high_rx2_low(self):
+        assert self._run(1, locks={"lock_H1": 1, "lock_L2": 0})[0] == "1-1/0-1"
+
+    def test_cartridge_and_mixer_overrides(self):
+        # pos 2 = H, but RxB is assigned the L-band cartridge, mixer 1
+        assert self._run(2, locks={"lock_H1": 0, "lock_L1": 1},
+                         cart_b="wsma:l-band", mix_b=1)[0] == "0-1/1-1"
+
+    def test_missing_lock_is_zero_not_w(self):
+        assert self._run(4)[0] == "0-1/0-1"
+
+    def test_raw_lock_value_shown_tri_state(self):
+        assert self._run(4, locks={"lock_L1": 2, "lock_L2": 1})[0] == "w-1/1-1"
+
+    @pytest.mark.parametrize("pos", [-1, 0, 5, None, "garbage"])
+    def test_unknown_position_is_zero(self, pos):
+        assert self._run(pos, locks={"lock_L1": 1, "lock_L2": 1, "lock_H1": 1},
+                         cart_a="wsma:l-band")[0] == "0-1/0-1"
+
+    def test_antenna_missing_from_wselect_is_zero(self):
+        assert self._run(4, wselect={}, locks={"lock_L1": 1, "lock_L2": 1})[0] == "0-1/0-1"
+
+    def test_no_busy_labels(self):
+        # wSMA shape has no "busy" input at all (the C forces busy = 0)
+        assert "busy" not in wsma_inputs(4)
+
+
+class TestLoLockOkWsma:
+    def _run(self, pos, locks, y1=1, rest=230e9):
+        return lo_lock_ok(wsma_inputs(pos, locks, yig1=y1, rest_freq=np.array([rest, rest])),
+                          ctx(params={"wselect": WSELECT_GHDL}))
+
+    def test_locked_low_band(self):
+        assert self._run(4, {"lock_L1": 1}) == (True, Validity.VALID_GOOD)
+
+    def test_unlocked(self):
+        assert self._run(4, {}) == (False, Validity.VALID_ERROR)
+
+    def test_high_band_needs_gunn2(self):
+        assert self._run(1, {"lock_L2": 1}, rest=690e9) == (True, Validity.VALID_GOOD)
+
+    def test_no_heartbeat_check(self):
+        # no gunn1_ts input; never stale
+        assert self._run(2, {"lock_H1": 1}) == (True, Validity.VALID_GOOD)
+
+    def test_yig1_still_required(self):
+        assert self._run(4, {"lock_L1": 1, "lock_L2": 1}, y1=0) == (False, Validity.VALID_ERROR)
 
 
 class TestHotloadPosition:

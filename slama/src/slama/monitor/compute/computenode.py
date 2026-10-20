@@ -52,8 +52,9 @@ class ComputeNode:
         Resolved canonical names to read. A list gives an ordered set
         (functions receive a ``list[ResolvedInput]``); a dict gives
         named inputs (functions receive a ``dict[str, ResolvedInput]``,
-        and any missing/stale named input short-circuits the whole
-        node to ``INVALID_NO_DATA`` — see
+        and any missing/stale named input not in
+        :attr:`optional_inputs` short-circuits the whole node to
+        ``INVALID_NO_DATA`` — see
         :meth:`slama.monitor.compute.engine.ComputeEngine._resolve_inputs`).
     params : dict
         Static configuration passed through to the function via
@@ -81,6 +82,12 @@ class ComputeNode:
         input gets ``None`` here and the function checks freshness
         against an RM heartbeat input (e.g. ``RM_SERVO_TIMESTAMP_L``)
         instead. See :meth:`staleness_for`.
+    optional_inputs : frozenset of str
+        Dict-form roles (config ``{"name": ..., "optional": true}``)
+        whose missing or stale value is passed to the function as a
+        :class:`ResolvedInput` with ``value=None`` and
+        ``INVALID_NO_DATA`` validity, instead of short-circuiting the
+        node.
     interval_s : float or None
         Reserved for future per-entry tick cadence (design doc §7
         decision 3). Not yet consulted by :class:`ComputeEngine` —
@@ -101,6 +108,7 @@ class ComputeNode:
     staleness_s: float | None = 30.0
     interval_s: float | None = None
     input_staleness: dict[str, float | None] = field(default_factory=dict)
+    optional_inputs: frozenset[str] = frozenset()
 
     state: dict = field(default_factory=dict)
 

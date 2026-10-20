@@ -196,6 +196,51 @@
     },
     {
       "__each__": {
+        "over": "@rxtype:wsma", "as": "i",
+        "template": {
+          "_comment": "wSMA receivers: gunn values are the selected PLL locks (arrayMonitor.c 491-500, wsma.c wsmaSelection/wsmaIsLocked), busy = 0, no heartbeat (2148-2160). Missing selection/lock tables fall back as in the C (optional inputs).",
+          "output": "monitorsystem:antenna:{i}:lo_status",
+          "function": "lo_status",
+          "inputs": {
+            "selector": {"name": "antenna:{i}:receiver:wsma:cryostat:selector:position", "staleness_s": null},
+            "cart_a": {"name": "antenna:{i}:receiver:a:cartridge", "staleness_s": null, "optional": true},
+            "mix_a": {"name": "antenna:{i}:receiver:a:mixer_index", "staleness_s": null, "optional": true},
+            "cart_b": {"name": "antenna:{i}:receiver:b:cartridge", "staleness_s": null, "optional": true},
+            "mix_b": {"name": "antenna:{i}:receiver:b:mixer_index", "staleness_s": null, "optional": true},
+            "lock_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "lock_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:pll:lock", "staleness_s": null, "optional": true},
+            "lock_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "yig2": {"name": "RM:acc{i}:RM_YIG2_LOCKED_S", "staleness_s": null}
+          },
+          "params": {"wselect": "@wselect:{i}"}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "@rxtype:wsma", "as": "i",
+        "template": {
+          "output": "monitorsystem:antenna:{i}:lo_lock_ok",
+          "function": "lo_lock_ok",
+          "inputs": {
+            "selector": {"name": "antenna:{i}:receiver:wsma:cryostat:selector:position", "staleness_s": null},
+            "cart_a": {"name": "antenna:{i}:receiver:a:cartridge", "staleness_s": null, "optional": true},
+            "mix_a": {"name": "antenna:{i}:receiver:a:mixer_index", "staleness_s": null, "optional": true},
+            "cart_b": {"name": "antenna:{i}:receiver:b:cartridge", "staleness_s": null, "optional": true},
+            "mix_b": {"name": "antenna:{i}:receiver:b:mixer_index", "staleness_s": null, "optional": true},
+            "lock_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "lock_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:pll:lock", "staleness_s": null, "optional": true},
+            "lock_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "rest_freq": {"name": "DSM:hal9000:DSM_REQUESTED_FREQUENCY_V2_D", "staleness_s": null}
+          },
+          "params": {"wselect": "@wselect:{i}"}
+        }
+      }
+    },
+    {
+      "__each__": {
         "over": "@loadtype:!wsma", "as": "i",
         "template": {
           "_comment": "Non-wSMA loads (loadtype.conf) check the optics board first (arrayMonitor.c 2338-2341).",

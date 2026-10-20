@@ -432,7 +432,9 @@ class ComputeEngine:
         Returns ``None`` if the node should short-circuit to
         ``INVALID_NO_DATA`` without calling its function: for
         dict-form inputs, any missing/stale named input does this
-        (a required named input can't be dropped); for list-form
+        (a required named input can't be dropped) unless its role is
+        in :attr:`ComputeNode.optional_inputs`, in which case it is
+        passed through with ``value=None``; for list-form
         inputs, ``"propagate"`` does this on any invalid input, and
         both policies do this if *every* input turns out invalid
         (nothing left to compute over).
@@ -459,7 +461,9 @@ class ComputeEngine:
             for key, name in node.inputs.items():
                 value, validity = self._resolve_one(name, now_wall, node.staleness_for(key))
                 if validity == Validity.INVALID_NO_DATA:
-                    return None
+                    if key not in node.optional_inputs:
+                        return None
+                    value = None
                 resolved[key] = ResolvedInput(name, value, validity, self._timestamp_of(name))
             return resolved
 

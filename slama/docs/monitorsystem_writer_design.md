@@ -160,6 +160,13 @@ Uniform rule, engine-enforced (computations don't hand-roll it):
     checks freshness against an RM heartbeat input instead (e.g.
     `RM_SERVO_TIMESTAMP_L`, whose *value* is a Unix time), using
     `ctx.wall_clock`. Entry and default `staleness_s` also accept `null`.
+  - **Optional inputs** (added for the wSMA LO lock port): the same
+    object form takes `"optional": true`. A dict-form input normally
+    short-circuits the whole node to `INVALID_NO_DATA` when missing or
+    stale; an optional one instead reaches the function with
+    `value=None`, so the function can apply the C's default (e.g.
+    `smaxLazyPullLong(..., FALSE)`). Used where a table may legitimately
+    not exist, such as antenna 1's `receiver:a`/`b` overrides.
 - Each computation declares a policy for invalid inputs:
   `"skip"` (compute over the valid subset — right for medians/counts) or
   `"propagate"` (output becomes `INVALID_NO_DATA` — right for physics
