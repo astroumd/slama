@@ -1,0 +1,75 @@
+{
+  "name": "Array Monitor Inputs",
+  "description": "Raw inputs to the Array Monitor that no other page shows. The Array Monitor shows what arrayMonitor.c shows (derived points); these raw values stay browsable here until the per-antenna detail redesign.",
+  "update_interval": 5,
+  "layout": [
+    {
+      "type": "table",
+      "title": "Safety / Drive",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Smoke warning",      "points": "RM:acc{ant}:RM_ANTENNA_SMOKE_WARNING_B"},
+        {"label": "Antenna status",     "points": "RM:acc{ant}:RM_ANTENNA_STATUS_S"},
+        {"label": "Tracking error (asec)", "points": "RM:acc{ant}:RM_TRACKING_ERROR_ARCSEC_F", "format": "{:.2f}", "display_min": 0, "display_max": 3600},
+        {"label": "Encoder Az (deg)",   "points": "RM:acc{ant}:RM_ENCODER_AZ_F", "format": "{:.3f}", "display_min": -360, "display_max": 360},
+        {"label": "Encoder El (deg)",   "points": "RM:acc{ant}:RM_ENCODER_EL_F", "format": "{:.3f}", "display_min": -5, "display_max": 90},
+        {"label": "El drive state",      "points": "RM:acc{ant}:RM_EL_DRV_STATE_B"},
+        {"label": "SCB CW limit",        "points": "RM:acc{ant}:RM_SCB_CW_LIMIT_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
+        {"label": "SCB CCW limit",       "points": "RM:acc{ant}:RM_SCB_CCW_LIMIT_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
+        {"label": "SCB low limit",       "points": "RM:acc{ant}:RM_SCB_LOW_LIMIT_F", "format": "{:.2f}", "display_min": -90, "display_max": 90},
+        {"label": "SCB up limit",        "points": "RM:acc{ant}:RM_SCB_UP_LIMIT_F", "format": "{:.2f}", "display_min": -90, "display_max": 90}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Receiver / Optics",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Gunn1 locked time",   "points": "RM:acc{ant}:RM_GUNN1_LOCKED_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000},
+        {"label": "YIG1 locked",         "points": "RM:acc{ant}:RM_YIG1_LOCKED_S"},
+        {"label": "YIG2 locked",         "points": "RM:acc{ant}:RM_YIG2_LOCKED_S"},
+        {"label": "YIG switch high freq","points": "RM:acc{ant}:RM_YIG_SWITCH_HIGH_FREQ_S"},
+        {"label": "Waveplate rotation",  "points": "RM:acc{ant}:RM_WAVEPLATE_ROTATION_STATUS_S"}
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Deice",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "Deice timestamp",     "points": "RM:acc{ant}:RM_DEICE_TIMESTAMP_L", "display_min": 0, "display_max": 2000000000}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Weather (raw wind)",
+      "cells": [
+        {"label": "Wind Server",     "point": "DSM:colossus:DSM_WIND_SERVER_C7"},
+        {"label": "Wind (m/s)",     "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDSPEED_F", "format": "{:.1f}", "display_min": 0,    "display_max": 200},
+        {"label": "Wind dir (deg)", "point": "DSM:colossus:SMA_METEOROLOGY_X:WINDDIR_F",   "format": "{:.1f}", "display_min": 0,    "display_max": 360}
+      ]
+    },
+    {
+      "type": "cells",
+      "title": "Ephemeris / Polar Motion",
+      "cells": [
+        {"label": "RA apparent (hr)",      "point": "RM:acc1:RM_RA_APP_HR_D",  "format": "{:.4f}", "display_min": 0, "display_max": 24},
+        {"label": "Dec apparent (deg)",    "point": "RM:acc1:RM_DEC_APP_DEG_D", "format": "{:.4f}", "display_min": -90, "display_max": 90},
+        {"label": "Polar Dx (asec)",       "point": "RM:acc1:RM_POLAR_DX_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
+        {"label": "Polar Dy (asec)",       "point": "RM:acc1:RM_POLAR_DY_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2}
+      ]
+    }
+  ]
+}
