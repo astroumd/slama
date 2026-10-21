@@ -7,24 +7,27 @@ filesystem root, so `/global/configFiles/rxtype.conf` lives at
 `site/global/configFiles/rxtype.conf`.
 
 Code never opens these files directly. It calls
-`slama.site_paths.site_path("/global/...")`, which re-roots the path, and
+`slama.site_paths.site_path("/global/...")` (or `"/otherInstances/..."`),
+which re-roots the path, and
 the parsers in `slama.sitefiles` port the C readers (and their quirks).
 
 ## Which root is used
 
-Chosen once per process (`slama.site_paths.site_root()`), logged at INFO:
+Chosen once per process for each tree (`slama.site_paths.site_root(tree)`),
+logged at INFO:
 
-1. `$SLAMA_SITE_ROOT` if set (`/` = live). The compute CLI and web server
-   also take `--site-root DIR`, which sets it.
-2. `/` if `/global/configFiles` is a directory (on-site).
+1. `$SLAMA_SITE_ROOT` if set (`/` = live), for both trees. The compute CLI
+   and web server also take `--site-root DIR`, which sets it.
+2. `/` if the tree's marker is a directory: `/global/configFiles` for
+   `/global`, `/otherInstances/acc` for `/otherInstances` (on-site).
 3. This directory.
 
 The test suite always pins the root to this directory (`conftest.py`), so
 results don't depend on the live files when run on-site.
 
-**Known limitation:** detection checks `/global` only. A host that mounts
-`/global` but not `/otherInstances` would look for `/otherInstances` at
-the live path. Nothing reads `/otherInstances` yet.
+If the two trees end up with different roots (e.g. a host that mounts
+`/global` but not `/otherInstances`), a WARNING is logged: on-site it
+means these mirror copies are standing in for live files.
 
 ## Contents and provenance
 
@@ -41,7 +44,7 @@ Live copies taken by Marc on 2026-10-20 (file mtimes preserved).
 | `global/configFiles/fire/ignoreAntSmoking.txt` | `@smokeIgnore:` | All zeros (no antenna ignored). A missing file means nothing is ignored. |
 | `global/polar/ser7.dat` | not yet | Only the mtime matters |
 | `global/projects/antennasInArray` | not yet | Empty at copy time (no project running) |
-| `otherInstances/acc/{1..8}/configFiles/pointingModel` | not yet | Tilt-flag defaults |
+| `otherInstances/acc/{1..8}/configFiles/pointingModel` | `@tiltDefault:` | `TiltFlag 0 0` on every antenna. A missing file means default 0, with a warning. |
 | `global/configFiles/{choppertype,servo}.conf` | not yet | Extras, not used by arrayMonitor.c |
 
 Kept out of git (`site/.gitignore`): `projects/antennaUser` (people's
@@ -60,7 +63,8 @@ cp -p /global/configFiles/rxtype.conf site/global/configFiles/
 ```
 
 The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` /
-`@smokeIgnore:` tokens are specified in `docs/monitorsystem_writer_design.md`
+`@smokeIgnore:` / `@tiltDefault:` tokens are specified in `docs/monitorsystem_writer_design.md`
 §9. A config that reads a file through one of them fails to load if that
-file is missing, instead of silently dropping antennas. The exception is
-`@smokeIgnore:`, which falls back to "ignore nothing".
+file is missing, instead of silently dropping antennas. The exceptions are
+`@smokeIgnore:`, which falls back to "ignore nothing", and `@tiltDefault:`,
+which falls back to a default of 0.

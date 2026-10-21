@@ -224,3 +224,55 @@ class TestSmokeIgnore:
 
 def test_mirror_smoke_ignore_is_all_zero():
     assert not any(sitefiles.read_smoke_ignore().values())
+
+
+class TestTiltDefault:
+    MODEL = ("# Pointing Model Parameters for Antenna-{ant}\n"
+             "# Parameter   Optical   Radio\n"
+             "AzDC          -54.6        -579.3\n"
+             "{tilt}"
+             "Date          02Sep22          16Dec25\n")
+
+    def _write(self, site, ant, tilt):
+        site(sitefiles.POINTING_MODEL_FILE.format(ant=ant), self.MODEL.format(ant=ant, tilt=tilt))
+
+    def test_radio_column_is_used(self, site):
+        self._write(site, 3, "TiltFlag       0          1\n")
+        assert sitefiles.read_tilt_default(3) == 1
+        self._write(site, 3, "TiltFlag       1          0\n")
+        assert sitefiles.read_tilt_default(3) == 0
+
+    def test_last_tiltflag_line_wins(self, site):
+        self._write(site, 2, "TiltFlag 0 1\nTiltFlag 0 0\n")
+        assert sitefiles.read_tilt_default(2) == 0
+
+    def test_atof_truncation_and_junk(self, site):
+        self._write(site, 1, "TiltFlag 0 1.9\n")
+        assert sitefiles.read_tilt_default(1) == 1
+        self._write(site, 1, "TiltFlag 0 1abc\n")
+        assert sitefiles.read_tilt_default(1) == 1
+        self._write(site, 1, "TiltFlag 0 yes\n")
+        assert sitefiles.read_tilt_default(1) == 0
+
+    def test_no_tiltflag_or_short_line_defaults_to_zero(self, site):
+        self._write(site, 4, "")
+        assert sitefiles.read_tilt_default(4) == 0
+        self._write(site, 4, "TiltFlag 1\n")
+        assert sitefiles.read_tilt_default(4) == 0
+
+    def test_commented_tiltflag_is_skipped(self, site):
+        self._write(site, 5, "#TiltFlag 0 1\n")
+        assert sitefiles.read_tilt_default(5) == 0
+
+    def test_missing_file_defaults_to_zero(self, site, caplog):
+        assert sitefiles.read_tilt_default(6) is None
+        assert sitefiles.tilt_default_param(6) == 0
+        assert "pointingModel" in caplog.text
+
+    def test_param_range(self, site):
+        with pytest.raises(ValueError, match="out of range"):
+            sitefiles.tilt_default_param(9)
+
+
+def test_mirror_tilt_defaults_are_zero():
+    assert [sitefiles.tilt_default_param(a) for a in range(1, 9)] == [0] * 8

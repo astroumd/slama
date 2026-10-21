@@ -1820,6 +1820,37 @@ def smoke_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     return "ignored" if ctx.params.get("ignored") else "SMOKING"
 
 
+@compute_function("tilt_flag")
+def tilt_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Tilt-correction flag vs the pointing-model default (``arrayMonitor.c:1813-1817``).
+
+    The C prints a ``T`` in the Ant/Pad row when
+    ``RM_TILT_CORRECTION_FLAG_L`` differs from the antenna's
+    ``TiltFlag`` in ``/otherInstances/acc/N/configFiles/pointingModel``
+    (``monitor.c:526-542``). Unlike the C, every antenna is checked,
+    online or not.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"flag"``: ``RM_TILT_CORRECTION_FLAG_L``.
+    ctx : ComputeContext
+        ``params["default"]``: int, from the ``@tiltDefault:{i}`` token.
+
+    Returns
+    -------
+    str
+        ``"T"`` (flag differs from the default, or is unreadable) or
+        ``"ok"``. Bare, so the output's ``state_validity`` in
+        ``smax.json`` maps it to WARNING / GOOD.
+    """
+    try:
+        flag = int(float(inputs["flag"].value))
+    except (TypeError, ValueError, OverflowError):
+        return "T"
+    return "ok" if flag == ctx.params["default"] else "T"
+
+
 @compute_function("m3_state")
 def m3_state(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
     """M3 mirror door state (``arrayMonitor.c:467-468, 2073-2125, 2792-2795``).

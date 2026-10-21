@@ -1,4 +1,4 @@
-"""Parsers for the observatory site files under ``/global/configFiles``.
+"""Parsers for the observatory site files under ``/global`` and ``/otherInstances``.
 
 Each parser ports one C reader and keeps its quirks, so SLAMA reaches
 the same conclusions as the curses monitor from the same file. Paths
@@ -13,6 +13,7 @@ the 1-based SMA numbers 1-8 throughout.
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -39,6 +40,9 @@ WSMA_SELECT_FILE: str = "/global/configFiles/wselect.conf"
 
 SMOKE_IGNORE_FILE: str = "/global/configFiles/fire/ignoreAntSmoking.txt"
 """``arrayMonitor.c`` ``SMOKE_FILE``."""
+
+POINTING_MODEL_FILE: str = "/otherInstances/acc/{ant}/configFiles/pointingModel"
+"""``monitor.c:529`` ``mountModelFile`` (``{ant}`` = antenna number 1-8)."""
 
 WSMA_SELECTOR_POSITIONS: int = 4
 """``wsma.c:21`` ``WSMA_SELECTOR_POSITIONS``: selector wheel positions 1-4."""
@@ -466,3 +470,83 @@ def smoke_ignore_param(ant: int) -> bool:
         raise ValueError(f"antenna {ant} out of range 1-{SMA_N_ANTENNAS}")
     flags = read_smoke_ignore()
     return False if flags is None else flags[ant]
+
+
+def _atof(s: str) -> float:
+    """C ``atof``: the longest leading float in ``s``, or 0.0 if there is none."""
+    for end in range(len(s), 0, -1):
+        try:
+            return float(s[:end])
+        except ValueError:
+            continue
+    return 0.0
+
+
+def read_tilt_default(ant: int) -> int | None:
+    """One antenna's default tilt-correction flag, from its ``pointingModel``.
+
+    Ports ``monitor.c:526-542``: lines starting with ``#`` are skipped;
+    each other line is read as ``parameter optical radio``, and for
+    ``TiltFlag`` the default is ``(int)atof(radio)``, the **radio**
+    (third) column. The last ``TiltFlag`` line wins, and a file without
+    one gives 0. A line with fewer than three fields is skipped (the C
+    would reuse the previous line's leftover ``radio`` value).
+
+    Parameters
+    ----------
+    ant : int
+        Antenna number 1-8.
+
+    Returns
+    -------
+    int or None
+        The default flag; ``None`` (with a warning) if the file can't be
+        opened. (The C crashes there: its ``fclose`` is outside the
+        ``NULL`` check.)
+
+    Raises
+    ------
+    ValueError
+        Antenna outside 1-8.
+    """
+    if not 1 <= ant <= SMA_N_ANTENNAS:
+        raise ValueError(f"antenna {ant} out of range 1-{SMA_N_ANTENNAS}")
+    lines = _read_lines(POINTING_MODEL_FILE.format(ant=ant))
+    if lines is None:
+        return None
+    default = 0
+    for _, line in lines:
+        fields = line.split()
+        if len(fields) >= 3 and fields[0] == "TiltFlag":
+            value = _atof(fields[2])
+            default = int(value) if math.isfinite(value) else 0
+    return default
+
+
+def tilt_default_param(ant: int) -> int:
+    """One antenna's default tilt flag, for a compute-config param token.
+
+    Like :func:`smoke_ignore_param`, **a missing file does not fail
+    config load**: it logs a warning and uses 0, the value the C sets
+    before reading the file. A missing file for one antenna would
+    otherwise stop every computed point for a single ``T`` indicator
+    (Marc, 2026-10-21).
+
+    Parameters
+    ----------
+    ant : int
+        Antenna number 1-8.
+
+    Returns
+    -------
+    int
+        The ``TiltFlag`` radio value from the antenna's ``pointingModel``,
+        or 0 if the file can't be read.
+
+    Raises
+    ------
+    ValueError
+        Antenna outside 1-8.
+    """
+    default = read_tilt_default(ant)
+    return 0 if default is None else default

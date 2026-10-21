@@ -7299,6 +7299,7 @@
           "smax_type": "double"
         },
         "RM_TILT_CORRECTION_FLAG_L": {
+          "description": "Tilt-correction flag. Raw value; the check against the pointingModel default is monitorsystem:antenna:N:tilt_flag.",
           "size": "1",
           "smax_type": "int32"
         },
@@ -12494,6 +12495,16 @@
               "SMOKING": "ERROR"
             },
             "unknown_state": "ERROR"
+          },
+          "tilt_flag": {
+            "description": "Antenna {i} tilt-correction flag check: T when RM_TILT_CORRECTION_FLAG_L differs from TiltFlag in /otherInstances/acc/{i}/configFiles/pointingModel, else ok (arrayMonitor.c 1813-1817). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "ok": "GOOD",
+              "T": "WARNING"
+            },
+            "unknown_state": "WARNING"
           },
           "m3_state": {
             "description": "Antenna {i} M3 door state from RM_M3STATE_B: ???, close, open, moving, -----, close?, open? (arrayMonitor.c), from slama.monitor.compute",

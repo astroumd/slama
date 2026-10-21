@@ -139,6 +139,7 @@
         {"label": "Commanded Az (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_AZ_DEG_F", "format": "{:.3f}", "display_min": 0, "display_max": 360},
         {"label": "Commanded El (deg)",  "points": "RM:acc{ant}:RM_COMMANDED_EL_DEG_F", "format": "{:.3f}", "display_min": -90, "display_max": 90},
         {"label": "Tilt correction flag","points": "RM:acc{ant}:RM_TILT_CORRECTION_FLAG_L"},
+        {"label": "Tilt flag vs default","points": "monitorsystem:antenna:{ant}:tilt_flag"},
         {"label": "Unheated load status","points": "RM:acc{ant}:RM_UNHEATEDLOAD_STATUS_S"}
       ]
     },
