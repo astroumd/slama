@@ -824,7 +824,9 @@ never an expression, and the vocabulary grows only by adding a parser in
 
 Files are found through `slama.site_paths.site_path()`: the live
 `/global` on-site, the repo's `site/` mirror offsite (details in
-`site/README.md`).
+`site/README.md`). `/global` and `/otherInstances` are detected
+separately, each by its own marker directory, and a WARNING is logged if
+they end up with different roots (Marc, 2026-10-21).
 
 ### 9.1 Antenna-set selectors (`__each__` `"over"`)
 
@@ -866,11 +868,13 @@ is substituted before the token is resolved.
 | `@dewarTemp:<ant>:<field>` | `ch77`, `ch12`, `ch4` (1-based Lakeshore channels), `limit4k` (K), or `ch4_index` (`ch4 − 1`, the 0-based index into `RM_DEWAR_TEMPS_V16_F`) | `dewarTemp.conf`, C defaults applied (`dewarpage.c`) |
 | `@wselect:<ant>` | `{"1": "G", "2": "H", "3": "D", "4": "L"}`: wheel position (string key) → mode. `{}` if the antenna has no line. | `wselect.conf` (`wsma.c`) |
 | `@smokeIgnore:<ant>` | `true` if the antenna's smoke alarm is ignored (nonzero entry). | `fire/ignoreAntSmoking.txt`: the first 8 integers, any whitespace (`arrayMonitor.c:219-228`) |
+| `@tiltDefault:<ant>` | The antenna's default tilt-correction flag (int): the radio (3rd) column of the last `TiltFlag` line; 0 if there is none or the file is missing. | `/otherInstances/acc/<ant>/configFiles/pointingModel` (`monitor.c:526-542`) |
 
 ```json
 "params": {"sensor": "@dewarTemp:{i}:ch4_index"}
 "params": {"wselect": "@wselect:{i}"}
 "params": {"ignored": "@smokeIgnore:{i}"}
+"params": {"default": "@tiltDefault:{i}"}
 ```
 
 ### 9.3 Rules common to both
@@ -883,11 +887,15 @@ is substituted before the token is resolved.
   `ValueError` that names the path. The engine refuses to start rather
   than run with antennas silently missing. Every file a token uses must
   therefore exist on-site; Marc confirmed this for all four.
-  - **One exception: `@smokeIgnore:`.** A missing
+  - **Exception: `@smokeIgnore:`.** A missing
     `ignoreAntSmoking.txt` logs a warning and ignores nothing, as in the
     C. For a fire alarm, "alarm on every antenna" is the safe fallback,
     and refusing to start would take down every computed point (Marc,
     2026-10-20).
+  - **Likewise `@tiltDefault:`.** A missing `pointingModel` logs a
+    warning and uses 0, the C's value before it reads the file (the C
+    itself crashes there). A single `T` indicator is not worth stopping
+    every computed point (Marc, 2026-10-21).
 - **Malformed tokens fail config load** too (`bad antenna-set selector`
   / `bad site token`).
 - Tests pin the site root to the repo mirror (`conftest.py`), so results
@@ -897,8 +905,9 @@ is substituted before the token is resolved.
 
 - `sitefiles.py`: one parser per file (`read_rxtypes`,
   `read_loadtypes`, `read_dewar_sensors`, `read_wsma_selection`,
-  `read_smoke_ignore`), plus the token resolvers `antenna_set`,
-  `dewar_param`, `wselect_param` and `smoke_ignore_param`.
+  `read_smoke_ignore`, `read_tilt_default`), plus the token resolvers
+  `antenna_set`, `dewar_param`, `wselect_param`, `smoke_ignore_param`
+  and `tilt_default_param`.
   A new token means a new parser and resolver here.
 - `computeconfig.py`: `_expand_entry` sends an `@` `"over"` to
   `antenna_set`; `_resolve_site_params` sends `@` param values to the

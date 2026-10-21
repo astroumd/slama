@@ -559,6 +559,21 @@ class TestOptionalInputSpec:
         }]}
         assert ComputeConfig.from_dict(raw, make_ms()).nodes[0].params == {"ignored": False}
 
+    def test_tilt_default_token(self, monkeypatch, tmp_path):
+        from slama import site_paths
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))
+        site_paths.reset_site_root()
+        conf = tmp_path / "otherInstances" / "acc" / "1" / "configFiles"
+        conf.mkdir(parents=True)
+        (conf / "pointingModel").write_text("TiltFlag 0 1\n")
+        raw = {"computations": [{
+            "output": "monitorsystem:antenna:1:tsys_min", "function": "count_true",
+            "inputs": ["antenna:1:is_online"], "params": {"default": "@tiltDefault:1"},
+        }]}
+        assert ComputeConfig.from_dict(raw, make_ms()).nodes[0].params == {"default": 1}
+        raw["computations"][0]["params"] = {"default": "@tiltDefault:2"}   # no file: 0, still loads
+        assert ComputeConfig.from_dict(raw, make_ms()).nodes[0].params == {"default": 0}
+
     def test_wselect_param_token(self, monkeypatch, tmp_path):
         from slama import site_paths
         monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))

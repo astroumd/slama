@@ -40,6 +40,7 @@ from slama.monitor.compute.functions import (
     lo_status,
     rx_label,
     smoke_alarm,
+    tilt_flag,
     yig_locked,
     on_source,
     timestamp_age,
@@ -684,6 +685,16 @@ class TestSmokeAlarm:
     ])
     def test_states(self, smoke, ignored, expected):
         assert smoke_alarm({"smoke": ri("s", smoke)}, ctx(params={"ignored": ignored})) == expected
+
+
+class TestTiltFlag:
+    @pytest.mark.parametrize("flag, default, expected", [
+        (0, 0, "ok"), (1, 1, "ok"), (1, 0, "T"), (0, 1, "T"),
+        ("junk", 0, "T"),                  # unreadable: flag it
+        (None, 0, "T"),
+    ])
+    def test_states(self, flag, default, expected):
+        assert tilt_flag({"flag": ri("f", flag)}, ctx(params={"default": default})) == expected
 
 
 class TestHotloadPosition:

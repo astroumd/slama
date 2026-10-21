@@ -251,7 +251,9 @@ def _resolve_site_params(params: dict, output) -> dict:
     * ``"@wselect:<ant>"`` -> :func:`slama.sitefiles.wselect_param`, the
       antenna's wheel-position -> mode map;
     * ``"@smokeIgnore:<ant>"`` -> :func:`slama.sitefiles.smoke_ignore_param`,
-      the antenna's smoke-ignore flag (a missing file means ``False``).
+      the antenna's smoke-ignore flag (a missing file means ``False``);
+    * ``"@tiltDefault:<ant>"`` -> :func:`slama.sitefiles.tilt_default_param`,
+      the antenna's ``TiltFlag`` from its ``pointingModel``.
 
     Other values pass through.
 
@@ -279,13 +281,14 @@ def _resolve_site_params(params: dict, output) -> dict:
             parts = value[len(SITE_TOKEN_PREFIX):].split(":")
             dewar = len(parts) == 3 and parts[0] == "dewarTemp"
             per_ant = {"wselect": sitefiles.wselect_param,
-                       "smokeIgnore": sitefiles.smoke_ignore_param}
+                       "smokeIgnore": sitefiles.smoke_ignore_param,
+                       "tiltDefault": sitefiles.tilt_default_param}
             single = len(parts) == 2 and parts[0] in per_ant
             if not (dewar or single) or not parts[1].isdigit():
                 raise ValueError(
                     f"computation {output!r} param {key!r}: bad site token "
                     f"{value!r} (expected '@dewarTemp:<ant>:<field>', "
-                    f"'@wselect:<ant>' or '@smokeIgnore:<ant>')"
+                    f"'@wselect:<ant>', '@smokeIgnore:<ant>' or '@tiltDefault:<ant>')"
                 )
             try:
                 if dewar:

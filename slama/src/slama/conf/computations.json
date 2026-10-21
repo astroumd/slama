@@ -253,6 +253,18 @@
     },
     {
       "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "_comment": "Tilt-correction flag vs the pointingModel default (arrayMonitor.c 1813-1817, monitor.c 526-542). A missing pointingModel means default 0, with a warning.",
+          "output": "monitorsystem:antenna:{i}:tilt_flag",
+          "function": "tilt_flag",
+          "inputs": {"flag": {"name": "RM:acc{i}:RM_TILT_CORRECTION_FLAG_L", "staleness_s": null}},
+          "params": {"default": "@tiltDefault:{i}"}
+        }
+      }
+    },
+    {
+      "__each__": {
         "over": "@loadtype:!wsma", "as": "i",
         "template": {
           "_comment": "Non-wSMA loads (loadtype.conf) check the optics board first (arrayMonitor.c 2338-2341).",
