@@ -38,7 +38,7 @@ Live copies taken by Marc on 2026-10-20 (file mtimes preserved).
 | `global/configFiles/wselect.conf` | `@wselect:` | Antennas 1, 7, 8: positions G H D L |
 | `global/configFiles/phaseMonitorBaselinesSorted` | not yet | SAO seeing |
 | `global/configFiles/badPhasemonBaselines` | not yet | SAO seeing |
-| `global/configFiles/fire/ignoreAntSmoking.txt` | not yet | All zeros (no antenna ignored) |
+| `global/configFiles/fire/ignoreAntSmoking.txt` | `@smokeIgnore:` | All zeros (no antenna ignored). A missing file means nothing is ignored. |
 | `global/polar/ser7.dat` | not yet | Only the mtime matters |
 | `global/projects/antennasInArray` | not yet | Empty at copy time (no project running) |
 | `otherInstances/acc/{1..8}/configFiles/pointingModel` | not yet | Tilt-flag defaults |
@@ -59,7 +59,8 @@ Copy with `cp -p` so modification times survive (some checks, e.g. the
 cp -p /global/configFiles/rxtype.conf site/global/configFiles/
 ```
 
-The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` tokens are
-specified in `docs/monitorsystem_writer_design.md` §9. A config that reads a
-file through one of them fails to load if that file is missing, instead of
-silently dropping antennas.
+The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` /
+`@smokeIgnore:` tokens are specified in `docs/monitorsystem_writer_design.md`
+§9. A config that reads a file through one of them fails to load if that
+file is missing, instead of silently dropping antennas. The exception is
+`@smokeIgnore:`, which falls back to "ignore nothing".

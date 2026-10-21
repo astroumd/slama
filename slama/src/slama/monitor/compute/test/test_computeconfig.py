@@ -549,6 +549,16 @@ class TestOptionalInputSpec:
         with pytest.raises(ValueError, match="'optional' must be true or false"):
             self._cfg({"name": "antenna:1:is_online", "optional": "yes"})
 
+    def test_smoke_ignore_token_missing_file_still_loads(self, monkeypatch, tmp_path):
+        from slama import site_paths
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))   # no files at all
+        site_paths.reset_site_root()
+        raw = {"computations": [{
+            "output": "monitorsystem:antenna:1:tsys_min", "function": "count_true",
+            "inputs": ["antenna:1:is_online"], "params": {"ignored": "@smokeIgnore:1"},
+        }]}
+        assert ComputeConfig.from_dict(raw, make_ms()).nodes[0].params == {"ignored": False}
+
     def test_wselect_param_token(self, monkeypatch, tmp_path):
         from slama import site_paths
         monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))

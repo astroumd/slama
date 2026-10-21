@@ -249,7 +249,9 @@ def _resolve_site_params(params: dict, output) -> dict:
     * ``"@dewarTemp:<ant>:<field>"`` -> :func:`slama.sitefiles.dewar_param`,
       e.g. ``"@dewarTemp:{i}:ch4_index"``;
     * ``"@wselect:<ant>"`` -> :func:`slama.sitefiles.wselect_param`, the
-      antenna's wheel-position -> mode map.
+      antenna's wheel-position -> mode map;
+    * ``"@smokeIgnore:<ant>"`` -> :func:`slama.sitefiles.smoke_ignore_param`,
+      the antenna's smoke-ignore flag (a missing file means ``False``).
 
     Other values pass through.
 
@@ -276,17 +278,20 @@ def _resolve_site_params(params: dict, output) -> dict:
         if isinstance(value, str) and value.startswith(SITE_TOKEN_PREFIX):
             parts = value[len(SITE_TOKEN_PREFIX):].split(":")
             dewar = len(parts) == 3 and parts[0] == "dewarTemp"
-            wselect = len(parts) == 2 and parts[0] == "wselect"
-            if not (dewar or wselect) or not parts[1].isdigit():
+            per_ant = {"wselect": sitefiles.wselect_param,
+                       "smokeIgnore": sitefiles.smoke_ignore_param}
+            single = len(parts) == 2 and parts[0] in per_ant
+            if not (dewar or single) or not parts[1].isdigit():
                 raise ValueError(
                     f"computation {output!r} param {key!r}: bad site token "
-                    f"{value!r} (expected '@dewarTemp:<ant>:<field>' or '@wselect:<ant>')"
+                    f"{value!r} (expected '@dewarTemp:<ant>:<field>', "
+                    f"'@wselect:<ant>' or '@smokeIgnore:<ant>')"
                 )
             try:
                 if dewar:
                     value = sitefiles.dewar_param(int(parts[1]), parts[2])
                 else:
-                    value = sitefiles.wselect_param(int(parts[1]))
+                    value = per_ant[parts[0]](int(parts[1]))
             except ValueError as exc:
                 raise ValueError(f"computation {output!r} param {key!r}: {exc}") from exc
         resolved[key] = value
