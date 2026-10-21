@@ -1746,6 +1746,82 @@ def palm_off(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
     return bool(int(inputs["faultword"].value) & PALM_OFF_BIT)
 
 
+MOTOR_WARN_AMPS: float = 50.0
+"""``arrayMonitor.c:1760``: an Az motor current at or above this shows ``[Motor]``."""
+
+MOTOR_ERROR_AMPS: float = 100.0
+"""``arrayMonitor.c:1763``: at or above this ``[Motor]`` is shown in the alarm style."""
+
+
+@compute_function("motor_alarm")
+def motor_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Azimuth motor over-current indicator (``arrayMonitor.c:1756-1768``).
+
+    The C shows ``[Motor]`` when either azimuth motor draws at least
+    :data:`MOTOR_WARN_AMPS`, in the alarm style from
+    :data:`MOTOR_ERROR_AMPS`. It checks the instantaneous value: the
+    "30 samples" comment above it is stale (``sample[1]`` is never
+    advanced). The El motor current is read but never tested, so it is
+    not an input.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"az1"``, ``"az2"``: ``RM_AZ1_MOT_CUR_AMP_F``, ``RM_AZ2_MOT_CUR_AMP_F``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"Motor!"`` (>= 100 A, or an unreadable current), ``"Motor"``
+        (>= 50 A) or ``"ok"``. Bare, so the output's ``state_validity``
+        in ``smax.json`` maps it to ERROR / WARNING / GOOD.
+    """
+    try:
+        amps = max(float(inputs["az1"].value), float(inputs["az2"].value))
+    except (TypeError, ValueError):
+        return "Motor!"
+    if amps >= MOTOR_ERROR_AMPS:
+        return "Motor!"
+    return "Motor" if amps >= MOTOR_WARN_AMPS else "ok"
+
+
+@compute_function("azel_flag")
+def azel_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Suffix after the Az/El position in the array monitor (``arrayMonitor.c:1882-1893``).
+
+    The C prints a highlighted ``I`` for an IRIG lock error; otherwise a
+    plain ``C`` when the El collision-limit check is enabled
+    (``RM_CHECK_EL_COLLISION_LIMIT_B``, read through
+    ``INIT_ANTSERVO_VARS`` in ``antservo.h``); otherwise nothing. Unlike
+    the C, which shows it only while the antenna is tracking, every
+    antenna is checked (``track_age`` shows staleness).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"irig"``: ``RM_IRIG_LOCK_ERROR_B``; ``"collision"``:
+        ``RM_CHECK_EL_COLLISION_LIMIT_B``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"I"`` (IRIG error, or an unreadable IRIG value), ``"C"`` or
+        ``"ok"``. Bare, so the output's ``state_validity`` in
+        ``smax.json`` maps it to ERROR / WARNING / GOOD.
+    """
+    try:
+        irig_error = int(float(inputs["irig"].value)) != 0
+    except (TypeError, ValueError):
+        irig_error = True
+    if irig_error:
+        return "I"
+    return "C" if _is_one(inputs["collision"].value) else "ok"
+
+
 @compute_function("antenna_online")
 def antenna_online(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     """Whether one antenna is online (``arrayMonitor.c:1794, 1809-1811``, "OFFLIN").

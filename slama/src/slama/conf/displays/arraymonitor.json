@@ -72,6 +72,8 @@
         {"label": "M3 door open",        "points": "monitorsystem:antenna:{ant}:m3_door_open"},
         {"label": "Waveplate",           "points": "monitorsystem:antenna:{ant}:waveplate"},
         {"label": "Palm off",            "points": "monitorsystem:antenna:{ant}:palm_off"},
+        {"label": "Motor",               "points": "monitorsystem:antenna:{ant}:motor_alarm"},
+        {"label": "Az/El flag",          "points": "monitorsystem:antenna:{ant}:azel_flag"},
         {"label": "El drive fault",      "points": "monitorsystem:antenna:{ant}:el_drive_fault"}
       ]
     },
@@ -101,11 +103,7 @@
         "values": [1, 2, 3, 4, 5, 6, 7, 8]
       },
       "rows": [
-        {"label": "Smoke alarm",        "points": "monitorsystem:antenna:{ant}:smoke_alarm"},
-        {"label": "Az1 motor current",  "points": "RM:acc{ant}:RM_AZ1_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
-        {"label": "Az2 motor current",  "points": "RM:acc{ant}:RM_AZ2_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
-        {"label": "El motor current",   "points": "RM:acc{ant}:RM_EL_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
-        {"label": "IRIG lock error",    "points": "RM:acc{ant}:RM_IRIG_LOCK_ERROR_B"}
+        {"label": "Smoke alarm",        "points": "monitorsystem:antenna:{ant}:smoke_alarm"}
       ]
     },
     {

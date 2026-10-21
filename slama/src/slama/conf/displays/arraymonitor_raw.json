@@ -21,7 +21,10 @@
         {"label": "SCB CW limit",        "points": "RM:acc{ant}:RM_SCB_CW_LIMIT_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
         {"label": "SCB CCW limit",       "points": "RM:acc{ant}:RM_SCB_CCW_LIMIT_F", "format": "{:.2f}", "display_min": -360, "display_max": 360},
         {"label": "SCB low limit",       "points": "RM:acc{ant}:RM_SCB_LOW_LIMIT_F", "format": "{:.2f}", "display_min": -90, "display_max": 90},
-        {"label": "SCB up limit",        "points": "RM:acc{ant}:RM_SCB_UP_LIMIT_F", "format": "{:.2f}", "display_min": -90, "display_max": 90}
+        {"label": "SCB up limit",        "points": "RM:acc{ant}:RM_SCB_UP_LIMIT_F", "format": "{:.2f}", "display_min": -90, "display_max": 90},
+        {"label": "Az1 motor current",  "points": "RM:acc{ant}:RM_AZ1_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "Az2 motor current",  "points": "RM:acc{ant}:RM_AZ2_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100},
+        {"label": "El motor current",   "points": "RM:acc{ant}:RM_EL_MOT_CUR_AMP_F", "format": "{:.2f}", "display_min": -100, "display_max": 100}
       ]
     },
     {

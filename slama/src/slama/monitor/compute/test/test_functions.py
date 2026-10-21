@@ -40,6 +40,8 @@ from slama.monitor.compute.functions import (
     lo_status,
     rx_label,
     smoke_alarm,
+    motor_alarm,
+    azel_flag,
     tilt_flag,
     yig_locked,
     on_source,
@@ -695,6 +697,29 @@ class TestTiltFlag:
     ])
     def test_states(self, flag, default, expected):
         assert tilt_flag({"flag": ri("f", flag)}, ctx(params={"default": default})) == expected
+
+
+class TestMotorAlarm:
+    @pytest.mark.parametrize("az1, az2, expected", [
+        (0.1, 0.0, "ok"), (49.9, 49.9, "ok"),
+        (50.0, 0.0, "Motor"), (0.0, 50.0, "Motor"),     # either Az motor
+        (99.9, 10.0, "Motor"), (100.0, 0.0, "Motor!"), (0.0, 250.0, "Motor!"),
+        ("junk", 0.0, "Motor!"),                        # unreadable: alarm
+    ])
+    def test_states(self, az1, az2, expected):
+        assert motor_alarm({"az1": ri("a1", az1), "az2": ri("a2", az2)}, ctx()) == expected
+
+
+class TestAzElFlag:
+    @pytest.mark.parametrize("irig, collision, expected", [
+        (0, 0, "ok"), (0, 1, "C"), (1, 0, "I"),
+        (1, 1, "I"),                       # IRIG takes precedence over C
+        (-1, 0, "I"),                      # any nonzero, as the C's != 0
+        (0, 2, "ok"),                      # C only when exactly 1
+        ("junk", 1, "I"),                  # unreadable IRIG: flag it
+    ])
+    def test_states(self, irig, collision, expected):
+        assert azel_flag({"irig": ri("i", irig), "collision": ri("c", collision)}, ctx()) == expected
 
 
 class TestHotloadPosition:
