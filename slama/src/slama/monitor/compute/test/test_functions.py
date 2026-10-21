@@ -39,6 +39,7 @@ from slama.monitor.compute.functions import (
     lo_lock_ok,
     lo_status,
     rx_label,
+    smoke_alarm,
     yig_locked,
     on_source,
     timestamp_age,
@@ -672,6 +673,17 @@ class TestLoLockOkWsma:
 
     def test_yig1_still_required(self):
         assert self._run(4, {"lock_L1": 1, "lock_L2": 1}, y1=0) == (False, Validity.VALID_ERROR)
+
+
+class TestSmokeAlarm:
+    @pytest.mark.parametrize("smoke, ignored, expected", [
+        (0, False, "ok"), (0, True, "ok"),
+        (1, False, "SMOKING"), (1, True, "ignored"),
+        (-3, False, "SMOKING"),            # any nonzero, as the C's if(antSmoke)
+        ("junk", False, "SMOKING"),        # unreadable: alarm
+    ])
+    def test_states(self, smoke, ignored, expected):
+        assert smoke_alarm({"smoke": ri("s", smoke)}, ctx(params={"ignored": ignored})) == expected
 
 
 class TestHotloadPosition:

@@ -241,6 +241,18 @@
     },
     {
       "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "_comment": "Smoke alarm with fire/ignoreAntSmoking.txt applied (arrayMonitor.c 1770-1782). A missing ignore file means nothing is ignored.",
+          "output": "monitorsystem:antenna:{i}:smoke_alarm",
+          "function": "smoke_alarm",
+          "inputs": {"smoke": {"name": "RM:acc{i}:RM_ANTENNA_SMOKE_WARNING_B", "staleness_s": null}},
+          "params": {"ignored": "@smokeIgnore:{i}"}
+        }
+      }
+    },
+    {
+      "__each__": {
         "over": "@loadtype:!wsma", "as": "i",
         "template": {
           "_comment": "Non-wSMA loads (loadtype.conf) check the optics board first (arrayMonitor.c 2338-2341).",

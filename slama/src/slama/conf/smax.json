@@ -5421,9 +5421,9 @@
           "smax_type": "int8"
         },
         "RM_ANTENNA_SMOKE_WARNING_B": {
+          "description": "Antenna smoke sensor (nonzero = smoke). Raw value; the alarm, with the ignore list applied, is monitorsystem:antenna:N:smoke_alarm.",
           "size": "1",
-          "smax_type": "int8",
-          "err_high": 1
+          "smax_type": "int8"
         },
         "RM_ANTENNA_STATUS_S": {
           "size": "1",
@@ -12481,6 +12481,17 @@
             "state_validity": {
               "R": "GOOD",
               "L": "GOOD"
+            },
+            "unknown_state": "ERROR"
+          },
+          "smoke_alarm": {
+            "description": "Antenna {i} smoke alarm: SMOKING (RM_ANTENNA_SMOKE_WARNING_B nonzero), ignored (tripped but on /global/configFiles/fire/ignoreAntSmoking.txt), or ok (arrayMonitor.c 1770-1782). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "ok": "GOOD",
+              "ignored": "WARNING",
+              "SMOKING": "ERROR"
             },
             "unknown_state": "ERROR"
           },

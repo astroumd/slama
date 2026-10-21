@@ -1783,6 +1783,40 @@ def waveplate(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     return _label(inputs["status"].value, WAVEPLATE_LABELS)
 
 
+@compute_function("smoke_alarm")
+def smoke_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Antenna smoke alarm with the ignore list (``arrayMonitor.c:1770-1782``).
+
+    The C flashes ``!SMOKING!`` (and stows the antenna) when
+    ``RM_ANTENNA_SMOKE_WARNING_B`` is nonzero and the antenna is not on
+    ``fire/ignoreAntSmoking.txt``; an ignored antenna shows nothing.
+    Here an ignored antenna with the sensor tripped reads ``"ignored"``
+    rather than ``"ok"``, so the tripped sensor stays visible (Marc,
+    2026-10-20).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"smoke"``: ``RM_ANTENNA_SMOKE_WARNING_B``.
+    ctx : ComputeContext
+        ``params["ignored"]``: bool, from the ``@smokeIgnore:{i}`` token.
+
+    Returns
+    -------
+    str
+        ``"SMOKING"``, ``"ignored"`` or ``"ok"``. Bare, so the output's
+        ``state_validity`` in ``smax.json`` maps it to ERROR / WARNING /
+        GOOD.
+    """
+    try:
+        smoking = float(inputs["smoke"].value) != 0
+    except (TypeError, ValueError):
+        smoking = True  # unreadable sensor value: alarm, as the C's nonzero test would
+    if not smoking:
+        return "ok"
+    return "ignored" if ctx.params.get("ignored") else "SMOKING"
+
+
 @compute_function("m3_state")
 def m3_state(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
     """M3 mirror door state (``arrayMonitor.c:467-468, 2073-2125, 2792-2795``).

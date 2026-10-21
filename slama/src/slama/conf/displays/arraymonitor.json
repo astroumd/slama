@@ -105,6 +105,7 @@
       },
       "rows": [
         {"label": "Smoke warning",      "points": "RM:acc{ant}:RM_ANTENNA_SMOKE_WARNING_B"},
+        {"label": "Smoke alarm",        "points": "monitorsystem:antenna:{ant}:smoke_alarm"},
         {"label": "Antenna status",     "points": "RM:acc{ant}:RM_ANTENNA_STATUS_S"},
         {"label": "Tracking error (asec)", "points": "RM:acc{ant}:RM_TRACKING_ERROR_ARCSEC_F", "format": "{:.2f}", "display_min": 0, "display_max": 3600},
         {"label": "Encoder Az (deg)",   "points": "RM:acc{ant}:RM_ENCODER_AZ_F", "format": "{:.3f}", "display_min": -360, "display_max": 360},

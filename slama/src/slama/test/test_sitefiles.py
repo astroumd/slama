@@ -191,3 +191,36 @@ class TestWselectParam:
         site(sitefiles.WSMA_SELECT_FILE, "7 L H G D\n")
         with pytest.raises(ValueError, match="out of range"):
             sitefiles.wselect_param(9)
+
+
+class TestSmokeIgnore:
+    def test_one_line(self, site):
+        site(sitefiles.SMOKE_IGNORE_FILE, "0 0 1 0 0 0 0 2\n")
+        flags = sitefiles.read_smoke_ignore()
+        assert [a for a, ignored in flags.items() if ignored] == [3, 8]
+
+    def test_values_may_span_lines(self, site):
+        site(sitefiles.SMOKE_IGNORE_FILE, "1 0 0 0\n0 0 0 1\n")
+        assert [a for a, i in sitefiles.read_smoke_ignore().items() if i] == [1, 8]
+
+    def test_short_file_and_junk_stop_reading(self, site):
+        site(sitefiles.SMOKE_IGNORE_FILE, "0 1 x 1 1\n")
+        assert [a for a, i in sitefiles.read_smoke_ignore().items() if i] == [2]
+
+    def test_missing_file_returns_none(self, site):
+        assert sitefiles.read_smoke_ignore() is None
+
+    def test_param_missing_file_ignores_nothing(self, site, caplog):
+        assert sitefiles.smoke_ignore_param(3) is False
+        assert "ignoreAntSmoking.txt" in caplog.text
+
+    def test_param_value_and_range(self, site):
+        site(sitefiles.SMOKE_IGNORE_FILE, "0 0 1 0 0 0 0 0\n")
+        assert sitefiles.smoke_ignore_param(3) is True
+        assert sitefiles.smoke_ignore_param(4) is False
+        with pytest.raises(ValueError, match="out of range"):
+            sitefiles.smoke_ignore_param(0)
+
+
+def test_mirror_smoke_ignore_is_all_zero():
+    assert not any(sitefiles.read_smoke_ignore().values())

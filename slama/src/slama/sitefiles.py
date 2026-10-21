@@ -37,6 +37,9 @@ DEWAR_SENSORS_FILE: str = "/global/configFiles/dewarTemp.conf"
 WSMA_SELECT_FILE: str = "/global/configFiles/wselect.conf"
 """``wsma.h`` ``WSMA_SELECT_FILE``."""
 
+SMOKE_IGNORE_FILE: str = "/global/configFiles/fire/ignoreAntSmoking.txt"
+"""``arrayMonitor.c`` ``SMOKE_FILE``."""
+
 WSMA_SELECTOR_POSITIONS: int = 4
 """``wsma.c:21`` ``WSMA_SELECTOR_POSITIONS``: selector wheel positions 1-4."""
 
@@ -408,3 +411,58 @@ def wselect_param(ant: int) -> dict[str, str]:
     if selection is None:
         raise ValueError(f"{site_path(WSMA_SELECT_FILE)} cannot be read")
     return {str(pos): mode for pos, mode in selection.get(ant, {}).items()}
+
+
+def read_smoke_ignore() -> dict[int, bool] | None:
+    """Per-antenna smoke-alarm ignore flags, from ``fire/ignoreAntSmoking.txt``.
+
+    Ports ``arrayMonitor.c:219-228``: ``fscanf("%d %d %d %d %d %d %d
+    %d")`` into ``ignoreSmoking[1..8]``. The values are the first eight
+    whitespace-separated integers, on one line or several; reading stops
+    at the first token that isn't an integer, and antennas without a
+    value are not ignored. A nonzero value means "ignore".
+
+    Returns
+    -------
+    dict of int to bool or None
+        Antennas 1-8 to their ignore flag; ``None`` (with a warning) if
+        the file can't be opened.
+    """
+    path = site_path(SMOKE_IGNORE_FILE)
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        logger.warning("cannot open %s: %s", path, exc)
+        return None
+    values = _leading_ints(text, SMA_N_ANTENNAS)
+    return {ant: (ant <= len(values) and values[ant - 1] != 0)
+            for ant in range(1, SMA_N_ANTENNAS + 1)}
+
+
+def smoke_ignore_param(ant: int) -> bool:
+    """One antenna's smoke-ignore flag, for a compute-config param token.
+
+    **Unlike the other site-file tokens, a missing file does not fail
+    config load.** As in the C (``arrayMonitor.c:220-222``), it logs a
+    warning and ignores nothing, so every smoke sensor still alarms:
+    the safe default for a fire alarm.
+
+    Parameters
+    ----------
+    ant : int
+        Antenna number 1-8.
+
+    Returns
+    -------
+    bool
+        ``True`` if the antenna's smoke alarm is to be ignored.
+
+    Raises
+    ------
+    ValueError
+        Antenna outside 1-8.
+    """
+    if not 1 <= ant <= SMA_N_ANTENNAS:
+        raise ValueError(f"antenna {ant} out of range 1-{SMA_N_ANTENNAS}")
+    flags = read_smoke_ignore()
+    return False if flags is None else flags[ant]
