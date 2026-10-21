@@ -990,6 +990,9 @@ def lo_lock_ok(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     else:
         gunn1, gunn2 = inputs["gunn1"].value, inputs["gunn2"].value
         stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
+    # YIG1 is required on both shapes. For wSMA the SMA receiver engineer
+    # confirmed (2026-10-21) that the antenna YIG1 lock is still needed, so
+    # keep it even though the gunn values come from the wSMA PLLs.
     g1, g2, y1 = _is_one(gunn1), _is_one(gunn2), _is_one(inputs["yig1"].value)
     rest = float(_array_elem(inputs["rest_freq"].value, 0))
     ok = (g1 and y1 and g2) \

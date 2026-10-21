@@ -12531,7 +12531,7 @@
             "smax_type": "string"
           },
           "lo_lock_ok": {
-            "description": "Antenna {i} LO locked for the observing band (arrayMonitor.c LO_FAULT), with a fresh gunn-lock heartbeat on Tune6 antennas (wSMA has no heartbeat check). From slama.monitor.compute",
+            "description": "Antenna {i} LO locked for the observing band (arrayMonitor.c LO_FAULT), with a fresh gunn-lock heartbeat on Tune6 antennas (wSMA has no heartbeat check). YIG1 lock is required on all antennas, wSMA included (confirmed by the receiver engineer, 2026-10-21). From slama.monitor.compute",
             "size": "1",
             "smax_type": "boolean"
           },
