@@ -655,7 +655,7 @@
       "__each__": {
         "over": "1-8", "as": "i",
         "template": {
-          "_comment": "[Motor] when either Az motor current is >= 50 A, alarm style >= 100 A (arrayMonitor.c 1756-1768). El current is read but never tested by the C.",
+          "_comment": "[Motor] when either Az motor current is at WARNING, alarm style at ERROR; the 50 / 100 A levels are the raw points' smax.json thresholds (arrayMonitor.c 1756-1768). El current is read but never tested by the C.",
           "output": "monitorsystem:antenna:{i}:motor_alarm",
           "function": "motor_alarm",
           "inputs": {

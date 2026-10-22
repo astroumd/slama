@@ -12466,7 +12466,7 @@
             "smax_type": "boolean"
           },
           "motor_alarm": {
-            "description": "Antenna {i} Az motor over-current: Motor! (Az1 or Az2 >= 100 A), Motor (>= 50 A) or ok (arrayMonitor.c [Motor], 1756-1768). From slama.monitor.compute",
+            "description": "Antenna {i} Az motor over-current: Motor! (Az1 or Az2 at ERROR), Motor (at WARNING) or ok; the levels (50 / 100 A) are the warn_high / err_high of RM_AZ1/AZ2_MOT_CUR_AMP_F (arrayMonitor.c [Motor], 1756-1768). From slama.monitor.compute",
             "size": "1",
             "smax_type": "string",
             "state_validity": {

@@ -700,14 +700,22 @@ class TestTiltFlag:
 
 
 class TestMotorAlarm:
-    @pytest.mark.parametrize("az1, az2, expected", [
-        (0.1, 0.0, "ok"), (49.9, 49.9, "ok"),
-        (50.0, 0.0, "Motor"), (0.0, 50.0, "Motor"),     # either Az motor
-        (99.9, 10.0, "Motor"), (100.0, 0.0, "Motor!"), (0.0, 250.0, "Motor!"),
-        ("junk", 0.0, "Motor!"),                        # unreadable: alarm
+    G, W, E = Validity.VALID_GOOD, Validity.VALID_WARNING_HIGH, Validity.VALID_ERROR_HIGH
+
+    @pytest.mark.parametrize("v1, v2, expected", [
+        (G, G, "ok"),
+        (W, G, "Motor"), (G, W, "Motor"),       # either Az motor
+        (E, G, "Motor!"), (W, E, "Motor!"),     # ERROR wins
+        (Validity.VALID_WARNING, G, "Motor"), (Validity.VALID_ERROR, G, "Motor!"),
+        (Validity.VALID_NOT_CHECKED, G, "ok"),  # no thresholds declared
     ])
-    def test_states(self, az1, az2, expected):
-        assert motor_alarm({"az1": ri("a1", az1), "az2": ri("a2", az2)}, ctx()) == expected
+    def test_states_follow_input_validity(self, v1, v2, expected):
+        # The amp levels live only in smax.json; the function sees validities.
+        assert motor_alarm({"az1": ri("a1", 1.0, v1), "az2": ri("a2", 1.0, v2)}, ctx()) == expected
+
+    @pytest.mark.parametrize("bad", ["junk", float("nan"), None])
+    def test_unreadable_current_alarms(self, bad):
+        assert motor_alarm({"az1": ri("a1", bad), "az2": ri("a2", 0.0)}, ctx()) == "Motor!"
 
 
 class TestAzElFlag:

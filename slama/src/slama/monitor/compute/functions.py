@@ -1746,11 +1746,9 @@ def palm_off(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
     return bool(int(inputs["faultword"].value) & PALM_OFF_BIT)
 
 
-MOTOR_WARN_AMPS: float = 50.0
-"""``arrayMonitor.c:1760``: an Az motor current at or above this shows ``[Motor]``."""
-
-MOTOR_ERROR_AMPS: float = 100.0
-"""``arrayMonitor.c:1763``: at or above this ``[Motor]`` is shown in the alarm style."""
+_ERROR_VALIDITIES = frozenset({Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW})
+_WARNING_VALIDITIES = frozenset({Validity.VALID_WARNING, Validity.VALID_WARNING_HIGH,
+                                 Validity.VALID_WARNING_LOW})
 
 
 @compute_function("motor_alarm")
@@ -1758,11 +1756,13 @@ def motor_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     """Azimuth motor over-current indicator (``arrayMonitor.c:1756-1768``).
 
     The C shows ``[Motor]`` when either azimuth motor draws at least
-    :data:`MOTOR_WARN_AMPS`, in the alarm style from
-    :data:`MOTOR_ERROR_AMPS`. It checks the instantaneous value: the
-    "30 samples" comment above it is stale (``sample[1]`` is never
-    advanced). The El motor current is read but never tested, so it is
-    not an input.
+    50 A, in the alarm style from 100 A. Those levels are the
+    ``warn_high`` / ``err_high`` of ``RM_AZ1/AZ2_MOT_CUR_AMP_F`` in
+    ``smax.json``, the single place they are defined: this function
+    reads only the inputs' resulting validities. The C checks the
+    instantaneous value: the "30 samples" comment above it is stale
+    (``sample[1]`` is never advanced). The El motor current is read but
+    never tested, so it is not an input.
 
     Parameters
     ----------
@@ -1774,17 +1774,23 @@ def motor_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     Returns
     -------
     str
-        ``"Motor!"`` (>= 100 A, or an unreadable current), ``"Motor"``
-        (>= 50 A) or ``"ok"``. Bare, so the output's ``state_validity``
-        in ``smax.json`` maps it to ERROR / WARNING / GOOD.
+        ``"Motor!"`` when either input's validity is an ERROR, or its
+        value is not a finite number; ``"Motor"`` when either is a
+        WARNING; otherwise ``"ok"``. Bare, so the output's
+        ``state_validity`` in ``smax.json`` maps it to ERROR / WARNING /
+        GOOD.
     """
-    try:
-        amps = max(float(inputs["az1"].value), float(inputs["az2"].value))
-    except (TypeError, ValueError):
+    currents = (inputs["az1"], inputs["az2"])
+    for current in currents:
+        try:
+            if not np.isfinite(float(current.value)):
+                return "Motor!"
+        except (TypeError, ValueError):
+            return "Motor!"
+    validities = {current.validity for current in currents}
+    if validities & _ERROR_VALIDITIES:
         return "Motor!"
-    if amps >= MOTOR_ERROR_AMPS:
-        return "Motor!"
-    return "Motor" if amps >= MOTOR_WARN_AMPS else "ok"
+    return "Motor" if validities & _WARNING_VALIDITIES else "ok"
 
 
 @compute_function("azel_flag")
