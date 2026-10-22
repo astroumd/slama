@@ -54,7 +54,7 @@ Apply the first rule that matches.
    alternative* its own color, the colors identify the category, not a
    severity. All valid alternatives are **GOOD**, and only the default /
    bad case follows rules 1–3.
-   - Example: the waveplate prints `R` yellow and `L` magenta, and only `?`
+    - Example: the waveplate prints `R` yellow and `L` magenta, and only `?`
      red.
 6. **Nothing shown** (the C prints a blank) → **GOOD**, unless a SLAMA
    decision says otherwise (§3, "Deliberate deviations").
