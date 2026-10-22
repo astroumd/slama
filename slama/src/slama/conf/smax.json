@@ -12477,13 +12477,13 @@
             "unknown_state": "ERROR"
           },
           "azel_flag": {
-            "description": "Antenna {i} Az/El suffix: I (RM_IRIG_LOCK_ERROR_B nonzero), C (RM_CHECK_EL_COLLISION_LIMIT_B = 1), or ok (arrayMonitor.c 1882-1893). From slama.monitor.compute",
+            "description": "Antenna {i} Az/El suffix: I (RM_IRIG_LOCK_ERROR_B nonzero; C standout, so WARNING), C (RM_CHECK_EL_COLLISION_LIMIT_B = 1; C plain text, so GOOD), or ok (arrayMonitor.c 1882-1893; docs/curses_color_validity.md). From slama.monitor.compute",
             "size": "1",
             "smax_type": "string",
             "state_validity": {
               "ok": "GOOD",
-              "C": "WARNING",
-              "I": "ERROR"
+              "C": "GOOD",
+              "I": "WARNING"
             },
             "unknown_state": "ERROR"
           },

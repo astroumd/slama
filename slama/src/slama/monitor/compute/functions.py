@@ -1811,7 +1811,9 @@ def azel_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     str
         ``"I"`` (IRIG error, or an unreadable IRIG value), ``"C"`` or
         ``"ok"``. Bare, so the output's ``state_validity`` in
-        ``smax.json`` maps it to ERROR / WARNING / GOOD.
+        ``smax.json`` maps it to WARNING / GOOD / GOOD: the C prints
+        ``I`` in standout and ``C`` as plain text
+        (``docs/curses_color_validity.md``).
     """
     try:
         irig_error = int(float(inputs["irig"].value)) != 0
