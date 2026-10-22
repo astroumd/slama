@@ -77,3 +77,25 @@ def test_pointing_offset_smax_thresholds(monitor_system, name, value, expected):
     mp = monitor_system.get_monitor_point(name)
     mp.update(_wrap(value, 1_790_000_000.0))
     assert mp.validity is expected
+
+
+@pytest.mark.parametrize("name, value, expected", [
+    # ser7.dat age (Marc, 2026-10-22): <= 10 d GOOD, 10-15 d WARNING, > 15 d ERROR.
+    ("monitorsystem:array:polar_file_age_s", 10 * 86400 - 1, Validity.VALID_GOOD),
+    ("monitorsystem:array:polar_file_age_s", 10 * 86400, Validity.VALID_WARNING_HIGH),
+    ("monitorsystem:array:polar_file_age_s", 15 * 86400 - 1, Validity.VALID_WARNING_HIGH),
+    ("monitorsystem:array:polar_file_age_s", 15 * 86400, Validity.VALID_ERROR_HIGH),
+    # The C's "N days old" when > 2.
+    ("monitorsystem:array:polar_days_old", 2, Validity.VALID_GOOD),
+    ("monitorsystem:array:polar_days_old", 3, Validity.VALID_WARNING_HIGH),
+    # The C's DUT wacko.
+    ("monitorsystem:array:polar_dut_s", 99999.0, Validity.VALID_GOOD),
+    ("monitorsystem:array:polar_dut_s", -100000.0, Validity.VALID_WARNING_LOW),
+])
+def test_polar_smax_thresholds(monitor_system, name, value, expected):
+    """The polar levels are defined only in smax.json."""
+    from slama.monitor.compute.engine import _wrap
+
+    mp = monitor_system.get_monitor_point(name)
+    mp.update(_wrap(value, 1_790_000_000.0))
+    assert mp.validity is expected

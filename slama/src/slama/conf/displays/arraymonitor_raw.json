@@ -84,7 +84,9 @@
         {"label": "RA apparent (hr)",      "point": "RM:acc1:RM_RA_APP_HR_D",  "format": "{:.4f}", "display_min": 0, "display_max": 24},
         {"label": "Dec apparent (deg)",    "point": "RM:acc1:RM_DEC_APP_DEG_D", "format": "{:.4f}", "display_min": -90, "display_max": 90},
         {"label": "Polar Dx (asec)",       "point": "RM:acc1:RM_POLAR_DX_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
-        {"label": "Polar Dy (asec)",       "point": "RM:acc1:RM_POLAR_DY_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2}
+        {"label": "Polar Dy (asec)",       "point": "RM:acc1:RM_POLAR_DY_ARCSEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
+        {"label": "Polar DUT (s)",         "point": "RM:acc1:RM_POLAR_DUT_SEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
+        {"label": "Polar MJD",             "point": "RM:acc1:RM_POLAR_MJD_L", "display_min": 0, "display_max": 1000000}
       ]
     }
   ]

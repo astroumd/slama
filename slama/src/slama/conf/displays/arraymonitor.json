@@ -147,8 +147,7 @@
         {"label": "UTC (hr)",              "point": "RM:acc1:RM_UTC_HOURS_F", "format": "{:.4f}", "display_min": 0, "display_max": 24},
         {"label": "Planet diameter (asec)","point": "RM:acc1:RM_PLANET_DIAMETER_ARCSEC_D", "format": "{:.3f}", "display_min": 0, "display_max": 3600},
         {"label": "Planet distance (AU)",  "point": "RM:acc1:RM_PLANET_DISTANCE_AU_D", "format": "{:.4f}", "display_min": 0, "display_max": 100},
-        {"label": "Polar DUT (s)",         "point": "RM:acc1:RM_POLAR_DUT_SEC_D", "format": "{:.4f}", "display_min": -2, "display_max": 2},
-        {"label": "Polar MJD",             "point": "RM:acc1:RM_POLAR_MJD_L", "format": "{:.4f}", "display_min": 0, "display_max": 1000000}
+        {"label": "DUT (s)",               "point": "monitorsystem:array:polar_dut_s", "format": "{:+.3f}"}
       ]
     },
     {

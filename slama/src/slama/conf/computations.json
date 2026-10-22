@@ -725,6 +725,166 @@
       }
     },
     {
+      "output": "monitorsystem:array:polar_file_age_s",
+      "function": "file_age_s",
+      "_comment": "Age of /global/polar/ser7.dat from its mtime, stat'ed at start and daily (arrayMonitor.c 795-808; /global is NFS).",
+      "inputs": {},
+      "params": {
+        "path": "/global/polar/ser7.dat"
+      }
+    },
+    {
+      "output": "monitorsystem:array:polar_days_old",
+      "function": "polar_days_old",
+      "_comment": "|POLAR_MJD - (int(TJD) - 2400000)| from the reference antenna (arrayMonitor.c 806-814).",
+      "inputs": {
+        "mjd1": {
+          "name": "RM:acc1:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd2": {
+          "name": "RM:acc2:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd3": {
+          "name": "RM:acc3:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd4": {
+          "name": "RM:acc4:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd5": {
+          "name": "RM:acc5:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd6": {
+          "name": "RM:acc6:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd7": {
+          "name": "RM:acc7:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "mjd8": {
+          "name": "RM:acc8:RM_POLAR_MJD_L",
+          "staleness_s": null
+        },
+        "tjd1": {
+          "name": "RM:acc1:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd2": {
+          "name": "RM:acc2:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd3": {
+          "name": "RM:acc3:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd4": {
+          "name": "RM:acc4:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd5": {
+          "name": "RM:acc5:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd6": {
+          "name": "RM:acc6:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd7": {
+          "name": "RM:acc7:RM_TJD_D",
+          "staleness_s": null
+        },
+        "tjd8": {
+          "name": "RM:acc8:RM_TJD_D",
+          "staleness_s": null
+        },
+        "online": {
+          "name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B",
+          "staleness_s": null
+        }
+      },
+      "params": {
+        "antennas": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "output": "monitorsystem:array:polar_dut_s",
+      "function": "polar_dut",
+      "_comment": "The C's DUT cell: reference antenna's UT1-UTC, validity from the file age and days old (arrayMonitor.c 792-825).",
+      "inputs": {
+        "dut1": {
+          "name": "RM:acc1:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut2": {
+          "name": "RM:acc2:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut3": {
+          "name": "RM:acc3:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut4": {
+          "name": "RM:acc4:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut5": {
+          "name": "RM:acc5:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut6": {
+          "name": "RM:acc6:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut7": {
+          "name": "RM:acc7:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "dut8": {
+          "name": "RM:acc8:RM_POLAR_DUT_SEC_D",
+          "staleness_s": null
+        },
+        "online": {
+          "name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B",
+          "staleness_s": null
+        },
+        "age": {
+          "name": "monitorsystem:array:polar_file_age_s",
+          "staleness_s": null,
+          "optional": true
+        },
+        "days": {
+          "name": "monitorsystem:array:polar_days_old",
+          "staleness_s": null
+        }
+      },
+      "params": {
+        "antennas": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
       "__each__": {
         "over": "1-8",
         "as": "i",

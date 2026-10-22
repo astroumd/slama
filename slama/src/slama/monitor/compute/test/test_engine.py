@@ -621,3 +621,60 @@ class TestOptionalInputs:
     def test_missing_required_input_still_short_circuits(self):
         engine = self._setup({"name": "antenna:1:receiver:a:mixer_index", "optional": False})
         assert engine.tick()[0].validity == Validity.INVALID_NO_DATA
+
+
+# ---------------------------------------------------------------------------
+# Zero-input node and an optional same-tick input (polar DUT chain)
+# ---------------------------------------------------------------------------
+
+class TestPolarChain:
+    def test_missing_file_runs_zero_input_node_and_warns_dut(self, tmp_path, monkeypatch):
+        import numpy as np
+        from slama import site_paths
+
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))  # no ser7.dat here
+        site_paths.reset_site_root()
+        now = 1_790_000_000.0
+        ts = datetime.fromtimestamp(now, tz=timezone.utc)
+        class _TimestampedArray(np.ndarray):
+            """An ndarray with .timestamp, as SMAX returns vector points."""
+
+        online = make_mp("DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B")
+        bits = np.ones(11, dtype=np.int8).view(_TimestampedArray)
+        bits.timestamp = ts
+        online.update(bits)
+        mjd = make_mp("RM:acc1:RM_POLAR_MJD_L")
+        mjd.update(_wrap(61305, now))
+        tjd = make_mp("RM:acc1:RM_TJD_D")
+        tjd.update(_wrap(2461306.2, now))
+        dut = make_mp("RM:acc1:RM_POLAR_DUT_SEC_D")
+        dut.update(_wrap(-0.0117, now))
+        age_out = make_mp("monitorsystem:array:polar_file_age_s", smax_type="float")
+        days_out = make_mp("monitorsystem:array:polar_days_old", smax_type="integer", warn_high=3)
+        dut_out = make_mp("monitorsystem:array:polar_dut_s", smax_type="float")
+        ms = FakeMonitorSystem([online, mjd, tjd, dut, age_out, days_out, dut_out])
+        none = {"staleness_s": None}
+        cfg = ComputeConfig.from_dict({"computations": [
+            {"output": "monitorsystem:array:polar_file_age_s", "function": "file_age_s",
+             "inputs": {}, "params": {"path": "/global/polar/ser7.dat"}},
+            {"output": "monitorsystem:array:polar_days_old", "function": "polar_days_old",
+             "inputs": {"mjd1": {"name": "RM:acc1:RM_POLAR_MJD_L", **none},
+                        "tjd1": {"name": "RM:acc1:RM_TJD_D", **none},
+                        "online": {"name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", **none}},
+             "params": {"antennas": [1]}},
+            {"output": "monitorsystem:array:polar_dut_s", "function": "polar_dut",
+             "inputs": {"dut1": {"name": "RM:acc1:RM_POLAR_DUT_SEC_D", **none},
+                        "online": {"name": "DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B", **none},
+                        "age": {"name": "monitorsystem:array:polar_file_age_s", **none, "optional": True},
+                        "days": {"name": "monitorsystem:array:polar_days_old", **none}},
+             "params": {"antennas": [1]}},
+        ]}, ms)
+        engine = ComputeEngine(cfg, ms, client=None, wall_clock=lambda: now)
+
+        results = {r.canonical_name: r for r in engine.tick()}
+
+        assert results["monitorsystem:array:polar_file_age_s"].validity is Validity.INVALID_NO_DATA
+        assert results["monitorsystem:array:polar_days_old"].value == 1
+        dut_result = results["monitorsystem:array:polar_dut_s"]
+        assert dut_result.value == pytest.approx(-0.0117)
+        assert dut_result.validity is Validity.VALID_WARNING
