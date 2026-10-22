@@ -1,6 +1,6 @@
 # Curses display styles → SLAMA `Validity`
 
-Status: **adopted (Marc, 2026-10-21)**; rule 7 and the gating question are open. Applies when porting a curses
+Status: **adopted (Marc, 2026-10-21)**; the gating question is open. Applies when porting a curses
 monitor page (`cursesmonitor/src/*.c`) to a computed `monitorsystem`
 point and its `state_validity` / thresholds in `smax.json`.
 
@@ -58,10 +58,17 @@ Apply the first rule that matches.
      red.
 6. **Nothing shown** (the C prints a blank) → **GOOD**, unless a SLAMA
    decision says otherwise (§3, "Deliberate deviations").
-7. **Wacko** values (physically impossible, usually red `wacko` / `wac` /
-   `Wac`) → **OPEN**. Whether they are `VALID_ERROR` or `INVALID_HW_BAD`
-   is the unresolved wacko-vs-standout question. Until it's decided, ports
-   keep their current choice and note it.
+7. **Wacko** ranges (physically impossible values, printed `wacko` /
+   `wac` / `Wac`) are treated like any other range (Marc, 2026-10-21,
+   after consulting the observatory team):
+   - **standout = WARNING**, so a wacko range drawn in standout gives
+     **WARNING**;
+   - a wacko range drawn in red gives **ERROR** (rule 2).
+   - The C uses wacko and standout inconsistently, because the code grew
+     over many years. So the draw style decides, not the word "wacko".
+     `INVALID_HW_BAD` is not used for wacko ranges.
+   - Ports from before this decision keep their choice until they are next
+     touched: wind speed, hour angle, scan age, dewar `wac`.
 
 Blinking (`setFlashing`) only appears together with red (smoke), so it
 adds nothing beyond rule 2.
@@ -117,7 +124,8 @@ Notes:
    `INVALID_NO_HW` says that more precisely than ERROR. The C's red is the
    only way curses can express it.
 5. **Numeric thresholds** (`warn_*` / `err_*`) are not covered here. They
-   come from the C's standout and wacko ranges and wait on rule 7.
+   come from the C's standout and wacko ranges, and rule 7 picks their
+   level.
 
 ## 4. Decisions (Marc, 2026-10-21)
 
