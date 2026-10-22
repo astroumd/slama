@@ -1841,8 +1841,9 @@ def tilt_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
     -------
     str
         ``"T"`` (flag differs from the default, or is unreadable) or
-        ``"ok"``. Bare, so the output's ``state_validity`` in
-        ``smax.json`` maps it to WARNING / GOOD.
+        ``"ok"``. Both are GOOD in ``smax.json``: the C prints ``T`` in
+        green (``printEnabled``), an indicator rather than a problem
+        (``docs/curses_color_validity.md``).
     """
     try:
         flag = int(float(inputs["flag"].value))
