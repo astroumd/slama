@@ -45,6 +45,19 @@
     },
     {
       "type": "table",
+      "title": "Pointing",
+      "columns": {
+        "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],
+        "var": "ant",
+        "values": [1, 2, 3, 4, 5, 6, 7, 8]
+      },
+      "rows": [
+        {"label": "RA offset (\")",     "points": "RM:acc{ant}:RM_RAOFF_ARCSEC_D", "format": "{:.2f}", "display_min": -3600, "display_max": 3600},
+        {"label": "Dec offset (\")",    "points": "RM:acc{ant}:RM_DECOFF_ARCSEC_D", "format": "{:.2f}", "display_min": -3600, "display_max": 3600}
+      ]
+    },
+    {
+      "type": "table",
       "title": "Deice",
       "columns": {
         "labels": ["Ant 1", "Ant 2", "Ant 3", "Ant 4", "Ant 5", "Ant 6", "Ant 7", "Ant 8"],

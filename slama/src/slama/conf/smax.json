@@ -5931,6 +5931,7 @@
           "smax_type": "float"
         },
         "RM_DECOFF_ARCSEC_D": {
+          "description": "Dec offset (arcsec); input to monitorsystem:array:dec_offset_arcsec and pointing_offset_spread_arcsec",
           "size": "1",
           "smax_type": "double"
         },
@@ -6843,6 +6844,7 @@
           "smax_type": "int16"
         },
         "RM_RAOFF_ARCSEC_D": {
+          "description": "RA offset (arcsec); input to monitorsystem:array:ra_offset_arcsec and pointing_offset_spread_arcsec",
           "size": "1",
           "smax_type": "double"
         },
@@ -12326,11 +12328,27 @@
         "smax_type": "boolean"
       },
       "pointing_offset_spread_arcsec": {
-        "description": "Largest spread of RM_RAOFF/DECOFF_ARCSEC_D across online antennas (arrayMonitor.c offsets inconsistent), from slama.monitor.compute",
+        "description": "Largest |RM_RAOFF/DECOFF_ARCSEC_D - reference antenna's| over online antennas and both axes (the reference is the lowest online antenna); WARNING at >= 0.02 (the C tests > 0.02; arrayMonitor.c 1053-1071 standout 'offsets inconsistent'), from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
         "unit": "arcsec",
-        "err_high": 0.02
+        "warn_high": 0.02
+      },
+      "ra_offset_arcsec": {
+        "description": "Array RA offset: the reference (lowest online) antenna's RM_RAOFF_ARCSEC_D; WARNING when pointing_offset_spread_arcsec is at WARNING (antennas inconsistent; the C hides the value then) or |offset| >= 10000 (standout wacko, warn_low/warn_high) (arrayMonitor.c 1072-1094), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "arcsec",
+        "warn_low": -10000.0,
+        "warn_high": 10000.0
+      },
+      "dec_offset_arcsec": {
+        "description": "Array Dec offset: the reference (lowest online) antenna's RM_DECOFF_ARCSEC_D; WARNING when pointing_offset_spread_arcsec is at WARNING (antennas inconsistent; the C hides the value then) or |offset| >= 10000 (standout wacko, warn_low/warn_high) (arrayMonitor.c 1072-1094), from slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "arcsec",
+        "warn_low": -10000.0,
+        "warn_high": 10000.0
       },
       "equipment_room_temp": {
         "description": "Summit equipment-room temperature (DSM_ANALOG_ROOM_TEMPERATURE_F); ERROR when its alarm flag is set and it exceeds DSM_ANALOG_ROOM_HITEMPLIMIT_F (arrayMonitor.c 2470-2502), from slama.monitor.compute",
