@@ -40,6 +40,8 @@ from slama.monitor.compute.functions import (
     lo_status,
     rx_label,
     smoke_alarm,
+    motor_alarm,
+    azel_flag,
     tilt_flag,
     yig_locked,
     on_source,
@@ -695,6 +697,37 @@ class TestTiltFlag:
     ])
     def test_states(self, flag, default, expected):
         assert tilt_flag({"flag": ri("f", flag)}, ctx(params={"default": default})) == expected
+
+
+class TestMotorAlarm:
+    G, W, E = Validity.VALID_GOOD, Validity.VALID_WARNING_HIGH, Validity.VALID_ERROR_HIGH
+
+    @pytest.mark.parametrize("v1, v2, expected", [
+        (G, G, "ok"),
+        (W, G, "Motor"), (G, W, "Motor"),       # either Az motor
+        (E, G, "Motor!"), (W, E, "Motor!"),     # ERROR wins
+        (Validity.VALID_WARNING, G, "Motor"), (Validity.VALID_ERROR, G, "Motor!"),
+        (Validity.VALID_NOT_CHECKED, G, "ok"),  # no thresholds declared
+    ])
+    def test_states_follow_input_validity(self, v1, v2, expected):
+        # The amp levels live only in smax.json; the function sees validities.
+        assert motor_alarm({"az1": ri("a1", 1.0, v1), "az2": ri("a2", 1.0, v2)}, ctx()) == expected
+
+    @pytest.mark.parametrize("bad", ["junk", float("nan"), None])
+    def test_unreadable_current_alarms(self, bad):
+        assert motor_alarm({"az1": ri("a1", bad), "az2": ri("a2", 0.0)}, ctx()) == "Motor!"
+
+
+class TestAzElFlag:
+    @pytest.mark.parametrize("irig, collision, expected", [
+        (0, 0, "ok"), (0, 1, "C"), (1, 0, "I"),
+        (1, 1, "I"),                       # IRIG takes precedence over C
+        (-1, 0, "I"),                      # any nonzero, as the C's != 0
+        (0, 2, "ok"),                      # C only when exactly 1
+        ("junk", 1, "I"),                  # unreadable IRIG: flag it
+    ])
+    def test_states(self, irig, collision, expected):
+        assert azel_flag({"irig": ri("i", irig), "collision": ri("c", collision)}, ctx()) == expected
 
 
 class TestHotloadPosition:

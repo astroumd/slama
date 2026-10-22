@@ -12465,6 +12465,28 @@
             "size": "1",
             "smax_type": "boolean"
           },
+          "motor_alarm": {
+            "description": "Antenna {i} Az motor over-current: Motor! (Az1 or Az2 at ERROR), Motor (at WARNING) or ok; the levels (50 / 100 A) are the warn_high / err_high of RM_AZ1/AZ2_MOT_CUR_AMP_F (arrayMonitor.c [Motor], 1756-1768). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "ok": "GOOD",
+              "Motor": "WARNING",
+              "Motor!": "ERROR"
+            },
+            "unknown_state": "ERROR"
+          },
+          "azel_flag": {
+            "description": "Antenna {i} Az/El suffix: I (RM_IRIG_LOCK_ERROR_B nonzero; C standout, so WARNING), C (RM_CHECK_EL_COLLISION_LIMIT_B = 1; C plain text, so GOOD), or ok (arrayMonitor.c 1882-1893; docs/curses_color_validity.md). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string",
+            "state_validity": {
+              "ok": "GOOD",
+              "C": "GOOD",
+              "I": "WARNING"
+            },
+            "unknown_state": "ERROR"
+          },
           "palm_off": {
             "description": "Antenna {i} SCB fault word bit 0x01000000 (arrayMonitor.c Palm Off; informational), from slama.monitor.compute",
             "size": "1",

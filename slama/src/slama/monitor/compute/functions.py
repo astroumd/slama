@@ -1746,6 +1746,90 @@ def palm_off(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
     return bool(int(inputs["faultword"].value) & PALM_OFF_BIT)
 
 
+_ERROR_VALIDITIES = frozenset({Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW})
+_WARNING_VALIDITIES = frozenset({Validity.VALID_WARNING, Validity.VALID_WARNING_HIGH,
+                                 Validity.VALID_WARNING_LOW})
+
+
+@compute_function("motor_alarm")
+def motor_alarm(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Azimuth motor over-current indicator (``arrayMonitor.c:1756-1768``).
+
+    The C shows ``[Motor]`` when either azimuth motor draws at least
+    50 A, in the alarm style from 100 A. Those levels are the
+    ``warn_high`` / ``err_high`` of ``RM_AZ1/AZ2_MOT_CUR_AMP_F`` in
+    ``smax.json``, the single place they are defined: this function
+    reads only the inputs' resulting validities. The C checks the
+    instantaneous value: the "30 samples" comment above it is stale
+    (``sample[1]`` is never advanced). The El motor current is read but
+    never tested, so it is not an input.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"az1"``, ``"az2"``: ``RM_AZ1_MOT_CUR_AMP_F``, ``RM_AZ2_MOT_CUR_AMP_F``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"Motor!"`` when either input's validity is an ERROR, or its
+        value is not a finite number; ``"Motor"`` when either is a
+        WARNING; otherwise ``"ok"``. Bare, so the output's
+        ``state_validity`` in ``smax.json`` maps it to ERROR / WARNING /
+        GOOD.
+    """
+    currents = (inputs["az1"], inputs["az2"])
+    for current in currents:
+        try:
+            if not np.isfinite(float(current.value)):
+                return "Motor!"
+        except (TypeError, ValueError):
+            return "Motor!"
+    validities = {current.validity for current in currents}
+    if validities & _ERROR_VALIDITIES:
+        return "Motor!"
+    return "Motor" if validities & _WARNING_VALIDITIES else "ok"
+
+
+@compute_function("azel_flag")
+def azel_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
+    """Suffix after the Az/El position in the array monitor (``arrayMonitor.c:1882-1893``).
+
+    The C prints a highlighted ``I`` for an IRIG lock error; otherwise a
+    plain ``C`` when the El collision-limit check is enabled
+    (``RM_CHECK_EL_COLLISION_LIMIT_B``, read through
+    ``INIT_ANTSERVO_VARS`` in ``antservo.h``); otherwise nothing. Unlike
+    the C, which shows it only while the antenna is tracking, every
+    antenna is checked (``track_age`` shows staleness).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"irig"``: ``RM_IRIG_LOCK_ERROR_B``; ``"collision"``:
+        ``RM_CHECK_EL_COLLISION_LIMIT_B``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    str
+        ``"I"`` (IRIG error, or an unreadable IRIG value), ``"C"`` or
+        ``"ok"``. Bare, so the output's ``state_validity`` in
+        ``smax.json`` maps it to WARNING / GOOD / GOOD: the C prints
+        ``I`` in standout and ``C`` as plain text
+        (``docs/curses_color_validity.md``).
+    """
+    try:
+        irig_error = int(float(inputs["irig"].value)) != 0
+    except (TypeError, ValueError):
+        irig_error = True
+    if irig_error:
+        return "I"
+    return "C" if _is_one(inputs["collision"].value) else "ok"
+
+
 @compute_function("antenna_online")
 def antenna_online(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     """Whether one antenna is online (``arrayMonitor.c:1794, 1809-1811``, "OFFLIN").

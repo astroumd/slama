@@ -39,3 +39,21 @@ def test_every_output_is_under_monitorsystem(monitor_system):
 def test_active_high_receiver_declared(monitor_system, ant):
     mp = monitor_system.get_monitor_point(f"RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10")
     assert mp.canonical_name == f"RM:acc{ant}:RM_ACTIVE_HIGH_RECEIVER_C10"
+
+
+@pytest.mark.parametrize("amps, expected", [
+    (49.9, "ok"), (50.0, "Motor"), (99.9, "Motor"), (100.0, "Motor!"),
+])
+def test_motor_alarm_uses_smax_thresholds(monitor_system, amps, expected):
+    """``motor_alarm``'s levels come from the raw points' smax.json thresholds."""
+    from slama.monitor.compute.computenode import ResolvedInput
+    from slama.monitor.compute.engine import _wrap
+    from slama.monitor.compute.functions import motor_alarm
+
+    resolved = {}
+    for role, rm in (("az1", "RM_AZ1_MOT_CUR_AMP_F"), ("az2", "RM_AZ2_MOT_CUR_AMP_F")):
+        name = f"RM:acc3:{rm}"
+        mp = monitor_system.get_monitor_point(name)
+        mp.update(_wrap(amps if role == "az1" else 0.0, 1_790_000_000.0))
+        resolved[role] = ResolvedInput(name, mp.value, mp.validity)
+    assert motor_alarm(resolved, None) == expected

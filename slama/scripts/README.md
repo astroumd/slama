@@ -169,6 +169,30 @@ for reference; superseded by `MonitorSystem` in `src/slama/monitor/`.
 
 ---
 
+## curses_completeness.py
+
+Check which monitor points a curses C page reads are covered by a display
+JSON: shown as a row/cell, or an input (transitively) to a computed
+`monitorsystem` point shown there. Names come from the C file's string
+literals **and** from macros in the headers it includes when the C file uses
+them (e.g. `INIT_ANTSERVO_VARS` in `antservo.h`), which a plain grep misses.
+The SMA C sources are not in this repo; pass the path.
+
+```bash
+C=../SMA-Software/online/Linux/applications/obscon/cursesmonitor/src/arrayMonitor.c
+
+# Coverage of every name the page reads
+uv run scripts/curses_completeness.py $C src/slama/conf/displays/arraymonitor.json
+
+# Only what a display change lost or gained
+uv run scripts/curses_completeness.py $C new.json --compare old.json
+```
+
+Coverage is necessary, not sufficient: a C page can read a value and never
+display it, so check `printw` usage for anything reported missing.
+
+---
+
 ## Tests
 
 Each main script has a corresponding test file:
@@ -177,6 +201,7 @@ Each main script has a corresponding test file:
 |---|---|
 | `test_dump_redis.py` | `filter_leaves()` in `dump_redis.py` |
 | `test_compare_monitor_points.py` | `parse_range()`, `expand_smax()` |
+| `test_curses_completeness.py` | `read_names()` (literals, header macros), `covered_names()` |
 | `test_smax_from_valkey.py` | `filter_input()`, `detect_each_group()`, `build_subtree()`, `deep_merge()`, and more |
 
 Run all tests from the repo root:
