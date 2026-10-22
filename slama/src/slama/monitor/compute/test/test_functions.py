@@ -1,4 +1,6 @@
 """Unit tests for the built-in compute functions (no engine/config needed)."""
+import os
+
 import numpy as np
 import pytest
 
@@ -19,6 +21,10 @@ from slama.monitor.compute.functions import (
     m3_state,
     palm_off,
     pointing_offset_spread,
+    polar_days_old,
+    polar_dut,
+    file_age_s,
+    POLAR_FILE_RECHECK_S,
     reference_offset,
     scan_flagged,
     sun_safe_minutes,
@@ -60,6 +66,7 @@ from slama.monitor.compute.functions import (
     worst_validity,
 )
 from slama.monitor.monitorpoint import Validity
+from slama import site_paths
 
 
 class FakeClock:
@@ -1126,6 +1133,119 @@ class TestReferenceOffset:
 
     def test_non_finite_reference(self):
         assert self._run({1: float("nan")}) == (None, Validity.INVALID_HW_BAD)
+
+
+class TestFileAgeS:
+    PATH = "/global/polar/ser7.dat"
+
+    @pytest.fixture
+    def site(self, tmp_path, monkeypatch):
+        # Never the mirror's ser7.dat: its mtime is the checkout time.
+        monkeypatch.setenv(site_paths.SITE_ROOT_ENV, str(tmp_path))
+        site_paths.reset_site_root()
+        f = tmp_path / "global" / "polar" / "ser7.dat"
+        f.parent.mkdir(parents=True)
+        return f
+
+    def _ctx(self, state, now):
+        return ctx(state=state, params={"path": self.PATH}, wall=lambda: now)
+
+    def test_age_from_mtime(self, site):
+        site.write_text("x")
+        os.utime(site, (WALL_NOW - 3600, WALL_NOW - 3600))
+        assert file_age_s({}, self._ctx({}, WALL_NOW)) == pytest.approx(3600.0)
+
+    def test_missing_file_is_no_data(self, site):
+        assert file_age_s({}, self._ctx({}, WALL_NOW)) == (None, Validity.INVALID_NO_DATA)
+
+    def test_cached_until_recheck(self, site):
+        site.write_text("x")
+        os.utime(site, (WALL_NOW, WALL_NOW))
+        state = {}
+        assert file_age_s({}, self._ctx(state, WALL_NOW)) == pytest.approx(0.0)
+        # The file is replaced, but no re-stat until the recheck interval:
+        # the age keeps growing from the cached mtime.
+        os.utime(site, (WALL_NOW + 100, WALL_NOW + 100))
+        just_before = WALL_NOW + POLAR_FILE_RECHECK_S - 1
+        assert file_age_s({}, self._ctx(state, just_before)) == pytest.approx(POLAR_FILE_RECHECK_S - 1)
+        at_recheck = WALL_NOW + POLAR_FILE_RECHECK_S
+        assert file_age_s({}, self._ctx(state, at_recheck)) == pytest.approx(POLAR_FILE_RECHECK_S - 100)
+
+    def test_missing_then_restored_waits_for_recheck(self, site):
+        state = {}
+        assert file_age_s({}, self._ctx(state, WALL_NOW))[1] is Validity.INVALID_NO_DATA
+        site.write_text("x")
+        os.utime(site, (WALL_NOW, WALL_NOW))
+        assert file_age_s({}, self._ctx(state, WALL_NOW + 60))[1] is Validity.INVALID_NO_DATA
+        assert file_age_s({}, self._ctx(state, WALL_NOW + POLAR_FILE_RECHECK_S)) == pytest.approx(
+            POLAR_FILE_RECHECK_S)
+
+    def test_mtime_after_clock_is_negative(self, site):
+        # An --as-of replay: the clock is before the file's mtime.
+        site.write_text("x")
+        os.utime(site, (WALL_NOW + 500, WALL_NOW + 500))
+        assert file_age_s({}, self._ctx({}, WALL_NOW)) == pytest.approx(-500.0)
+
+
+def _one_ant_polar(online=None, **vals):
+    online = ONLINE_ALL if online is None else online
+    d = {"online": ri("o", online)}
+    for a in range(1, 9):
+        for k, v in vals.items():
+            d[f"{k}{a}"] = ri(f"{k}{a}", v.get(a, v.get(0)) if isinstance(v, dict) else v)
+    return d
+
+
+class TestPolarDaysOld:
+    def _run(self, mjd, tjd, online=None):
+        return polar_days_old(_one_ant_polar(online, mjd=mjd, tjd=tjd),
+                              ctx(params={"antennas": list(range(1, 9))}))
+
+    def test_snapshot_values(self):
+        assert self._run(61305, 2461306.188565) == 1
+
+    def test_absolute_and_int_truncation(self):
+        assert self._run(61310, 2461306.99) == 4
+
+    def test_reference_antenna(self):
+        online = ONLINE_ALL.copy()
+        online[1] = 0
+        assert self._run({1: 50000, 0: 61306}, 2461306.5, online) == 0
+
+    def test_none_online(self):
+        assert self._run(61305, 2461306.0, np.zeros(11, dtype=np.int8)) == (None, Validity.INVALID_NO_DATA)
+
+    def test_non_finite_tjd(self):
+        assert self._run(61305, float("nan")) == (None, Validity.INVALID_HW_BAD)
+
+
+class TestPolarDut:
+    G = Validity.VALID_GOOD
+
+    def _run(self, dut=-0.0117, age=(1000.0, G), days=(1, G), online=None):
+        d = _one_ant_polar(online, dut=dut)
+        d["age"] = ri("age", age[0], age[1])
+        d["days"] = ri("days", days[0], days[1])
+        return polar_dut(d, ctx(params={"antennas": list(range(1, 9))}))
+
+    def test_fresh_is_bare(self):
+        assert self._run() == pytest.approx(-0.0117)
+
+    @pytest.mark.parametrize("age, days, expected", [
+        ((900000.0, Validity.VALID_WARNING_HIGH), (1, G), Validity.VALID_WARNING),
+        ((1300000.0, Validity.VALID_ERROR_HIGH), (1, G), Validity.VALID_ERROR),
+        ((1000.0, G), (3, Validity.VALID_WARNING_HIGH), Validity.VALID_WARNING),
+        ((1300000.0, Validity.VALID_ERROR_HIGH), (3, Validity.VALID_WARNING_HIGH), Validity.VALID_ERROR),
+        ((None, Validity.INVALID_NO_DATA), (1, G), Validity.VALID_WARNING),   # no ser7.dat
+    ])
+    def test_age_folded_in(self, age, days, expected):
+        assert self._run(age=age, days=days) == (pytest.approx(-0.0117), expected)
+
+    def test_none_online(self):
+        assert self._run(online=np.zeros(11, dtype=np.int8)) == (None, Validity.INVALID_NO_DATA)
+
+    def test_non_finite_dut(self):
+        assert self._run(dut=float("inf")) == (None, Validity.INVALID_HW_BAD)
 
 
 class TestScanFlagged:

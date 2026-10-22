@@ -39,6 +39,7 @@ registered, unit-testable Python function — not as config.
 """
 from __future__ import annotations
 
+import os
 import statistics
 from typing import Callable
 
@@ -46,6 +47,7 @@ import astropy.units as u
 import numpy as np
 from slama.monitor.monitorpoint import Validity
 from slama.coordinates import sun_distance
+from slama.site_paths import site_path
 
 from .computenode import ComputeContext, ResolvedInput
 
@@ -1772,6 +1774,141 @@ def reference_offset(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     if not np.isfinite(value):
         return None, Validity.INVALID_HW_BAD
     if inputs["spread"].validity in _WARNING_VALIDITIES | _ERROR_VALIDITIES:
+        return value, Validity.VALID_WARNING
+    return value
+
+
+POLAR_FILE_RECHECK_S = 86400.0
+"""How often :func:`file_age_s` re-stats its file (Marc, 2026-10-22).
+
+``/global`` is NFS-mounted on site, so the file is not stat'ed every tick:
+once at engine start, then daily. ``ser7.dat`` is refreshed about weekly,
+so the cached age lags the real one by at most a day (about 8 days for a
+weekly file), which stays under its 10-day WARNING level; a 6-day interval
+could reach ~13 days and warn falsely."""
+
+TJD_TO_MJD = 2400000
+"""``arrayMonitor.c:806``: ``MJD = int(TJD) - 2400000``, as the C computes it."""
+
+
+@compute_function("file_age_s")
+def file_age_s(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Age of a file from its modification time (``arrayMonitor.c:795-808``).
+
+    The C stats ``/global/polar/ser7.dat`` on every refresh. Here the
+    mtime is cached in ``ctx.state`` and re-read only every
+    :data:`POLAR_FILE_RECHECK_S`, because ``/global`` is NFS and a hung
+    stat would stall the whole tick. The age itself is recomputed every
+    tick from the cached mtime. It is a runtime read, not an ``@``
+    site-file token: a missing file is a normal state (the C's
+    "NO DATA!"), never a config-load failure.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        None (a zero-input node).
+    ctx : ComputeContext
+        ``ctx.params["path"]``: the C path, resolved with
+        :func:`slama.site_paths.site_path`. ``ctx.state`` holds
+        ``"mtime"`` (None when the file was missing) and
+        ``"checked_at"``.
+
+    Returns
+    -------
+    float or tuple of (None, Validity)
+        ``wall_clock - mtime`` in seconds, bare so the output's
+        ``warn_high`` / ``err_high`` in ``smax.json`` set its validity.
+        Negative when the mtime is after the clock (e.g. an ``--as-of``
+        replay), which is fresh, as in the C. ``(None,
+        INVALID_NO_DATA)`` when the file is missing.
+    """
+    now = ctx.wall_clock()
+    checked_at = ctx.state.get("checked_at")
+    if checked_at is None or now - checked_at >= POLAR_FILE_RECHECK_S:
+        try:
+            ctx.state["mtime"] = os.stat(site_path(ctx.params["path"])).st_mtime
+        except OSError:
+            ctx.state["mtime"] = None
+        ctx.state["checked_at"] = now
+    mtime = ctx.state["mtime"]
+    if mtime is None:
+        return None, Validity.INVALID_NO_DATA
+    return now - mtime
+
+
+@compute_function("polar_days_old")
+def polar_days_old(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> int:
+    """Days between the polar-motion entry and today (``arrayMonitor.c:806-814``).
+
+    ``|RM_POLAR_MJD_L - (int(RM_TJD_D) - 2400000)|`` from the reference
+    antenna (:func:`_reference_antenna`). The C shows "N days old" when
+    this exceeds 2; that level is the output's ``warn_high`` in
+    ``smax.json``.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"mjd{i}"`` (``RM_POLAR_MJD_L``), ``"tjd{i}"`` (``RM_TJD_D``) for
+        each antenna in ``ctx.params["antennas"]``, and ``"online"``.
+    ctx : ComputeContext
+        ``ctx.params["antennas"]``: antenna numbers to consider.
+
+    Returns
+    -------
+    int or tuple of (None, Validity)
+        Whole days, bare. ``(None, INVALID_NO_DATA)`` with no antenna
+        online; ``(None, INVALID_HW_BAD)`` for a non-finite TJD.
+    """
+    ants = _reference_antenna(inputs, ctx)
+    if not ants:
+        return None, Validity.INVALID_NO_DATA
+    tjd = float(inputs[f"tjd{ants[0]}"].value)
+    if not np.isfinite(tjd):
+        return None, Validity.INVALID_HW_BAD
+    return abs(int(inputs[f"mjd{ants[0]}"].value) - (int(tjd) - TJD_TO_MJD))
+
+
+@compute_function("polar_dut")
+def polar_dut(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """UT1-UTC from the reference antenna, with the data's age folded in (``arrayMonitor.c:792-825``).
+
+    The C's one ``DUT`` cell shows, first match wins: "NO DATA!" (no
+    ``ser7.dat``), "OLD DATA!", "N days old", " wacko " or the value.
+    SLAMA always publishes the value and carries the reason in the
+    validity: the worse of the file age's and ``polar_days_old``'s
+    validities (levels in ``smax.json``), and WARNING for a missing file
+    (the C's standout NO DATA). Otherwise the value is bare, so the
+    output's own ``warn_low`` / ``warn_high`` (the C's wacko) apply.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"dut{i}"`` (``RM_POLAR_DUT_SEC_D``) for each antenna in
+        ``ctx.params["antennas"]``; ``"online"``; ``"age"``
+        (``monitorsystem:array:polar_file_age_s``, optional: ``None``
+        when the file is missing); ``"days"``
+        (``monitorsystem:array:polar_days_old``).
+    ctx : ComputeContext
+        ``ctx.params["antennas"]``: antenna numbers to consider.
+
+    Returns
+    -------
+    float or tuple of (float or None, Validity)
+        DUT in seconds: ``(value, VALID_ERROR)`` or ``(value,
+        VALID_WARNING)`` from the age inputs, else bare. ``(None,
+        INVALID_NO_DATA)`` with no antenna online; ``(None,
+        INVALID_HW_BAD)`` for a non-finite DUT.
+    """
+    ants = _reference_antenna(inputs, ctx)
+    if not ants:
+        return None, Validity.INVALID_NO_DATA
+    value = float(inputs[f"dut{ants[0]}"].value)
+    if not np.isfinite(value):
+        return None, Validity.INVALID_HW_BAD
+    helpers = {inputs["age"].validity, inputs["days"].validity}
+    if helpers & _ERROR_VALIDITIES:
+        return value, Validity.VALID_ERROR
+    if inputs["age"].value is None or helpers & _WARNING_VALIDITIES:
         return value, Validity.VALID_WARNING
     return value
 
