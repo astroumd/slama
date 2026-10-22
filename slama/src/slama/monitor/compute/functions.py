@@ -1600,15 +1600,13 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
 
 # ---------------------------------------------------------------------------
 # arrayMonitor.c port — validation checks (goals/monsubsys_arrayMonitor.md
-# "New point? = No" rows that need logic beyond a static threshold; the
-# "wacko" range checks are deferred pending the observatory team).
+# "New point? = No" rows that need logic beyond a static threshold).
+# Wacko ranges take the validity of their draw style (standout → WARNING,
+# red → ERROR; docs/curses_color_validity.md rule 7).
 # ---------------------------------------------------------------------------
 
 SUN_SAFE_CRITICAL_MIN = 10
 """``arrayMonitor.c:1912-1926``: sun-safe minutes below this are dimmed (critical)."""
-
-POINTING_OFFSET_TOLERANCE_ARCSEC = 0.02
-"""``arrayMonitor.c:1060-1071``: RA/Dec offsets must agree across antennas to this."""
 
 PALM_OFF_BIT = 0x01000000
 """``arrayMonitor.c:1750-1754``: SCB fault-word bit shown as "Palm Off"."""
@@ -1662,40 +1660,120 @@ def sun_safe_minutes(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     return present, Validity.VALID_GOOD
 
 
+_ERROR_VALIDITIES = frozenset({Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW})
+_WARNING_VALIDITIES = frozenset({Validity.VALID_WARNING, Validity.VALID_WARNING_HIGH,
+                                 Validity.VALID_WARNING_LOW})
+
+
+def _reference_antenna(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Online antennas, with the reference antenna first (``arrayMonitor.c:235-253``).
+
+    The C's reference is ``specialAntenna``: the lowest antenna in
+    ``/global/projects/antennasInArray``, else the lowest one not dead.
+    As elsewhere in this port, the online list
+    (``DSM_ONLINE_ANTENNAS_V11_B``) stands in for both.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"online"`` (``DSM_ONLINE_ANTENNAS_V11_B``, indexed by antenna
+        number).
+    ctx : ComputeContext
+        ``ctx.params["antennas"]``: antenna numbers to consider.
+
+    Returns
+    -------
+    list of int
+        The online antennas in ascending order; the first is the
+        reference. Empty when none is online.
+    """
+    return sorted(a for a in ctx.params["antennas"]
+                  if _is_one(_array_elem(inputs["online"].value, a)))
+
+
 @compute_function("pointing_offset_spread")
 def pointing_offset_spread(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
-    """Largest RA/Dec offset disagreement across online antennas (``arrayMonitor.c:1053-1071``).
+    """Largest RA/Dec offset deviation from the reference antenna (``arrayMonitor.c:1053-1071``).
 
-    The C compares antennas above a reference antenna against it and
-    stops at the first mismatch; this port takes the full spread
-    (max - min) over every online antenna, for RA and Dec separately,
-    and reports the larger.
+    The C compares each online antenna's RA and Dec offsets with the
+    reference antenna's (:func:`_reference_antenna`) and shows a
+    standout "RA/DEC offsets inconsistent between antennas!" when any
+    differs by more than 0.02". The point keeps its historical name; its
+    value is that largest deviation, not max - min. The 0.02" level is
+    the output's ``warn_high`` in ``smax.json`` (which fires at ``>=``
+    where the C tests ``>``).
 
     Parameters
     ----------
     inputs : dict of str to ResolvedInput
         ``"raoff{i}"``, ``"decoff{i}"`` (``RM_RAOFF_ARCSEC_D``,
         ``RM_DECOFF_ARCSEC_D``) for each antenna in
-        ``ctx.params["antennas"]``, and ``"online"``
-        (``DSM_ONLINE_ANTENNAS_V11_B``, indexed by antenna number).
+        ``ctx.params["antennas"]``, and ``"online"``.
+    ctx : ComputeContext
+        ``ctx.params["antennas"]``: antenna numbers to consider.
+
+    Returns
+    -------
+    float or tuple of (None, Validity)
+        The deviation in arcsec, bare so ``smax.json`` sets its
+        validity; 0.0 when fewer than two antennas are online.
+        ``(None, INVALID_HW_BAD)`` when a reference offset is non-finite
+        (no comparison against it means anything).
+    """
+    ants = _reference_antenna(inputs, ctx)
+    if not ants:
+        return 0.0
+    ref = ants[0]
+    ref_off = {axis: float(inputs[f"{axis}off{ref}"].value) for axis in ("ra", "dec")}
+    if not all(np.isfinite(v) for v in ref_off.values()):
+        return None, Validity.INVALID_HW_BAD
+    deviation = 0.0
+    for a in ants[1:]:
+        for axis in ("ra", "dec"):
+            deviation = max(deviation, abs(float(inputs[f"{axis}off{a}"].value) - ref_off[axis]))
+    return deviation
+
+
+@compute_function("reference_offset")
+def reference_offset(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """The array's RA or Dec offset: the reference antenna's (``arrayMonitor.c:1072-1094``).
+
+    The C prints ``RA offset`` / ``DEC offset`` from the reference
+    antenna (:func:`_reference_antenna`), and hides both while the
+    antennas are inconsistent. SLAMA always publishes the value and
+    folds the hiding into a WARNING, taken from the validity of
+    :func:`pointing_offset_spread`'s output so the tolerance is defined
+    once, in ``smax.json``. The C's standout " wacko " (``|x| >=
+    10000``) is the output's own ``warn_low`` / ``warn_high``.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"off{i}"``: this axis's ``RM_RAOFF_ARCSEC_D`` or
+        ``RM_DECOFF_ARCSEC_D`` for each antenna in
+        ``ctx.params["antennas"]``; ``"online"``; and ``"spread"``
+        (``monitorsystem:array:pointing_offset_spread_arcsec``).
     ctx : ComputeContext
         ``ctx.params["antennas"]``: antenna numbers to consider.
 
     Returns
     -------
     float or tuple of (float or None, Validity)
-        Spread in arcsec (the output's ``err_high`` applies
-        :data:`POINTING_OFFSET_TOLERANCE_ARCSEC`); ``(0.0, VALID_GOOD)``
-        with fewer than two online antennas.
+        The reference antenna's offset in arcsec: ``(value,
+        VALID_WARNING)`` when the spread is at WARNING or worse, else
+        bare so ``smax.json`` sets its validity. ``(None,
+        INVALID_NO_DATA)`` with no antenna online; ``(None,
+        INVALID_HW_BAD)`` for a non-finite reference offset.
     """
-    ants = [a for a in ctx.params["antennas"] if _is_one(_array_elem(inputs["online"].value, a))]
-    if len(ants) < 2:
-        return 0.0, Validity.VALID_GOOD
-    spreads = []
-    for axis in ("raoff", "decoff"):
-        vals = [float(inputs[f"{axis}{a}"].value) for a in ants]
-        spreads.append(max(vals) - min(vals))
-    return max(spreads)
+    ants = _reference_antenna(inputs, ctx)
+    if not ants:
+        return None, Validity.INVALID_NO_DATA
+    value = float(inputs[f"off{ants[0]}"].value)
+    if not np.isfinite(value):
+        return None, Validity.INVALID_HW_BAD
+    if inputs["spread"].validity in _WARNING_VALIDITIES | _ERROR_VALIDITIES:
+        return value, Validity.VALID_WARNING
+    return value
 
 
 @compute_function("scan_flagged")
@@ -1744,11 +1822,6 @@ def palm_off(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
         (which prints it without an alarm), so no validity is asserted.
     """
     return bool(int(inputs["faultword"].value) & PALM_OFF_BIT)
-
-
-_ERROR_VALIDITIES = frozenset({Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW})
-_WARNING_VALIDITIES = frozenset({Validity.VALID_WARNING, Validity.VALID_WARNING_HIGH,
-                                 Validity.VALID_WARNING_LOW})
 
 
 @compute_function("motor_alarm")

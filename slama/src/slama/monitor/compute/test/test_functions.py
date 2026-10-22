@@ -19,6 +19,7 @@ from slama.monitor.compute.functions import (
     m3_state,
     palm_off,
     pointing_offset_spread,
+    reference_offset,
     scan_flagged,
     sun_safe_minutes,
     waveplate,
@@ -1047,29 +1048,84 @@ class TestSunSafeMinutes:
         assert self._run(9, 120) == (9, Validity.VALID_ERROR)
 
 
+def _offset_inputs(ra, dec, online):
+    d = {"online": ri("o", online)}
+    for a in range(1, 9):
+        d[f"raoff{a}"] = ri(f"r{a}", ra.get(a, 0.0))
+        d[f"decoff{a}"] = ri(f"d{a}", dec.get(a, 0.0))
+    return d
+
+
 class TestPointingOffsetSpread:
+    # The 0.02" level is the output's warn_high in smax.json
+    # (test_realconfig.py); the function returns the bare deviation.
     def _run(self, ra, dec, online=ONLINE_ALL):
-        d = {"online": ri("o", online)}
-        for a in range(1, 9):
-            d[f"raoff{a}"] = ri(f"r{a}", ra.get(a, 0.0))
-            d[f"decoff{a}"] = ri(f"d{a}", dec.get(a, 0.0))
-        return pointing_offset_spread(d, ctx(params={"antennas": list(range(1, 9))}))
+        return pointing_offset_spread(_offset_inputs(ra, dec, online),
+                                      ctx(params={"antennas": list(range(1, 9))}))
 
     def test_consistent(self):
         assert self._run({a: 5.0 for a in range(1, 9)}, {}) == pytest.approx(0.0)
 
-    def test_spread_is_larger_axis(self):
+    def test_deviation_from_reference_not_spread(self):
+        # ±0.015 about the reference: max - min is 0.03, but the C's test
+        # (each antenna vs the reference) sees 0.015.
+        assert self._run({3: 0.015, 5: -0.015}, {}) == pytest.approx(0.015)
+
+    def test_larger_axis_wins(self):
         assert self._run({3: 0.01}, {5: -0.05}) == pytest.approx(0.05)
+
+    def test_reference_is_lowest_online(self):
+        online = ONLINE_ALL.copy()
+        online[1] = 0
+        # Ant 1 (offline) disagrees; ant 2 is the reference and all others agree.
+        assert self._run({1: 30.0, **{a: 2.0 for a in range(2, 9)}}, {}, online) == pytest.approx(0.0)
 
     def test_offline_antenna_ignored(self):
         online = ONLINE_ALL.copy()
         online[4] = 0
         assert self._run({4: 30.0}, {}, online) == pytest.approx(0.0)
 
-    def test_fewer_than_two_online(self):
+    def test_single_online(self):
         online = np.zeros(11, dtype=np.int8)
         online[2] = 1
-        assert self._run({2: 30.0}, {}, online) == (0.0, Validity.VALID_GOOD)
+        assert self._run({2: 30.0}, {}, online) == 0.0
+
+    def test_none_online(self):
+        assert self._run({}, {}, np.zeros(11, dtype=np.int8)) == 0.0
+
+    def test_non_finite_reference(self):
+        assert self._run({}, {1: float("inf")}) == (None, Validity.INVALID_HW_BAD)
+
+
+class TestReferenceOffset:
+    # The wacko ±10000" level is the outputs' warn_low/warn_high in
+    # smax.json (test_realconfig.py).
+    def _run(self, off, spread_validity=Validity.VALID_GOOD, online=ONLINE_ALL):
+        d = {"online": ri("o", online), "spread": ri("s", 0.0, spread_validity)}
+        for a in range(1, 9):
+            d[f"off{a}"] = ri(f"x{a}", off.get(a, 0.0))
+        return reference_offset(d, ctx(params={"antennas": list(range(1, 9))}))
+
+    def test_consistent_reports_reference_bare(self):
+        assert self._run({a: 5.0 for a in range(1, 9)}) == pytest.approx(5.0)
+
+    def test_reference_skips_offline(self):
+        online = ONLINE_ALL.copy()
+        online[1] = online[2] = 0
+        assert self._run({1: 9.0, 2: 9.0, 3: 4.0}, online=online) == pytest.approx(4.0)
+
+    @pytest.mark.parametrize("spread_validity", [
+        Validity.VALID_WARNING_HIGH, Validity.VALID_WARNING, Validity.VALID_ERROR_HIGH,
+    ])
+    def test_inconsistent_spread_warns(self, spread_validity):
+        # The C hides the value while the antennas disagree.
+        assert self._run({1: 2.0}, spread_validity) == (2.0, Validity.VALID_WARNING)
+
+    def test_none_online(self):
+        assert self._run({}, online=np.zeros(11, dtype=np.int8)) == (None, Validity.INVALID_NO_DATA)
+
+    def test_non_finite_reference(self):
+        assert self._run({1: float("nan")}) == (None, Validity.INVALID_HW_BAD)
 
 
 class TestScanFlagged:

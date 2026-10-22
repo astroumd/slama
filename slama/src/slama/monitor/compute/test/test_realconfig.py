@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from slama.monitor.compute.computeconfig import ComputeConfig
+from slama.monitor.monitorpoint import Validity
 from slama.monitor.monitorsystem import MonitorSystem
 
 CONF = Path(__file__).parents[3] / "conf"
@@ -57,3 +58,22 @@ def test_motor_alarm_uses_smax_thresholds(monitor_system, amps, expected):
         mp.update(_wrap(amps if role == "az1" else 0.0, 1_790_000_000.0))
         resolved[role] = ResolvedInput(name, mp.value, mp.validity)
     assert motor_alarm(resolved, None) == expected
+
+
+@pytest.mark.parametrize("name, value, expected", [
+    # The C flags > 0.02"; SLAMA's warn_high fires at >= 0.02.
+    ("monitorsystem:array:pointing_offset_spread_arcsec", 0.0199, Validity.VALID_GOOD),
+    ("monitorsystem:array:pointing_offset_spread_arcsec", 0.02, Validity.VALID_WARNING_HIGH),
+    # |offset| >= 10000" is the C's standout wacko.
+    ("monitorsystem:array:ra_offset_arcsec", 9999.9, Validity.VALID_GOOD),
+    ("monitorsystem:array:ra_offset_arcsec", 10000.0, Validity.VALID_WARNING_HIGH),
+    ("monitorsystem:array:dec_offset_arcsec", -10000.0, Validity.VALID_WARNING_LOW),
+    ("monitorsystem:array:dec_offset_arcsec", -9999.9, Validity.VALID_GOOD),
+])
+def test_pointing_offset_smax_thresholds(monitor_system, name, value, expected):
+    """The offset levels are defined only in smax.json."""
+    from slama.monitor.compute.engine import _wrap
+
+    mp = monitor_system.get_monitor_point(name)
+    mp.update(_wrap(value, 1_790_000_000.0))
+    assert mp.validity is expected
