@@ -88,6 +88,8 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 
 `Validity` enum covers: `INVALID_NO_DATA`, `INVALID_NO_HW`, `INVALID_HW_BAD`, `VALID`, `VALID_NOT_CHECKED`, `VALID_GOOD`, `VALID_WARNING`, `VALID_ERROR`, `VALID_WARNING_LOW/HIGH`, `VALID_ERROR_LOW/HIGH`.
 
+When porting a curses page, pick a computed point's validity from how the C draws it (beep / red → ERROR, yellow or standout → WARNING, green / normal → GOOD); the full mapping and recorded deviations are in `docs/curses_color_validity.md`.
+
 ### SMAX Backend
 
 SMAX data is addressed as `table:key` pairs. The SMAX library (`smax-python`) provides `SmaxRedisClient`, `SmaxVarBase`, and `smax_share()`. The server runs at `localhost:6380` (not default Redis port 6379). `SmaxRedisClient` is synchronous, so the web server wraps SMAX calls in `asyncio.to_thread()` to avoid blocking the event loop.
