@@ -6808,6 +6808,7 @@
           "smax_type": "float"
         },
         "RM_POLAR_DUT_SEC_D": {
+          "description": "UT1-UTC from the polar-motion table (s); input to monitorsystem:array:polar_dut_s",
           "size": "1",
           "smax_type": "double"
         },
@@ -6820,6 +6821,7 @@
           "smax_type": "double"
         },
         "RM_POLAR_MJD_L": {
+          "description": "MJD of the polar-motion entry; input to monitorsystem:array:polar_days_old",
           "size": "1",
           "smax_type": "int32"
         },
@@ -12341,6 +12343,29 @@
         "unit": "arcsec",
         "warn_low": -10000.0,
         "warn_high": 10000.0
+      },
+      "polar_file_age_s": {
+        "description": "Age of /global/polar/ser7.dat (IERS UT1-UTC predictions) from its mtime, stat'ed at engine start and daily (/global is NFS); WARNING from 10 d, ERROR from 15 d (Marc, 2026-10-22; the C shows standout OLD DATA! > 10 d, arrayMonitor.c 795-810); no data when the file is missing. From slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s",
+        "warn_high": 864000.0,
+        "err_high": 1296000.0
+      },
+      "polar_days_old": {
+        "description": "|RM_POLAR_MJD_L - (int(RM_TJD_D) - 2400000)| from the reference (lowest online) antenna; WARNING from 3 (the C's 'N days old' when > 2, arrayMonitor.c 806-814). From slama.monitor.compute",
+        "size": "1",
+        "smax_type": "integer",
+        "unit": "d",
+        "warn_high": 3
+      },
+      "polar_dut_s": {
+        "description": "UT1-UTC (RM_POLAR_DUT_SEC_D) from the reference (lowest online) antenna; validity is the worse of polar_file_age_s and polar_days_old, WARNING when ser7.dat is missing (the C's standout NO DATA!), and warn_low/warn_high +-100000 (standout wacko) (arrayMonitor.c 792-825). From slama.monitor.compute",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s",
+        "warn_low": -100000.0,
+        "warn_high": 100000.0
       },
       "dec_offset_arcsec": {
         "description": "Array Dec offset: the reference (lowest online) antenna's RM_DECOFF_ARCSEC_D; WARNING when pointing_offset_spread_arcsec is at WARNING (antennas inconsistent; the C hides the value then) or |offset| >= 10000 (standout wacko, warn_low/warn_high) (arrayMonitor.c 1072-1094), from slama.monitor.compute",
