@@ -33,7 +33,7 @@ cp ../sim/build/smax-messages.c   submodules/smax/src/
 make -i
 
 
-# calfind (and maybe more)
+# calfind (and maybe more, e.g. project, observe, azel, ...)
 cd $SMAGIT/online/Linux/applications/obscon/smash
 make
 for b in calfind; do
@@ -47,3 +47,11 @@ make
 for b in lookupd lookup; do
     cp bin/x86_64/$b $SMAGIT/../sim/bin
 done
+
+#  to run:
+#       source $SMAGIT/setup.sh
+#       cd sim
+#       source sim_start.sh
+#       lookupd &
+#       make test3
+#       make test4
