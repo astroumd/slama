@@ -807,9 +807,9 @@ class TestDewar4kTemp:
         t, v = self._tune6([4.0] * 16, age=61)
         assert v == Validity.INVALID_NO_DATA
 
-    def test_wacko_low(self):
-        t, v = self._tune6([1.4] * 16)
-        assert v == Validity.VALID_ERROR
+    def test_wacko_low_is_bare(self):
+        # The 2 K floor is the output's err_low in smax.json (test_realconfig.py).
+        assert self._tune6([1.4] * 16) == pytest.approx(1.4, abs=1e-4)
 
     def test_wsma_shape(self):
         assert dewar_4k_temp({"temp": ri("w", 4.076)}, ctx()) == pytest.approx(4.076)
@@ -887,9 +887,10 @@ class TestWind:
         assert out["speed"] == (None, Validity.INVALID_NO_DATA)
         assert out["invalid_stations"] == 4
 
-    def test_wacko_speed(self):
+    def test_wacko_speed_is_bare(self):
         out = wind(_wind_inputs(stations={"SMA": (500.0, 0.0, 5.0)}), ctx())
-        assert out["speed"] == (500.0, Validity.VALID_ERROR)
+        # The 150 mph limit is the output's err_high in smax.json (test_realconfig.py).
+        assert out["speed"] == pytest.approx(500.0)
 
 
 class TestSunVisible:

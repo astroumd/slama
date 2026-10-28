@@ -738,9 +738,6 @@ HI_LO_FREQ_CUTOFF_HZ = 600.0e9
 LAKESHORE_STALE_S = 60.0
 """``arrayMonitor.c`` ``LAKESHORE_STALE``: dewar temperature heartbeat limit."""
 
-DEWAR_WACKO_K = 2.0
-"""``arrayMonitor.c:2296-2326``: a 4K reading at or below this is not physical."""
-
 SMA_N_CORR_SEGMENTS = 8
 """Correlator chunk count; ``DSM_REQUESTED_CHUNK_V2_S`` is valid in 1..8."""
 
@@ -1115,9 +1112,9 @@ def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     -------
     float or tuple of (float, Validity)
         The temperature in K. ``(T, INVALID_NO_DATA)`` if the lakeshore
-        heartbeat is stale; ``(T, VALID_ERROR)`` if ``T <=``
-        :data:`DEWAR_WACKO_K` (C: "wac"); otherwise bare, so the
-        output's ``err_high`` (the ``dewarTemp.conf`` 4K limit) applies.
+        heartbeat is stale; otherwise bare, so the output's thresholds
+        in ``smax.json`` apply: ``err_high`` (the ``dewarTemp.conf`` 4K
+        limit) and ``err_low`` (the C's "wac" floor).
     """
     if "temps" in inputs:
         t = float(_array_elem(inputs["temps"].value, int(ctx.params["sensor"])))
@@ -1125,8 +1122,6 @@ def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
             return t, Validity.INVALID_NO_DATA
     else:
         t = float(inputs["temp"].value)
-    if t <= DEWAR_WACKO_K:
-        return t, Validity.VALID_ERROR
     return t
 
 
@@ -1146,9 +1141,6 @@ WIND_METER_FROZEN_CUTOFF_MPH = 0.20
 
 WIND_STATION_STALE_S = 1800.0
 """``computeMedianWindspeed()``: stations older than this are excluded."""
-
-WIND_SPEED_WACKO_MPS = 150.0 * MPH_TO_MPS
-"""``arrayMonitor.c:1587``: speeds above 150 mph are shown as "wacko"."""
 
 WIND_AVERAGE_STATIONS = ("UH88", "IRTF", "CFHT", "SUBARU")
 """``computeMedianWindspeed()`` station order (VLBA deliberately excluded).
@@ -1249,6 +1241,11 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
         Roles ``"speed"`` (m/s), ``"direction"`` (deg), ``"source"``
         (``"SMA"``, a station name, ``"average"``, or ``"none"``) and
         ``"invalid_stations"`` (count excluded from the average).
+        ``"speed"`` and ``"direction"`` are bare, so the C's wacko
+        ranges (speed above 150 mph, direction outside (-99, 400]) are
+        the ``err_high`` / ``err_low`` of the output points in
+        ``smax.json``; they fire on ``>=`` / ``<=``, so a direction of
+        exactly 400 is now an error.
     """
     valid, invalid = [], 0
     for st in WIND_AVERAGE_STATIONS:
@@ -1287,9 +1284,7 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
                 "direction": (None, Validity.INVALID_NO_DATA),
                 "source": ("none", Validity.VALID_ERROR),
                 "invalid_stations": invalid}
-    speed_out = (speed, Validity.VALID_ERROR) if not 0 <= speed <= WIND_SPEED_WACKO_MPS else speed
-    dir_out = (direction, Validity.VALID_ERROR) if not -99 < direction <= 400 else direction
-    return {"speed": speed_out, "direction": dir_out, "source": source,
+    return {"speed": speed, "direction": direction, "source": source,
             "invalid_stations": invalid}
 
 

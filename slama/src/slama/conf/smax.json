@@ -12649,10 +12649,11 @@
             "smax_type": "string"
           },
           "dewar_4k_temp": {
-            "description": "Antenna {i} dewar 4K-stage temperature: RM_DEWAR_TEMPS_V16_F (Tune6) or wSMA 4K-plate (arrayMonitor.c dewarTemp); err_high is the dewarTemp.conf 4K limit. From slama.monitor.compute",
+            "description": "Antenna {i} dewar 4K-stage temperature: RM_DEWAR_TEMPS_V16_F (Tune6) or wSMA 4K-plate (arrayMonitor.c dewarTemp); err_high is the dewarTemp.conf 4K limit; err_low is the C's wacko (\"wac\") floor. From slama.monitor.compute",
             "size": "1",
             "smax_type": "float",
             "unit": "K",
+            "err_low": 2.0,
             "err_high": 5.2
           }
         }
@@ -12660,17 +12661,20 @@
     },
     "weather": {
       "wind_speed": {
-        "description": "Summit wind speed: SMA station, or cross-station average if frozen (arrayMonitor.c windspeed), from slama.monitor.compute",
+        "description": "Summit wind speed: SMA station, or cross-station average if frozen (arrayMonitor.c windspeed); err_high is 150 mph (the C's wacko), from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
         "unit": "m/s",
-        "warn_high": 13.4
+        "warn_high": 13.4,
+        "err_high": 67.056
       },
       "wind_direction": {
-        "description": "Summit wind direction matching wind_speed's source (circular mean when averaged), from slama.monitor.compute",
+        "description": "Summit wind direction matching wind_speed's source (circular mean when averaged); err_low/err_high are the C's wacko range, from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
-        "unit": "deg"
+        "unit": "deg",
+        "err_low": -99,
+        "err_high": 400
       },
       "wind_source": {
         "description": "Where wind_speed came from: SMA, a station name, average, or none, from slama.monitor.compute",
