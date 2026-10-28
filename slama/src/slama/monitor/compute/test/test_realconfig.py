@@ -108,6 +108,14 @@ def test_polar_smax_thresholds(monitor_system, name, value, expected):
     # dewar 4K wacko floor (the C's "wac"), and the dewarTemp.conf limit.
     ("monitorsystem:antenna:3:dewar_4k_temp", 2.0, Validity.VALID_ERROR_LOW),
     ("monitorsystem:antenna:3:dewar_4k_temp", 2.1, Validity.VALID_GOOD),
+    # hour_angle's wacko: |HA| >= 100 h, tested on the RA input.
+    ("RM:acc3:RM_RA_APP_HR_D", 99.9, Validity.VALID_GOOD),
+    ("RM:acc3:RM_RA_APP_HR_D", 100.0, Validity.VALID_ERROR_HIGH),
+    # scan age wacko: >= 100 days, or below -100 s.
+    ("monitorsystem:array:scan_age_s", 8639999.0, Validity.VALID_GOOD),
+    ("monitorsystem:array:scan_age_s", 8640000.0, Validity.VALID_ERROR_HIGH),
+    ("monitorsystem:array:scan_age_s", -100.0, Validity.VALID_ERROR_LOW),
+    ("monitorsystem:array:scan_age_s", -99.0, Validity.VALID_GOOD),
     # wind: 150 mph = 67.056 m/s is the wacko limit; direction wacko is (-99, 400].
     ("monitorsystem:weather:wind_speed", 67.05, Validity.VALID_WARNING_HIGH),
     ("monitorsystem:weather:wind_speed", 67.056, Validity.VALID_ERROR_HIGH),

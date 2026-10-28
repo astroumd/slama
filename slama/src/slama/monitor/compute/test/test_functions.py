@@ -981,7 +981,10 @@ class TestTauStandout:
 
 class TestHourAngle:
     def _run(self, lst, ra, dec=20.0):
-        return hour_angle({"lst": ri("l", lst), "ra": ri("r", ra), "dec": ri("d", dec)}, ctx())
+        # RA's err_low/err_high (+-100 h) are in smax.json (test_realconfig.py).
+        ra_validity = Validity.VALID_ERROR_HIGH if abs(ra) >= 100 else Validity.VALID_GOOD
+        return hour_angle({"lst": ri("l", lst), "ra": ri("r", ra, ra_validity),
+                           "dec": ri("d", dec)}, ctx())
 
     @pytest.mark.parametrize("lst, ra, ha", [
         (6.0, 4.0, 2.0), (6.244624, 18.26431240032124, 11.980311), (23.0, 1.0, -2.0), (1.0, 23.0, 2.0),
@@ -1028,8 +1031,9 @@ class TestSwarmScan:
         assert out["status"] == ("SWARM offline", Validity.VALID_WARNING)
         assert out["scan_age_s"] == pytest.approx(7764502)
 
-    def test_wacko_age(self):
-        assert self._run(9e6, 9e6)["scan_age_s"][1] == Validity.VALID_ERROR
+    def test_wacko_age_is_bare(self):
+        # The wacko bounds are the output's err_low/err_high in smax.json (test_realconfig.py).
+        assert self._run(9e6, 9e6)["scan_age_s"] == pytest.approx(9e6)
 
     def test_missing_timestamp(self):
         out = swarm_scan({

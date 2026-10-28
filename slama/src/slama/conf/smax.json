@@ -6851,8 +6851,12 @@
           "smax_type": "double"
         },
         "RM_RA_APP_HR_D": {
+          "description": "Apparent RA in hours; err_low/err_high are the arrayMonitor.c hour-angle wacko level (|HA| >= 100, hour_angle reads this validity)",
           "size": "1",
-          "smax_type": "double"
+          "smax_type": "double",
+          "unit": "h",
+          "err_low": -100,
+          "err_high": 100
         },
         "RM_RA_CAT_HOURS_F": {
           "size": "1",
@@ -12407,10 +12411,12 @@
         "unit": "s"
       },
       "scan_age_s": {
-        "description": "Seconds since the data catcher last wrote DSM:hcn:DSM_AS_SCAN_SOURCE_C24 (arrayMonitor.c lastScan), from slama.monitor.compute",
+        "description": "Seconds since the data catcher last wrote DSM:hcn:DSM_AS_SCAN_SOURCE_C24 (arrayMonitor.c lastScan); err_low/err_high are the C's wacko bounds (-100 s, 100 days), from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
-        "unit": "s"
+        "unit": "s",
+        "err_low": -100,
+        "err_high": 8640000
       },
       "focus_curve_count": {
         "description": "Number of antennas with a fresh chopper status and focus curve on (arrayMonitor.c chopperStatus[0]), from slama.monitor.compute",
