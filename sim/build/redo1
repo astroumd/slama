@@ -1,0 +1,49 @@
+#! /usr/bin/env bash
+#
+
+
+# hack build for simulator (currently branch: sim)
+# assumes /global and /ephemeris exist
+
+url=https://github.com/astroumd/slama
+
+
+rm -rf slama
+git clone $url
+cd slama/sim
+git checkout sim
+
+cd ..
+make git
+
+cd SMA-Software
+source setup.sh
+git submodule init
+git submodule update
+./update-hash.sh
+
+echo SMAGIT=$SMAGIT
+
+# 3 essential ones, there are more like this
+cp ../sim/build/xstruct.c         submodules/xchange/src/
+cp ../sim/build/redisx.c          submodules/redisx/src/
+cp ../sim/build/smax-messages.c   submodules/smax/src/
+
+#  this will have lots of failures still
+make -i
+
+
+# calfind (and maybe more)
+cd $SMAGIT/online/Linux/applications/obscon/smash
+make
+for b in calfind; do
+    cp bin/x86_64/$b $SMAGIT/../sim/bin
+done
+
+
+# lookup     -- where is "hash" made
+cd $SMAGIT/global/lookup
+make
+for b in lookupd lookup; do
+    cp bin/x86_64/$b $SMAGIT/../sim/bin
+done
