@@ -34,6 +34,7 @@ time:
 ## test3:    a few "lookup" runs
 test3:
 	@echo "LOOKUP_SERVER=$(LOOKUP_SERVER) :  should be -S lookup (on-site) or -S localhost (off-site)"
+	@echo "Suggested invocation:   lookupd debug"
 	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -s sun
 	@echo "102.397216 -56.489765 0.000000"
 	lookup $(LOOKUP_SERVER) -t "14 Dec 2010 12:40:15" -s moon
