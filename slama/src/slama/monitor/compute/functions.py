@@ -425,9 +425,6 @@ CHOPPER_STALE_S = 4.0
 DEICE_STALE_S = 300.0
 """``arrayMonitor.c:590-602``: deice heartbeat stale limit."""
 
-TRACKING_ERROR_THRESHOLD_ARCSEC = 1.0
-"""``arrayMonitor.c`` ``TRACKING_ERROR_THRESHOLD``: on source below this."""
-
 EMERGENCY_STOP_FAULT = 1 << 21
 """SCB fault-word bit (``global/include/s_cmd2.h:166``)."""
 
@@ -497,13 +494,20 @@ def on_source(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
     Returns
     -------
     bool
-        ``True`` iff the tracking error is below
-        :data:`TRACKING_ERROR_THRESHOLD_ARCSEC` and the radio
-        refraction flag is set (the C forces ``onSource = 0`` when the
-        flag is 0).
+        ``True`` iff the tracking error is below the ``err_high``
+        limit declared on ``RM_TRACKING_ERROR_ARCSEC_F`` in
+        ``smax.json`` (the input's validity is not an error) and the
+        radio refraction flag is set (the C forces ``onSource = 0`` when
+        the flag is 0). The C compares with strict ``<``; the limit
+        fires on ``>=``, so exactly 1.0" is now off source.
     """
-    return (float(inputs["tracking_error"].value) < TRACKING_ERROR_THRESHOLD_ARCSEC
+    return (not _is_tracking_off(inputs)
             and int(inputs["refraction_flag"].value) != 0)
+
+
+def _is_tracking_off(inputs: dict[str, ResolvedInput]) -> bool:
+    """Whether the tracking error is at or beyond its ``smax.json`` error limit."""
+    return inputs["tracking_error"].validity in _ERROR_VALIDITIES
 
 
 @compute_function("drive_status")
@@ -552,7 +556,7 @@ def drive_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     else:
         code = None
 
-    if float(inputs["tracking_error"].value) >= TRACKING_ERROR_THRESHOLD_ARCSEC:
+    if _is_tracking_off(inputs):
         el = float(inputs["enc_el"].value)
         az = float(inputs["enc_az"].value)
         if el >= float(inputs["up_limit"].value) or el <= float(inputs["low_limit"].value):
@@ -733,9 +737,6 @@ HI_LO_FREQ_CUTOFF_HZ = 600.0e9
 
 LAKESHORE_STALE_S = 60.0
 """``arrayMonitor.c`` ``LAKESHORE_STALE``: dewar temperature heartbeat limit."""
-
-DEWAR_WACKO_K = 2.0
-"""``arrayMonitor.c:2296-2326``: a 4K reading at or below this is not physical."""
 
 SMA_N_CORR_SEGMENTS = 8
 """Correlator chunk count; ``DSM_REQUESTED_CHUNK_V2_S`` is valid in 1..8."""
@@ -1111,9 +1112,9 @@ def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     -------
     float or tuple of (float, Validity)
         The temperature in K. ``(T, INVALID_NO_DATA)`` if the lakeshore
-        heartbeat is stale; ``(T, VALID_ERROR)`` if ``T <=``
-        :data:`DEWAR_WACKO_K` (C: "wac"); otherwise bare, so the
-        output's ``err_high`` (the ``dewarTemp.conf`` 4K limit) applies.
+        heartbeat is stale; otherwise bare, so the output's thresholds
+        in ``smax.json`` apply: ``err_high`` (the ``dewarTemp.conf`` 4K
+        limit) and ``err_low`` (the C's "wac" floor).
     """
     if "temps" in inputs:
         t = float(_array_elem(inputs["temps"].value, int(ctx.params["sensor"])))
@@ -1121,8 +1122,6 @@ def dewar_4k_temp(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
             return t, Validity.INVALID_NO_DATA
     else:
         t = float(inputs["temp"].value)
-    if t <= DEWAR_WACKO_K:
-        return t, Validity.VALID_ERROR
     return t
 
 
@@ -1142,9 +1141,6 @@ WIND_METER_FROZEN_CUTOFF_MPH = 0.20
 
 WIND_STATION_STALE_S = 1800.0
 """``computeMedianWindspeed()``: stations older than this are excluded."""
-
-WIND_SPEED_WACKO_MPS = 150.0 * MPH_TO_MPS
-"""``arrayMonitor.c:1587``: speeds above 150 mph are shown as "wacko"."""
 
 WIND_AVERAGE_STATIONS = ("UH88", "IRTF", "CFHT", "SUBARU")
 """``computeMedianWindspeed()`` station order (VLBA deliberately excluded).
@@ -1245,6 +1241,11 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
         Roles ``"speed"`` (m/s), ``"direction"`` (deg), ``"source"``
         (``"SMA"``, a station name, ``"average"``, or ``"none"``) and
         ``"invalid_stations"`` (count excluded from the average).
+        ``"speed"`` and ``"direction"`` are bare, so the C's wacko
+        ranges (speed above 150 mph, direction outside (-99, 400]) are
+        the ``err_high`` / ``err_low`` of the output points in
+        ``smax.json``; they fire on ``>=`` / ``<=``, so a direction of
+        exactly 400 is now an error.
     """
     valid, invalid = [], 0
     for st in WIND_AVERAGE_STATIONS:
@@ -1283,9 +1284,7 @@ def wind(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
                 "direction": (None, Validity.INVALID_NO_DATA),
                 "source": ("none", Validity.VALID_ERROR),
                 "invalid_stations": invalid}
-    speed_out = (speed, Validity.VALID_ERROR) if not 0 <= speed <= WIND_SPEED_WACKO_MPS else speed
-    dir_out = (direction, Validity.VALID_ERROR) if not -99 < direction <= 400 else direction
-    return {"speed": speed_out, "direction": dir_out, "source": source,
+    return {"speed": speed, "direction": direction, "source": source,
             "invalid_stations": invalid}
 
 
@@ -1468,9 +1467,6 @@ def tau_standout(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
 # arrayMonitor.c port — source / scan (goals/monsubsys_arrayMonitor.md)
 # ---------------------------------------------------------------------------
 
-HOUR_ANGLE_WACKO_H = 100.0
-"""``arrayMonitor.c:1042-1051``: an hour angle this large is "wacko"."""
-
 SOURCE_TYPE_FLAGS = ((1, "F"), (2, "B"), (4, "G"), (8, "I"))
 """``DSM_AS_SOURCE_TYPE_L`` bit -> letter (``arrayMonitor.c:921-930``).
 
@@ -1483,9 +1479,6 @@ SWARM_TICK_S = 128 * 2 * 16384 / (2 * 2.288e9)
 
 SWARM_SCAN_GRACE_S = 15.0
 """``arrayMonitor.c:1282``: a scan is current if newer than scan length + this."""
-
-SCAN_AGE_WACKO_S = 8640000.0
-"""``arrayMonitor.c:1330-1348``: ages at or above this (100 days) are "wacko"."""
 
 
 @compute_function("hour_angle")
@@ -1505,16 +1498,17 @@ def hour_angle(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     float or tuple of (float or None, Validity)
         ``LST - RA`` in hours, wrapped to [-12, 12). ``(None,
         INVALID_NO_DATA)`` if RA and Dec are both 0 (no source; the C
-        shows nothing). ``(ha, VALID_ERROR)`` if ``|ha| >=``
-        :data:`HOUR_ANGLE_WACKO_H` — only reachable with a non-finite
-        or garbage input, since the wrap bounds real values; the C
-        wrapped once, so its check could fire on bad RA/LST.
+        shows nothing). ``(ha, VALID_ERROR)`` if ``ha`` is non-finite
+        or the RA input is at an error level in ``smax.json`` (the C's
+        ``|ha| >= 100`` wacko: real values are wrapped, so only a
+        garbage RA or LST can reach it; the limit is now tested on RA
+        itself, not on ``LST - RA``).
     """
     ra = float(inputs["ra"].value)
     if ra == 0.0 and float(inputs["dec"].value) == 0.0:
         return None, Validity.INVALID_NO_DATA
     ha = float(inputs["lst"].value) - ra
-    if not np.isfinite(ha) or abs(ha) >= HOUR_ANGLE_WACKO_H:
+    if not np.isfinite(ha) or inputs["ra"].validity in _ERROR_VALIDITIES:
         return ha, Validity.VALID_ERROR
     return (ha + 12.0) % 24.0 - 12.0
 
@@ -1539,13 +1533,6 @@ def source_type_flags(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> 
     """
     bits = int(inputs["type"].value)
     return "".join(letter for bit, letter in SOURCE_TYPE_FLAGS if bits & bit)
-
-
-def _swarm_age(age: float):
-    """Age in seconds, as ``(age, VALID_ERROR)`` if outside the C's wacko bounds."""
-    if age >= SCAN_AGE_WACKO_S or age < -100:
-        return age, Validity.VALID_ERROR
-    return age
 
 
 @compute_function("swarm_scan")
@@ -1576,8 +1563,10 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
         that current (correlator running, nothing catching data); else
         ``("SWARM offline", VALID_WARNING)``. ``"progress_s"``,
         ``"length_s"``: scan progress and length in seconds.
-        ``"scan_age_s"``: ``lastScan``, ERROR outside the C's wacko
-        bounds.
+        ``"scan_age_s"``: ``lastScan``, bare, so the C's wacko bounds
+        (>= 100 days, or < -100 s) are the output's ``err_high`` /
+        ``err_low`` in ``smax.json``; the lower bound fires on ``<=``,
+        the C's on ``<``.
     """
     length_s = float(inputs["length"].value) * SWARM_TICK_S
     progress_s = float(inputs["progress"].value) * SWARM_TICK_S
@@ -1594,8 +1583,7 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
         status = ("no dataCatcher", Validity.VALID_ERROR)
     else:
         status = ("SWARM offline", Validity.VALID_WARNING)
-    scan_age = (_swarm_age(last_scan) if np.isfinite(last_scan)
-                else (None, Validity.INVALID_NO_DATA))
+    scan_age = last_scan if np.isfinite(last_scan) else (None, Validity.INVALID_NO_DATA)
     return {"status": status, "progress_s": progress_s, "length_s": length_s,
             "scan_age_s": scan_age}
 
@@ -1606,9 +1594,6 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
 # Wacko ranges take the validity of their draw style (standout → WARNING,
 # red → ERROR; docs/curses_color_validity.md rule 7).
 # ---------------------------------------------------------------------------
-
-SUN_SAFE_CRITICAL_MIN = 10
-"""``arrayMonitor.c:1912-1926``: sun-safe minutes below this are dimmed (critical)."""
 
 PALM_OFF_BIT = 0x01000000
 """``arrayMonitor.c:1750-1754``: SCB fault-word bit shown as "Palm Off"."""
@@ -1643,21 +1628,25 @@ def sun_safe_minutes(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         ``"present"``: ``RM_PRESENT_SUN_SAFE_MINUTES_S``; ``"required"``:
         ``RM_REQUIERD_SUN_SAFE_MINUTES_S`` (misspelling is the RM name).
     ctx : ComputeContext
-        Unused.
+        ``ctx.params["critical_min"]``: the critical level in minutes
+        (``arrayMonitor.c:1912-1926``). The one level kept out of
+        ``smax.json``: the WARNING bound is another input
+        (``required``) and the idle -1 must stay GOOD, so a static
+        output threshold cannot express it; it is set in
+        ``computations.json`` instead of as a code constant.
 
     Returns
     -------
     tuple of (int, Validity)
         The present minutes. Only ``0 < present < required`` is flagged,
         as in the C (a value <= 0, e.g. the -1 seen when idle, means
-        "not applicable"): ``VALID_ERROR`` below
-        :data:`SUN_SAFE_CRITICAL_MIN`, else ``VALID_WARNING``. Otherwise
-        ``VALID_GOOD``.
+        "not applicable"): ``VALID_ERROR`` below ``critical_min``, else
+        ``VALID_WARNING``. Otherwise ``VALID_GOOD``.
     """
     present = int(inputs["present"].value)
     required = int(inputs["required"].value)
     if 0 < present < required:
-        return present, (Validity.VALID_ERROR if present < SUN_SAFE_CRITICAL_MIN
+        return present, (Validity.VALID_ERROR if present < ctx.params["critical_min"]
                          else Validity.VALID_WARNING)
     return present, Validity.VALID_GOOD
 

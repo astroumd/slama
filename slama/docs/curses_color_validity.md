@@ -67,8 +67,9 @@ Apply the first rule that matches.
    - The C uses wacko and standout inconsistently, because the code grew
      over many years. So the draw style decides, not the word "wacko".
      `INVALID_HW_BAD` is not used for wacko ranges.
-   - Ports from before this decision keep their choice until they are next
-     touched: wind speed, hour angle, scan age, dewar `wac`.
+   - Ports from before this decision kept their choice (ERROR) until they
+     were next touched: wind speed, hour angle, scan age, dewar `wac`.
+     #47 left them ERROR and moved the levels into `smax.json` (§5).
 
 Blinking (`setFlashing`) only appears together with red (smoke), so it
 adds nothing beyond rule 2.
@@ -145,3 +146,39 @@ Notes:
     project;
   - this ties to porting `projects/antennasInArray` (`isAntennaInArray`).
 - **New ports:** pick validity with §2, and list any deviation in the PR.
+
+## 5. Levels live in `smax.json` (#47)
+
+A constant that decides **validity** is a `warn_*` / `err_*` threshold (or a
+`state_validity` map) in `smax.json`, never a code constant. A constant that
+decides **what is computed** (time window, bit mask, unit conversion) stays in
+code. #47 moved these:
+
+| Point | Level | Where it lives now |
+|---|---|---|
+| `on_source`, `drive_status` | tracking error 1.0″ | `err_high` on raw `RM_TRACKING_ERROR_ARCSEC_F`; both read its validity |
+| `dewar_4k_temp` | wacko ≤ 2.0 K | `err_low` on the output |
+| `wind_speed` | wacko > 150 mph (67.056 m/s) | `err_high` on the output |
+| `wind_direction` | wacko outside (-99, 400] | `err_low` / `err_high` on the output |
+| `hour_angle` | wacko \|HA\| ≥ 100 h | `err_low` / `err_high` ±100 on raw `RM_RA_APP_HR_D`; non-finite stays in code |
+| `scan_age_s` | wacko ≥ 100 days or < -100 s | `err_high` / `err_low` on the output |
+
+Wacko levels keep ERROR (rule 7's draw-style check was not redone here).
+
+**Comparison deviations.** SLAMA thresholds fire on `>=` / `<=`. Where the C
+uses a strict comparison, the level moved anyway and the boundary shifted:
+
+- tracking error exactly 1.0″ is now off source (C: on source needs `< 1`);
+- wind speed exactly 150 mph and wind direction exactly 400° are now errors
+  (C: `> 150`, `<= 400`);
+- scan age exactly -100 s is now an error (C: `< -100`).
+
+**Kept in code.**
+
+- `sun_safe_minutes` critical level (10 min) is a `critical_min` param in
+  `computations.json`. The WARNING bound is another input (`required`) and the
+  idle -1 must stay GOOD, so a static output threshold cannot express it.
+- The staleness windows (`TRACK_STALE_S`, `SERVO_STALE_S`, `CHOPPER_STALE_S`,
+  `DEICE_STALE_S`, `LAKESHORE_STALE_S`, `PHASE_LOCK_IS_STALE_S`,
+  `GETWEATHER_STALE_S`, `WIND_STATION_STALE_S`) pick which state the C shows;
+  `state_validity` then colors it. Whether they should move too is open.

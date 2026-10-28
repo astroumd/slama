@@ -87,6 +87,14 @@ def ri(name, value, validity=Validity.VALID_GOOD):
 WALL_NOW = 1_790_000_000.0
 
 
+def tracking_ri(err):
+    """Tracking-error input with the validity ``smax.json`` gives it (err_high 1.0).
+
+    The real limit is checked in ``test_realconfig.py``.
+    """
+    return ri("e", err, Validity.VALID_ERROR_HIGH if err >= 1.0 else Validity.VALID_GOOD)
+
+
 def ctx(clock=None, state=None, params=None, wall=None):
     return ComputeContext(
         clock=clock if clock is not None else FakeClock(),
@@ -368,7 +376,7 @@ class TestTimestampAge:
 
 class TestOnSource:
     def _run(self, err, flag):
-        return on_source({"tracking_error": ri("e", err), "refraction_flag": ri("f", flag)}, ctx())
+        return on_source({"tracking_error": tracking_ri(err), "refraction_flag": ri("f", flag)}, ctx())
 
     def test_on_source(self):
         assert self._run(0.4, 1) is True
@@ -387,7 +395,9 @@ class TestDriveStatus:
 
     def _run(self, **over):
         vals = dict(self.BASE, **over)
-        return drive_status({k: ri(k, v) for k, v in vals.items()}, ctx())
+        inputs = {k: ri(k, v) for k, v in vals.items()}
+        inputs["tracking_error"] = tracking_ri(vals["tracking_error"])
+        return drive_status(inputs, ctx())
 
     def test_on(self):
         assert self._run() == "on"
@@ -797,9 +807,9 @@ class TestDewar4kTemp:
         t, v = self._tune6([4.0] * 16, age=61)
         assert v == Validity.INVALID_NO_DATA
 
-    def test_wacko_low(self):
-        t, v = self._tune6([1.4] * 16)
-        assert v == Validity.VALID_ERROR
+    def test_wacko_low_is_bare(self):
+        # The 2 K floor is the output's err_low in smax.json (test_realconfig.py).
+        assert self._tune6([1.4] * 16) == pytest.approx(1.4, abs=1e-4)
 
     def test_wsma_shape(self):
         assert dewar_4k_temp({"temp": ri("w", 4.076)}, ctx()) == pytest.approx(4.076)
@@ -877,9 +887,10 @@ class TestWind:
         assert out["speed"] == (None, Validity.INVALID_NO_DATA)
         assert out["invalid_stations"] == 4
 
-    def test_wacko_speed(self):
+    def test_wacko_speed_is_bare(self):
         out = wind(_wind_inputs(stations={"SMA": (500.0, 0.0, 5.0)}), ctx())
-        assert out["speed"] == (500.0, Validity.VALID_ERROR)
+        # The 150 mph limit is the output's err_high in smax.json (test_realconfig.py).
+        assert out["speed"] == pytest.approx(500.0)
 
 
 class TestSunVisible:
@@ -970,7 +981,10 @@ class TestTauStandout:
 
 class TestHourAngle:
     def _run(self, lst, ra, dec=20.0):
-        return hour_angle({"lst": ri("l", lst), "ra": ri("r", ra), "dec": ri("d", dec)}, ctx())
+        # RA's err_low/err_high (+-100 h) are in smax.json (test_realconfig.py).
+        ra_validity = Validity.VALID_ERROR_HIGH if abs(ra) >= 100 else Validity.VALID_GOOD
+        return hour_angle({"lst": ri("l", lst), "ra": ri("r", ra, ra_validity),
+                           "dec": ri("d", dec)}, ctx())
 
     @pytest.mark.parametrize("lst, ra, ha", [
         (6.0, 4.0, 2.0), (6.244624, 18.26431240032124, 11.980311), (23.0, 1.0, -2.0), (1.0, 23.0, 2.0),
@@ -1017,8 +1031,9 @@ class TestSwarmScan:
         assert out["status"] == ("SWARM offline", Validity.VALID_WARNING)
         assert out["scan_age_s"] == pytest.approx(7764502)
 
-    def test_wacko_age(self):
-        assert self._run(9e6, 9e6)["scan_age_s"][1] == Validity.VALID_ERROR
+    def test_wacko_age_is_bare(self):
+        # The wacko bounds are the output's err_low/err_high in smax.json (test_realconfig.py).
+        assert self._run(9e6, 9e6)["scan_age_s"] == pytest.approx(9e6)
 
     def test_missing_timestamp(self):
         out = swarm_scan({
@@ -1039,7 +1054,8 @@ ONLINE_ALL = np.array([0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], dtype=np.int8)
 
 class TestSunSafeMinutes:
     def _run(self, present, required):
-        return sun_safe_minutes({"present": ri("p", present), "required": ri("r", required)}, ctx())
+        return sun_safe_minutes({"present": ri("p", present), "required": ri("r", required)},
+                                ctx(params={"critical_min": 10}))
 
     def test_not_applicable(self):
         assert self._run(-1, 120) == (-1, Validity.VALID_GOOD)

@@ -509,6 +509,7 @@
           "_comment": "Validation checks (arrayMonitor.c 'New point? = No' rows). RM status points here are written only on change, so staleness_s null.",
           "output": "monitorsystem:antenna:{i}:sun_safe_minutes",
           "function": "sun_safe_minutes",
+          "params": {"critical_min": 10},
           "inputs": {
             "present": {
               "name": "RM:acc{i}:RM_PRESENT_SUN_SAFE_MINUTES_S",

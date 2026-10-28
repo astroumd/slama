@@ -6851,8 +6851,12 @@
           "smax_type": "double"
         },
         "RM_RA_APP_HR_D": {
+          "description": "Apparent RA in hours; err_low/err_high are the arrayMonitor.c hour-angle wacko level (|HA| >= 100, hour_angle reads this validity)",
           "size": "1",
-          "smax_type": "double"
+          "smax_type": "double",
+          "unit": "h",
+          "err_low": -100,
+          "err_high": 100
         },
         "RM_RA_CAT_HOURS_F": {
           "size": "1",
@@ -7396,8 +7400,11 @@
           "smax_type": "double"
         },
         "RM_TRACKING_ERROR_ARCSEC_F": {
+          "description": "Tracking error; err_high is the arrayMonitor.c TRACKING_ERROR_THRESHOLD (on_source / drive_status read this validity)",
           "size": "1",
-          "smax_type": "float"
+          "smax_type": "float",
+          "unit": "arcsec",
+          "err_high": 1.0
         },
         "RM_TRACKING_ERROR_BOXTIME_SEC_F": {
           "size": "1",
@@ -12404,10 +12411,12 @@
         "unit": "s"
       },
       "scan_age_s": {
-        "description": "Seconds since the data catcher last wrote DSM:hcn:DSM_AS_SCAN_SOURCE_C24 (arrayMonitor.c lastScan), from slama.monitor.compute",
+        "description": "Seconds since the data catcher last wrote DSM:hcn:DSM_AS_SCAN_SOURCE_C24 (arrayMonitor.c lastScan); err_low/err_high are the C's wacko bounds (-100 s, 100 days), from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
-        "unit": "s"
+        "unit": "s",
+        "err_low": -100,
+        "err_high": 8640000
       },
       "focus_curve_count": {
         "description": "Number of antennas with a fresh chopper status and focus curve on (arrayMonitor.c chopperStatus[0]), from slama.monitor.compute",
@@ -12646,10 +12655,11 @@
             "smax_type": "string"
           },
           "dewar_4k_temp": {
-            "description": "Antenna {i} dewar 4K-stage temperature: RM_DEWAR_TEMPS_V16_F (Tune6) or wSMA 4K-plate (arrayMonitor.c dewarTemp); err_high is the dewarTemp.conf 4K limit. From slama.monitor.compute",
+            "description": "Antenna {i} dewar 4K-stage temperature: RM_DEWAR_TEMPS_V16_F (Tune6) or wSMA 4K-plate (arrayMonitor.c dewarTemp); err_high is the dewarTemp.conf 4K limit; err_low is the C's wacko (\"wac\") floor. From slama.monitor.compute",
             "size": "1",
             "smax_type": "float",
             "unit": "K",
+            "err_low": 2.0,
             "err_high": 5.2
           }
         }
@@ -12657,17 +12667,20 @@
     },
     "weather": {
       "wind_speed": {
-        "description": "Summit wind speed: SMA station, or cross-station average if frozen (arrayMonitor.c windspeed), from slama.monitor.compute",
+        "description": "Summit wind speed: SMA station, or cross-station average if frozen (arrayMonitor.c windspeed); err_high is 150 mph (the C's wacko), from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
         "unit": "m/s",
-        "warn_high": 13.4
+        "warn_high": 13.4,
+        "err_high": 67.056
       },
       "wind_direction": {
-        "description": "Summit wind direction matching wind_speed's source (circular mean when averaged), from slama.monitor.compute",
+        "description": "Summit wind direction matching wind_speed's source (circular mean when averaged); err_low/err_high are the C's wacko range, from slama.monitor.compute",
         "size": "1",
         "smax_type": "float",
-        "unit": "deg"
+        "unit": "deg",
+        "err_low": -99,
+        "err_high": 400
       },
       "wind_source": {
         "description": "Where wind_speed came from: SMA, a station name, average, or none, from slama.monitor.compute",
