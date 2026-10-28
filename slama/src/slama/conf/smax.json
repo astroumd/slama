@@ -7396,8 +7396,11 @@
           "smax_type": "double"
         },
         "RM_TRACKING_ERROR_ARCSEC_F": {
+          "description": "Tracking error; err_high is the arrayMonitor.c TRACKING_ERROR_THRESHOLD (on_source / drive_status read this validity)",
           "size": "1",
-          "smax_type": "float"
+          "smax_type": "float",
+          "unit": "arcsec",
+          "err_high": 1.0
         },
         "RM_TRACKING_ERROR_BOXTIME_SEC_F": {
           "size": "1",

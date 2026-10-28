@@ -425,9 +425,6 @@ CHOPPER_STALE_S = 4.0
 DEICE_STALE_S = 300.0
 """``arrayMonitor.c:590-602``: deice heartbeat stale limit."""
 
-TRACKING_ERROR_THRESHOLD_ARCSEC = 1.0
-"""``arrayMonitor.c`` ``TRACKING_ERROR_THRESHOLD``: on source below this."""
-
 EMERGENCY_STOP_FAULT = 1 << 21
 """SCB fault-word bit (``global/include/s_cmd2.h:166``)."""
 
@@ -497,13 +494,20 @@ def on_source(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> bool:
     Returns
     -------
     bool
-        ``True`` iff the tracking error is below
-        :data:`TRACKING_ERROR_THRESHOLD_ARCSEC` and the radio
-        refraction flag is set (the C forces ``onSource = 0`` when the
-        flag is 0).
+        ``True`` iff the tracking error is below the ``err_high``
+        limit declared on ``RM_TRACKING_ERROR_ARCSEC_F`` in
+        ``smax.json`` (the input's validity is not an error) and the
+        radio refraction flag is set (the C forces ``onSource = 0`` when
+        the flag is 0). The C compares with strict ``<``; the limit
+        fires on ``>=``, so exactly 1.0" is now off source.
     """
-    return (float(inputs["tracking_error"].value) < TRACKING_ERROR_THRESHOLD_ARCSEC
+    return (not _is_tracking_off(inputs)
             and int(inputs["refraction_flag"].value) != 0)
+
+
+def _is_tracking_off(inputs: dict[str, ResolvedInput]) -> bool:
+    """Whether the tracking error is at or beyond its ``smax.json`` error limit."""
+    return inputs["tracking_error"].validity in _ERROR_VALIDITIES
 
 
 @compute_function("drive_status")
@@ -552,7 +556,7 @@ def drive_status(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     else:
         code = None
 
-    if float(inputs["tracking_error"].value) >= TRACKING_ERROR_THRESHOLD_ARCSEC:
+    if _is_tracking_off(inputs):
         el = float(inputs["enc_el"].value)
         az = float(inputs["enc_az"].value)
         if el >= float(inputs["up_limit"].value) or el <= float(inputs["low_limit"].value):

@@ -87,6 +87,14 @@ def ri(name, value, validity=Validity.VALID_GOOD):
 WALL_NOW = 1_790_000_000.0
 
 
+def tracking_ri(err):
+    """Tracking-error input with the validity ``smax.json`` gives it (err_high 1.0).
+
+    The real limit is checked in ``test_realconfig.py``.
+    """
+    return ri("e", err, Validity.VALID_ERROR_HIGH if err >= 1.0 else Validity.VALID_GOOD)
+
+
 def ctx(clock=None, state=None, params=None, wall=None):
     return ComputeContext(
         clock=clock if clock is not None else FakeClock(),
@@ -368,7 +376,7 @@ class TestTimestampAge:
 
 class TestOnSource:
     def _run(self, err, flag):
-        return on_source({"tracking_error": ri("e", err), "refraction_flag": ri("f", flag)}, ctx())
+        return on_source({"tracking_error": tracking_ri(err), "refraction_flag": ri("f", flag)}, ctx())
 
     def test_on_source(self):
         assert self._run(0.4, 1) is True
@@ -387,7 +395,9 @@ class TestDriveStatus:
 
     def _run(self, **over):
         vals = dict(self.BASE, **over)
-        return drive_status({k: ri(k, v) for k, v in vals.items()}, ctx())
+        inputs = {k: ri(k, v) for k, v in vals.items()}
+        inputs["tracking_error"] = tracking_ri(vals["tracking_error"])
+        return drive_status(inputs, ctx())
 
     def test_on(self):
         assert self._run() == "on"

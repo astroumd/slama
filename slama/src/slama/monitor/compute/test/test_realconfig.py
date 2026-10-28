@@ -99,3 +99,17 @@ def test_polar_smax_thresholds(monitor_system, name, value, expected):
     mp = monitor_system.get_monitor_point(name)
     mp.update(_wrap(value, 1_790_000_000.0))
     assert mp.validity is expected
+
+
+@pytest.mark.parametrize("name, value, expected", [
+    # The C's on-source limit is 1"; SLAMA's err_high fires at >= 1.0.
+    ("RM:acc3:RM_TRACKING_ERROR_ARCSEC_F", 0.9999, Validity.VALID_GOOD),
+    ("RM:acc3:RM_TRACKING_ERROR_ARCSEC_F", 1.0, Validity.VALID_ERROR_HIGH),
+])
+def test_moved_validity_thresholds(monitor_system, name, value, expected):
+    """Levels that used to be constants in functions.py are defined only in smax.json."""
+    from slama.monitor.compute.engine import _wrap
+
+    mp = monitor_system.get_monitor_point(name)
+    mp.update(_wrap(value, 1_790_000_000.0))
+    assert mp.validity is expected
