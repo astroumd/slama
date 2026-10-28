@@ -5,5 +5,10 @@ if [ -d /global/rrao/sma_obs_perl ]; then
   export PATH=$SMAOP:$PATH
 else
   # off-site, make sure you source this file from the slama/sim directory
-  export PATH=$SMAGIT/../sim/bin:.:$PATH
+  if [[ -n "$SMAGIT" ]]; then
+      export PATH=$SMAGIT/../sim/bin:.:$PATH
+  else
+      echo "SMAGIT does not exist, simulator unlikely loaded"
+  fi
+
 fi
