@@ -1054,7 +1054,8 @@ ONLINE_ALL = np.array([0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], dtype=np.int8)
 
 class TestSunSafeMinutes:
     def _run(self, present, required):
-        return sun_safe_minutes({"present": ri("p", present), "required": ri("r", required)}, ctx())
+        return sun_safe_minutes({"present": ri("p", present), "required": ri("r", required)},
+                                ctx(params={"critical_min": 10}))
 
     def test_not_applicable(self):
         assert self._run(-1, 120) == (-1, Validity.VALID_GOOD)

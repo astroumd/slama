@@ -1595,9 +1595,6 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
 # red → ERROR; docs/curses_color_validity.md rule 7).
 # ---------------------------------------------------------------------------
 
-SUN_SAFE_CRITICAL_MIN = 10
-"""``arrayMonitor.c:1912-1926``: sun-safe minutes below this are dimmed (critical)."""
-
 PALM_OFF_BIT = 0x01000000
 """``arrayMonitor.c:1750-1754``: SCB fault-word bit shown as "Palm Off"."""
 
@@ -1631,21 +1628,25 @@ def sun_safe_minutes(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         ``"present"``: ``RM_PRESENT_SUN_SAFE_MINUTES_S``; ``"required"``:
         ``RM_REQUIERD_SUN_SAFE_MINUTES_S`` (misspelling is the RM name).
     ctx : ComputeContext
-        Unused.
+        ``ctx.params["critical_min"]``: the critical level in minutes
+        (``arrayMonitor.c:1912-1926``). The one level kept out of
+        ``smax.json``: the WARNING bound is another input
+        (``required``) and the idle -1 must stay GOOD, so a static
+        output threshold cannot express it; it is set in
+        ``computations.json`` instead of as a code constant.
 
     Returns
     -------
     tuple of (int, Validity)
         The present minutes. Only ``0 < present < required`` is flagged,
         as in the C (a value <= 0, e.g. the -1 seen when idle, means
-        "not applicable"): ``VALID_ERROR`` below
-        :data:`SUN_SAFE_CRITICAL_MIN`, else ``VALID_WARNING``. Otherwise
-        ``VALID_GOOD``.
+        "not applicable"): ``VALID_ERROR`` below ``critical_min``, else
+        ``VALID_WARNING``. Otherwise ``VALID_GOOD``.
     """
     present = int(inputs["present"].value)
     required = int(inputs["required"].value)
     if 0 < present < required:
-        return present, (Validity.VALID_ERROR if present < SUN_SAFE_CRITICAL_MIN
+        return present, (Validity.VALID_ERROR if present < ctx.params["critical_min"]
                          else Validity.VALID_WARNING)
     return present, Validity.VALID_GOOD
 
