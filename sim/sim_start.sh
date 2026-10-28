@@ -5,5 +5,5 @@ if [ -d /global/rrao/sma_obs_perl ]; then
   export PATH=$SMAOP:$PATH
 else
   # off-site, make sure you source this file from the slama/sim directory
-  export PATH=$SMAGIT/bin:.:$PATH
+  export PATH=$SMAGIT/../sim/bin:.:$PATH
 fi
