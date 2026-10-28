@@ -55,3 +55,5 @@ done
 #       lookupd &
 #       make test3
 #       make test4
+
+#  note: i had to install some extra packages not well documented, see also the sim/README.md file
