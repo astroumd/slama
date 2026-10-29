@@ -1604,7 +1604,7 @@ def swarm_scan(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
 # arrayMonitor.c port — validation checks (goals/monsubsys_arrayMonitor.md
 # "New point? = No" rows that need logic beyond a static threshold).
 # Wacko ranges take the validity of their draw style (standout → WARNING,
-# red → ERROR; docs/curses_color_validity.md rule 7).
+# red → ERROR; docs/source/curses_color_validity.md rule 7).
 # ---------------------------------------------------------------------------
 
 SUN_SAFE_CRITICAL_MIN = 10
@@ -2029,7 +2029,7 @@ def azel_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
         ``"ok"``. Bare, so the output's ``state_validity`` in
         ``smax.json`` maps it to WARNING / GOOD / GOOD: the C prints
         ``I`` in standout and ``C`` as plain text
-        (``docs/curses_color_validity.md``).
+        (``docs/source/curses_color_validity.md``).
     """
     try:
         irig_error = int(float(inputs["irig"].value)) != 0
@@ -2137,7 +2137,7 @@ def tilt_flag(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> str:
         ``"T"`` (flag differs from the default, or is unreadable) or
         ``"ok"``. Both are GOOD in ``smax.json``: the C prints ``T`` in
         green (``printEnabled``), an indicator rather than a problem
-        (``docs/curses_color_validity.md``).
+        (``docs/source/curses_color_validity.md``).
     """
     try:
         flag = int(float(inputs["flag"].value))

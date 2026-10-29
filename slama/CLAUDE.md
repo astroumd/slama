@@ -88,7 +88,7 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 
 `Validity` enum covers: `INVALID_NO_DATA`, `INVALID_NO_HW`, `INVALID_HW_BAD`, `VALID`, `VALID_NOT_CHECKED`, `VALID_GOOD`, `VALID_WARNING`, `VALID_ERROR`, `VALID_WARNING_LOW/HIGH`, `VALID_ERROR_LOW/HIGH`.
 
-When porting a curses page, pick a computed point's validity from how the C draws it (beep / red → ERROR, yellow or standout → WARNING, green / normal → GOOD); the full mapping and recorded deviations are in `docs/curses_color_validity.md`.
+When porting a curses page, pick a computed point's validity from how the C draws it (beep / red → ERROR, yellow or standout → WARNING, green / normal → GOOD); the full mapping and recorded deviations are in `docs/source/curses_color_validity.md`.
 
 ### SMAX Backend
 

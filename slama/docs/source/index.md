@@ -34,6 +34,7 @@ monitorsystem_writer_design
 fault-system
 display-system
 web_display_design
+curses_color_validity
 replay-as-of
 testing
 ```
