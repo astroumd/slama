@@ -124,3 +124,8 @@ scripts/                maintenance and inspection utilities
 site/                   offline mirror of /global and /otherInstances
 docs/                   this documentation
 ```
+
+Astronomy helpers (horizontal/equatorial transforms, observed frequency,
+the Sun's position and angular distance) are in {py:mod}`slama.coordinates.core`;
+the compute function {py:func}`sun_distance_degrees <slama.monitor.compute.functions.sun_distance_degrees>`
+calls into them.

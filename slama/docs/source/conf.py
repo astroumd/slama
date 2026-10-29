@@ -39,9 +39,15 @@ numpydoc_class_members_toctree = False
 autodoc_member_order = "bysource"
 autodoc_default_options = {"members": True, "show-inheritance": True}
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "astropy": ("https://docs.astropy.org/en/stable/", None),
+    "matplotib": ("https://matplotlib.org/stable", None),
+    }
 
 suppress_warnings = ["misc.highlighting_failure"]  # pseudo-JSON with "..." in the included design records
 
-html_theme = "alabaster"
+html_theme = "sphinx_book_theme"
 html_static_path = ["static"]

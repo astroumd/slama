@@ -365,7 +365,7 @@ side-by-side comparison and the storage options for validity are in
 
 ---
 
-## 7. Decisions (resolved with Marc, 2026-08-05)
+## 7. Decisions 
 
 1. **Source-point validities: defer, keep the hook.** The first
    deliverable writes validities only for derived points (§3.3).
@@ -401,7 +401,7 @@ side-by-side comparison and the storage options for validity are in
 Realized in `src/slama/monitor/compute/`; decision 5 landed ahead of it as the
 `state_validity` extension to {py:class}`MonitorPoint <slama.monitor.monitorpoint.MonitorPoint>`.
 
-## 8. Addendum: multi-output computation entries (2026-08-19)
+## 8. Multi-output computation entries 
 
 The engine's first form was "one entry, one output", which fits awkwardly
 when two related quantities are naturally computed together in a single pass (e.g. min-and-max of the same input set,
@@ -528,7 +528,7 @@ the unchanged single-output path, zero behavior change.
 
 ---
 
-## 9. Addendum: site-file tokens (2026-10-20)
+## 9. Site-file tokens 
 
 The arrayMonitor port hard-coded facts that the C reads from observatory
 files under `/global/configFiles`: which antennas have wSMA receivers or

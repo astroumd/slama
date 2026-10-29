@@ -35,6 +35,12 @@ Generated from the numpydoc docstrings in the source.
 .. automodule:: slama.web.server
 ```
 
+## Coordinates
+
+```{eval-rst}
+.. automodule:: slama.coordinates.core
+```
+
 ## Site files
 
 ```{eval-rst}
