@@ -53,12 +53,13 @@ dev = [
   "ruff",
   "sphinx",
   "sphinx-autobuild",
-  #"sphinx-book-theme",
+  "sphinx-book-theme",
   #"sphinx-copybutton",
   #"sphinx-design",
   #"sphinx-inline-tabs",
   #"sphinxcontrib-mermaid",
   "slama", # ensure that all extras are included in dev envs
+  "myst-parser>=5.1.0",
 ]
 
 [tool.uv.sources]

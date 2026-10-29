@@ -322,7 +322,7 @@ def solar_coordinate(time:Time=None, frame:str|coord.BaseCoordinateFrame=coord.G
     """Determine the location of the Sun at the given time in the given reference frame.  
 
     Parameters
-    ---------
+    ----------
     time : `~astropy.time.Time`
         The time at which to compute the solar position. Default: None, which means 'now'
     frame: str or `~astropy.coord.BaseCoordinateFrame`
@@ -330,7 +330,7 @@ def solar_coordinate(time:Time=None, frame:str|coord.BaseCoordinateFrame=coord.G
         Can be a string, e.g. "hcrs", "gcrs", or a coordinate frame class, e.g. GGRS.  Default: GCRS
 
     Returns
-    ------
+    -------
     solar_coordinate: `~astropy.coord.SkyCoord`
         The sky position of the Sun
     """
