@@ -313,8 +313,8 @@ entries.
 
 Adding a subsystem's computations means adding entries to `computations.json`
 and declaring the outputs in `smax.json`'s `monitorsystem` subtree, plus (only
-when new math is needed) one function in `functions.py`. No engine code
-changes.
+when new math is needed) one function in `functions.py`. **No engine code
+changes required.**
 
 ### 4.3 Guarantees the engine provides
 
