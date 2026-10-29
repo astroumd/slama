@@ -15,8 +15,8 @@ holds:
   thresholds.
 
 `slama.monitor.monitorsystem.MonitorSystem` extends `treelib.Tree`. It reads
-`smax.json`, expands `__each__` blocks, and builds `MonitorSubsystem` branch
-nodes with `MonitorPoint` leaves. Frequently used methods:
+`smax.json`, expands `__each__` blocks, and builds {py:class}`MonitorSubsystem <slama.monitor.monitorsystem.MonitorSubsystem>` branch
+nodes with {py:class}`MonitorPoint <slama.monitor.monitorpoint.MonitorPoint>` leaves. Frequently used methods:
 
 ```python
 from slama.monitor import MonitorSystem
@@ -27,7 +27,7 @@ ms.read(["RM:acc1:RM_TRACK_EL_F"], client)   # pull just these
 ms.read_all(client)                          # pull everything
 ```
 
-`MonitorPointUpdater`, `MonitorPointSubscriber` and `MonitorPointWriter`
+`MonitorPointUpdater`, {py:class}`MonitorPointSubscriber <slama.monitor.monitorpoint.MonitorPointSubscriber>` and `MonitorPointWriter`
 are the lower-level helpers for pulling, subscribing and writing through
 the SMAX client.
 
@@ -85,7 +85,7 @@ Rules enforced when the file loads:
 
 ### What one tick does
 
-`ComputeEngine.tick()` runs the nodes in dependency order:
+{py:meth}`ComputeEngine.tick() <slama.monitor.compute.engine.ComputeEngine.tick>` runs the nodes in dependency order:
 
 1. Refresh the input points from SMAX.
 2. Resolve each input to `(value, effective validity)`. An input older than
@@ -123,7 +123,7 @@ function with a unit test. Add the output to `smax.json`, add the entry to
 
 ### Where to read more
 
-- [](records/monitorsystem_writer_design.md): the full design, the rejected
-  alternative, multi-output entries (section 8) and site-file `@` tokens
-  (section 9).
+- [](monitorsystem_writer_design.md): the full design, including multi-output
+  entries (section 8) and site-file `@` tokens (section 9). The options that
+  were weighed are in [](history/monitorsystem_writer_options.md).
 - The API reference for {py:mod}`slama.monitor.compute.engine`.

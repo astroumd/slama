@@ -68,15 +68,15 @@ Canonical name
     Computed points live under the `monitorsystem:` table.
 
 Validity
-:   The `Validity` enum in `slama.monitor.monitorpoint` says how far to trust
+:   The {py:class}`Validity <slama.monitor.monitorpoint.Validity>` enum in `slama.monitor.monitorpoint` says how far to trust
     a value: `INVALID_NO_DATA`, `INVALID_NO_HW`, `INVALID_HW_BAD`, `VALID`,
     `VALID_NOT_CHECKED`, `VALID_GOOD`, `VALID_WARNING[_LOW|_HIGH]` and
     `VALID_ERROR[_LOW|_HIGH]`. The same enum feeds the cell colours, the
     compute engine's rollups and the fault system's definition of "faulted".
 
 Monitor point and monitor system
-:   `MonitorPoint` is one variable plus its thresholds and current validity;
-    `MonitorSystem` is the tree of all of them built from `smax.json`.
+:   {py:class}`MonitorPoint <slama.monitor.monitorpoint.MonitorPoint>` is one variable plus its thresholds and current validity;
+    {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` is the tree of all of them built from `smax.json`.
     See [](monitor-system.md).
 
 ## Time and clocks
@@ -104,7 +104,7 @@ resolves those C-era paths against, in order: `$SLAMA_SITE_ROOT`; the live
 repository. `slama.sitefiles` ports the C parsers.
 `computations.json` refers to them with `@` tokens such as
 `"over": "@rxtype:wsma"`; the grammar is in
-[](records/monitorsystem_writer_design.md). The tests pin the root to the
+[](monitorsystem_writer_design.md). The tests pin the root to the
 mirror (`conftest.py`) so results never depend on the machine they run on.
 
 ## Package layout

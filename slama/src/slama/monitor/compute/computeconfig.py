@@ -668,7 +668,7 @@ def _build_dependency_order(nodes: list[ComputeNode]) -> list[ComputeNode]:
     A node ``A`` depends on node ``B`` iff one of ``A``'s resolved
     input names literally equals one of ``B``'s :attr:`ComputeNode.output_names`
     (a glob input that happens to match a computed output is not
-    detected as a dependency — see design doc §6.1's comparison table;
+    detected as a dependency — see design doc §3.6;
     this is a documented limitation, not a bug). For a multi-output
     node, every one of its output names maps back to the same node —
     depending on *any* one of its results is a dependency on the whole

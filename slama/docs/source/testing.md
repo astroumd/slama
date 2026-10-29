@@ -9,22 +9,22 @@ uv run pytest --cov=slama      # coverage (pytest-cov)
 
 Written against the repository as of this guide, the suite collects **756
 tests and runs in about ten seconds**. None of it needs a SMAX server (a
-run with Valkey up on 6380 opened no connections to it): tests use fakes in place of `SmaxRedisClient` and build a `MonitorSystem` from
+run with Valkey up on 6380 opened no connections to it): tests use fakes in place of `SmaxRedisClient` and build a {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` from
 either a small fixture or the real `smax.json`.
 
 | Area | Location | What it covers |
 |------|----------|----------------|
 | Compute engine | `src/slama/monitor/compute/test/` | config loading and validation, engine ticks, every compute function, the real `computations.json` |
-| Monitor points | `src/slama/monitor/test/` | `MonitorPoint` validity, `MonitorSystem` tree build (fixture `fixture_smax.json`) |
+| Monitor points | `src/slama/monitor/test/` | {py:class}`MonitorPoint <slama.monitor.monitorpoint.MonitorPoint>` validity, {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` tree build (fixture `fixture_smax.json`) |
 | Fault system | `src/slama/fault/test/` | config, debounce, root detection, dedup, ignores, actions, CLI |
-| Web | `src/slama/web/test/` | `DataBridge` validity to CSS mapping, computed-point freshness |
+| Web | `src/slama/web/test/` | {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` validity to CSS mapping, computed-point freshness |
 | Site files | `src/slama/test/` | `site_paths`, `sitefiles` parsers, logging |
 | Coordinates | `src/slama/coordinates/test/` | astronomy helpers |
 | Scripts | `scripts/test_*.py` | maintenance scripts |
 
 ## Conventions
 
-- **Inject the clock.** `ComputeEngine` and `FaultSystem` accept `clock` and
+- **Inject the clock.** {py:class}`ComputeEngine <slama.monitor.compute.engine.ComputeEngine>` and {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>` accept `clock` and
   `wall_clock`. Tests pass lambdas and advance them by hand instead of
   sleeping. Do the same in new code.
 - **Fake the client.** The engine and fault system accept `client=None` to

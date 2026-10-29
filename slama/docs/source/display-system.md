@@ -38,7 +38,7 @@ GET  /api/history/{name}     JSON time series for the click-to-plot feature
 ```
 
 1. **Page load.** `display_config` loads the JSON and expands templates.
-   `DataBridge.fetch_all` pulls each value from SMAX inside
+   {py:meth}`DataBridge.fetch_all <slama.web.data_bridge.DataBridge.fetch_all>` pulls each value from SMAX inside
    `asyncio.to_thread` (the SMAX client is synchronous) under a 5 s timeout.
    If SMAX is down the page still renders, with `---` cells.
 2. **Live updates.** The page opens the WebSocket via HTMX's `ws` extension.
@@ -52,7 +52,7 @@ GET  /api/history/{name}     JSON time series for the click-to-plot feature
 
 ## DataBridge and cell colours
 
-`slama.web.data_bridge.DataBridge` turns a canonical name into a `CellData`
+`slama.web.data_bridge.DataBridge` turns a canonical name into a {py:class}`CellData <slama.web.data_bridge.CellData>`
 (formatted value, CSS class, HTML-safe id). Two different paths decide the
 class:
 
@@ -72,13 +72,13 @@ Computed points (`monitorsystem:` prefix)
 The classes are `cell-good`, `cell-warning`, `cell-error`, `cell-nodata`
 and `cell-unchecked`; `static/style.css` holds the dark observatory theme.
 
-`DataBridge` keeps a per-point ring buffer (`deque(maxlen=1800)`, about an
+{py:class}`DataBridge <slama.web.data_bridge.DataBridge>` keeps a per-point ring buffer (`deque(maxlen=1800)`, about an
 hour at 2 s) that feeds the history plots. The SMAX connection is created
 lazily on first use so the server starts even when SMAX is down.
 
 ## Pointing the server at SMAX
 
-`server.py` builds one module-level `DataBridge` from `SMAX_HOST` and
+`server.py` builds one module-level {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` from `SMAX_HOST` and
 `SMAX_PORT` (defaults `localhost` and `6380`). Set them in the environment
 before starting uvicorn.
 

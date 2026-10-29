@@ -7,7 +7,7 @@ downstream points, the operator should get one alert, not thirteen.
 ## Concepts
 
 Fault
-:   A point whose `Validity` is in `FAULT_STATES`: `INVALID_NO_DATA`,
+:   A point whose {py:class}`Validity <slama.monitor.monitorpoint.Validity>` is in `FAULT_STATES`: `INVALID_NO_DATA`,
     `INVALID_NO_HW`, `INVALID_HW_BAD`, `VALID_ERROR`, `VALID_ERROR_LOW` or
     `VALID_ERROR_HIGH`. Warnings are **not** faults.
 
@@ -30,8 +30,8 @@ Debounce (`transient_filter_s`)
 
 Action
 :   Anything with `fire(event: FaultEvent) -> None`. Version 1 ships
-    `LogFileAction`. A new type is a class, a builder function, and an entry
-    in `ACTION_TYPES`; `FaultSystem` itself does not change.
+    {py:class}`LogFileAction <slama.fault.actions.LogFileAction>`. A new type is a class, a builder function, and an entry
+    in `ACTION_TYPES`; {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>` itself does not change.
 
 ## Configuration
 
@@ -61,13 +61,13 @@ entry, or the load fails):
 }
 ```
 
-`FaultConfig.from_file` flattens `__each__` blocks, checks that every action
+{py:meth}`FaultConfig.from_file <slama.fault.faultconfig.FaultConfig.from_file>` flattens `__each__` blocks, checks that every action
 and parent reference resolves, and rejects duplicate canonical names. A
 malformed config fails at load, not at the first fault.
 
 ## What one tick does
 
-`FaultSystem.tick()`:
+{py:meth}`FaultSystem.tick() <slama.fault.faultsystem.FaultSystem.tick>`:
 
 1. `MonitorSystem.read_all(client)` refreshes every point.
 2. Each critical node is classified faulted or not. A node recovering
@@ -99,7 +99,7 @@ tail -f /tmp/slama-faults.log
   `smax.json`**. It does not look at the SMAX timestamp, so a stale value
   that is within limits is not a fault. This differs from the web display,
   which does distrust old computed points (see [](display-system.md)).
-- `read_all` pulls the whole tree. The `MonitorSystem.read` docstring puts
+- `read_all` pulls the whole tree. The {py:meth}`MonitorSystem.read <slama.monitor.monitorsystem.MonitorSystem.read>` docstring puts
   that at about 13 s per pass against Valkey for the full `smax.json`, which
   is longer than the configured 2 s interval. Narrowing the pull to the
   watched points (as the compute engine does with `read`) is a natural

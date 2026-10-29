@@ -30,6 +30,7 @@ your changes.
 getting-started
 architecture
 monitor-system
+monitorsystem_writer_design
 fault-system
 display-system
 replay-as-of

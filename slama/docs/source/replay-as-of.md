@@ -75,7 +75,7 @@ writes `monitorsystem:*` keys into the database you point it at.
     live loop.
 
 Only the compute engine has the flag
-:   `FaultSystem` takes a `wall_clock` argument, but the `slama.fault` CLI
+:   {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>` takes a `wall_clock` argument, but the `slama.fault` CLI
     does not expose it. The fault system does not judge staleness (see
     [](fault-system.md)), so this rarely matters.
 
@@ -86,7 +86,7 @@ The web display still uses the real clock
     snapshot-day timestamp, so against a static snapshot they render as
     **no-data in the browser** even though the values are correct. The web
     server has no flag, environment variable or `--as-of` for this:
-    `server.py` constructs `DataBridge` without passing `computed_max_age_s`,
+    `server.py` constructs {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` without passing `computed_max_age_s`,
     so seeing them coloured today means editing that line or refreshing the
     snapshot. Source-point cells are unaffected, since they are judged by value.
 
