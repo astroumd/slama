@@ -1,4 +1,4 @@
-# Monitor Subsystem Writer Design
+# Monitor Subsystem Writer
 
 **Status:** Current design; implemented in `slama.monitor.compute`.
 **Originally drafted:** 2026-08-05. Addenda: §8 (2026-08-19), §9 (2026-10-20).
