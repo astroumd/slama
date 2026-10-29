@@ -4,7 +4,7 @@ This package encompasses python, jinja2, css, JSON, HTML and JavaScript
 required to server and view SMA monitor data.  It also includes a simple
 simulator for end-to-end testing.
 
-For more info on the server and display design see web/DESIGN.md.
+For more info on the server and display design see docs/source/web_display_design.md.
 
 A developer guide (architecture, monitor/fault/display systems, running a dev
 system, tests, and the `--as-of` replay flag) builds with Sphinx:
@@ -55,7 +55,7 @@ points, derives new values/validities from them (counts, rollups, min/max,
 etc.), and writes the results back to SMAX under a `monitorsystem:` table so
 they show up in the web display like any other point. What it computes is
 driven entirely by `src/slama/conf/computations.json` (which functions,
-which inputs); see `docs/monitorsystem_writer_design.md` for the full
+which inputs); see `docs/source/monitorsystem_writer_design.md` for the full
 design.
 
 **Run it** (needs a running SMAX/Valkey server, default `localhost:6380`).

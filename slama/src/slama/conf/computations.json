@@ -1,6 +1,6 @@
 {
   "_note": [
-    "See docs/monitorsystem_writer_design.md for the full design.",
+    "See docs/source/monitorsystem_writer_design.md for the full design.",
     "Each entry writes 'output' (declared under the 'monitorsystem' subtree",
     "in smax.json) by applying 'function' (registered in",
     "slama.monitor.compute.functions) to 'inputs'.",

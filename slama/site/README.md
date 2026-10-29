@@ -63,7 +63,7 @@ cp -p /global/configFiles/rxtype.conf site/global/configFiles/
 ```
 
 The `@rxtype:` / `@loadtype:` / `@dewarTemp:` / `@wselect:` /
-`@smokeIgnore:` / `@tiltDefault:` tokens are specified in `docs/monitorsystem_writer_design.md`
+`@smokeIgnore:` / `@tiltDefault:` tokens are specified in `docs/source/monitorsystem_writer_design.md`
 §9. A config that reads a file through one of them fails to load if that
 file is missing, instead of silently dropping antennas. The exceptions are
 `@smokeIgnore:`, which falls back to "ignore nothing", and `@tiltDefault:`,

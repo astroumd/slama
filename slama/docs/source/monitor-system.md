@@ -36,7 +36,7 @@ the SMAX client.
 The web display colours a cell from the validity. When a curses page from
 the old C monitor is ported, a computed point's validity follows how the C
 code *drew* it: beep or red is an error, yellow or standout is a warning,
-green or normal is good. [](records/curses_color_validity.md) holds the
+green or normal is good. [](curses_color_validity.md) holds the
 full table and the deviations that were agreed.
 
 ## The compute engine

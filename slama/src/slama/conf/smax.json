@@ -12520,7 +12520,7 @@
             "unknown_state": "ERROR"
           },
           "azel_flag": {
-            "description": "Antenna {i} Az/El suffix: I (RM_IRIG_LOCK_ERROR_B nonzero; C standout, so WARNING), C (RM_CHECK_EL_COLLISION_LIMIT_B = 1; C plain text, so GOOD), or ok (arrayMonitor.c 1882-1893; docs/curses_color_validity.md). From slama.monitor.compute",
+            "description": "Antenna {i} Az/El suffix: I (RM_IRIG_LOCK_ERROR_B nonzero; C standout, so WARNING), C (RM_CHECK_EL_COLLISION_LIMIT_B = 1; C plain text, so GOOD), or ok (arrayMonitor.c 1882-1893; docs/source/curses_color_validity.md). From slama.monitor.compute",
             "size": "1",
             "smax_type": "string",
             "state_validity": {
@@ -12562,7 +12562,7 @@
             "unknown_state": "ERROR"
           },
           "tilt_flag": {
-            "description": "Antenna {i} tilt-correction flag check: T when RM_TILT_CORRECTION_FLAG_L differs from TiltFlag in /otherInstances/acc/{i}/configFiles/pointingModel, else ok (arrayMonitor.c 1813-1817). The C prints T in green (printEnabled), an indicator rather than a problem, so both states are GOOD (docs/curses_color_validity.md). From slama.monitor.compute",
+            "description": "Antenna {i} tilt-correction flag check: T when RM_TILT_CORRECTION_FLAG_L differs from TiltFlag in /otherInstances/acc/{i}/configFiles/pointingModel, else ok (arrayMonitor.c 1813-1817). The C prints T in green (printEnabled), an indicator rather than a problem, so both states are GOOD (docs/source/curses_color_validity.md). From slama.monitor.compute",
             "size": "1",
             "smax_type": "string",
             "state_validity": {

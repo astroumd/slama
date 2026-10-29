@@ -1,4 +1,8 @@
-# SMA Web Display — Design & Implementation
+# Web display: implementation phases
+
+:::{note}
+Historical record, kept as written: the phase-by-phase log written while the display was built. Some details have since changed (for example, the plot is now a floating panel rather than a modal). The current [design](../web_display_design.md) wins where they differ. Its original title was "SMA Web Display — Design & Implementation".
+:::
 
 This document describes the design and implementation of the SLAMA web-based
 monitor display system, covering Phase 1 (core infrastructure) and Phase 2

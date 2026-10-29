@@ -58,8 +58,8 @@ class:
 
 Source points
 :   Judged from the **value** against the thresholds loaded from `smax.json`
-    at start-up. Strings are checked against `valid_strings`; booleans and
-    points without thresholds are `cell-unchecked`.
+    at start-up. Strings are checked against `valid_strings` (unchecked if
+    the point has none); a numeric point with no thresholds is `cell-good`.
 
 Computed points (`monitorsystem:` prefix)
 :   Judged from the validity the compute engine pushed into the `validity`
@@ -80,7 +80,8 @@ lazily on first use so the server starts even when SMAX is down.
 
 `server.py` builds one module-level {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` from `SMAX_HOST` and
 `SMAX_PORT` (defaults `localhost` and `6380`). Set them in the environment
-before starting uvicorn.
+before starting uvicorn, or start it with `python -m slama.web.server
+--smax-host H --smax-port P --web-port W`, which sets them for you.
 
 ## Adding a page
 
@@ -96,7 +97,8 @@ derived from).
 
 ## Where to read more
 
-- [](records/web_display_design.md): original design, technology choices,
-  the history-plot phase.
+- [](web_display_design.md): the current design (modules, templates, validity
+  colouring, plots, known limitations); [](history/web_display_phases.md) is the
+  implementation log it replaces.
 - {py:mod}`slama.web.server`, {py:mod}`slama.web.data_bridge`,
   {py:mod}`slama.web.display_config`.
