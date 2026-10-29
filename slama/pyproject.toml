@@ -59,6 +59,7 @@ dev = [
   #"sphinx-inline-tabs",
   #"sphinxcontrib-mermaid",
   "slama", # ensure that all extras are included in dev envs
+  "myst-parser>=5.1.0",
 ]
 
 [tool.uv.sources]

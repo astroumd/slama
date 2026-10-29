@@ -6,6 +6,10 @@ simulator for end-to-end testing.
 
 For more info on the server and display design see web/DESIGN.md.
 
+A developer guide (architecture, monitor/fault/display systems, running a dev
+system, tests, and the `--as-of` replay flag) builds with Sphinx:
+`cd docs && make html`, then open `docs/_build/html/index.html`.
+
 ### Install
 
 Assuming you have  python 3.11+ already installed.
