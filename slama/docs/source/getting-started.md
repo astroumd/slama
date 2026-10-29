@@ -25,8 +25,10 @@ uv pip install -e .
 Everything in SLAMA talks to one SMAX server. On a development machine it
 listens on **port 6380**, not the usual Redis port 6379, because the
 operating system's own Redis normally owns 6379. On the real observatory
-system Valkey uses 6379, so every command in this guide needs `--port 6379`
-(or `SMAX_PORT=6379`) there.
+system Valkey uses 6379, so there you must pass `--port 6379` or set
+`SMAX_PORT=6379`. The environment variable is honoured only by the compute
+engine, the web server and `fakeobs.py`; the fault system (`slama.fault`)
+reads no environment variables and always needs `--port 6379`.
 
 Check that the server is up:
 
