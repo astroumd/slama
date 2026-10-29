@@ -301,7 +301,10 @@ observatory feeds, a snapshot database, or the compute engine.
   `fetch_all` per cycle, so SMAX load grows with the number of clients, and
   because history is recorded inside `fetch_cell`, each connected client
   also appends its own sample of each point to the shared buffer. With several
-  viewers the buffer holds duplicate samples and spans less than an hour. A
+  viewers the buffer holds duplicate samples and spans less than an hour: with
+  10 pages showing the same point, the 1800-sample buffer fills 10 times faster
+  and keeps only about 6 minutes of history, in clusters of near-identical
+  readings. A one-person test does not show this. A
   single shared fetch loop that all connections read from would fix both.
 - **No `--as-of` for the server.** Computed points written with a replayed
   clock look stale to the freshness rule in section 6; `computed_max_age_s` is
