@@ -35,18 +35,25 @@ Action
 
 ## Configuration
 
-`conf/faults.json`:
+The shipped `conf/faults.json` is a flat list of root nodes. A config with a
+causal edge looks like this (every parent must itself be declared as a fault
+entry, or the load fails):
 
 ```json
 {
   "defaults": { "transient_filter_s": 5, "interval_s": 2 },
   "actions":  { "log": { "type": "log_file", "path": "/tmp/slama-faults.log" } },
   "faults": [
-    { "canonical_name": "correlator:swarm:progress", "actions": ["log"] },
+    {
+      "__each__": { "over": "1-8", "as": "i", "template": {
+        "canonical_name": "antenna:{i}:air:temperature",
+        "actions": ["log"]
+      }}
+    },
     {
       "__each__": { "over": "1-8", "as": "i", "template": {
         "canonical_name": "antenna:{i}:air:heater",
-        "parents": ["antenna:{i}:power:ok"],
+        "parents": ["antenna:{i}:air:temperature"],
         "actions": ["log"]
       }}
     }

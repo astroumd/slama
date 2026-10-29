@@ -61,23 +61,19 @@ Then `computations.json` wires it up:
   "defaults": { "interval_s": 2, "staleness_s": 30, "invalid_inputs": "skip" },
   "computations": [
     {
-      "__each__": {
-        "over": "1-8", "as": "i",
-        "template": {
-          "output": "monitorsystem:antenna:{i}:sun_distance",
-          "function": "sun_distance",
-          "inputs": {
-            "sunaz": "RM:acc{i}:RM_SUN_AZ_DEG_F",
-            "antaz": "RM:acc{i}:RM_ACTUAL_AZ_DEG_F"
-          }
-        }
-      }
+      "output": "monitorsystem:array:antennas_online",
+      "function": "count_true",
+      "inputs": ["DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B"],
+      "params": { "indices": [1, 2, 3, 4, 5, 6, 7, 8] },
+      "staleness_s": null
     }
   ]
 }
 ```
 
-(Abbreviated; see the real file for the full input set.)
+This entry is the real one from `conf/computations.json`. A per-antenna entry
+wraps the same keys in an `__each__` block with `{i}` placeholders (see
+`monitorsystem:antenna:{i}:sun_distance` in that file).
 
 Rules enforced when the file loads:
 

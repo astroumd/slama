@@ -6,8 +6,8 @@ run from the `slama/` directory of the repository unless noted.
 ## Prerequisites
 
 - Python 3.11 or newer and [`uv`](https://docs.astral.sh/uv/).
-- A SMAX server: Valkey (or Redis) with the SMAX Lua scripts loaded. The
-  umbrella checkout one level above `slama/` builds this; see
+- A SMAX server: Valkey with the SMAX Lua scripts loaded. The repository root
+  (one level above this `slama/` directory) builds and starts one; see
   [](#the-smax-server).
 - Network access to GitHub, because `smax-python` is installed from its git
   repository.
@@ -35,9 +35,24 @@ redis-cli -p 6380 ping        # -> PONG
 redis-cli -p 6380 DBSIZE
 ```
 
-If it is not running, the umbrella checkout provides `valkey-init.sh`,
-which copies the database file, starts `valkey-server_sma` on port 6380 and
-then loads the Lua scripts with `smax-init.sh`.
+If it is not running, bring it up from the **repository root** (the
+directory above `slama/`), following `INSTALL.md` there. In outline:
+
+```bash
+./configure && make setup     # writes slama_start.sh/.csh, valkey-init.sh, ...
+source slama_start.sh         # sets $SLAMA and PATH; every SLAMA shell starts here
+make valkey                   # builds valkey as valkey-server_sma / valkey-cli_sma
+valkey-init.sh                # starts the server on 6380, then loads the Lua scripts
+valkey-cli_sma -p 6380 ping   # -> PONG
+```
+
+`valkey-init.sh` copies `$SLAMA/data/sma-shared-variables.rdb` into the
+current directory and starts the server from it, using
+`data/valkey_sma.conf` (port 6380, `dbfilename sma-shared-variables.rdb`).
+That `.rdb` is the snapshot of the live database that you develop against.
+It is written back when the server shuts down, so run `valkey-init.sh` from a
+scratch directory if you want the original left alone. `valkey-init.sh` does
+not guard against a second instance.
 
 :::{important}
 A development database is normally a **static copy** of the live
@@ -71,8 +86,10 @@ uv run uvicorn slama.web.server:app --reload --port 8000
 ```
 
 Open <http://localhost:8000/>. The index lists every file in
-`src/slama/conf/displays/`. With a static snapshot most cells will be grey
-("no data") for the reason given in [](replay-as-of.md).
+`src/slama/conf/displays/`. Against a static snapshot, cells for ordinary
+source points colour normally from their frozen values, but cells for
+computed `monitorsystem:` points show grey ("no data") because the web
+server distrusts their old timestamps; see [](replay-as-of.md).
 
 ### Compute engine
 

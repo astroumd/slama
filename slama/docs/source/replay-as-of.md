@@ -84,9 +84,11 @@ The web display still uses the real clock
     timestamp to `time.time()` and greys the cell when it is older than
     `computed_max_age_s` (6 s). Outputs written with `--as-of` carry the
     snapshot-day timestamp, so against a static snapshot they render as
-    **no-data in the browser** even though the values are correct. To see
-    them coloured you can run the server with a large `computed_max_age_s`,
-    or refresh the snapshot. There is no `--as-of` for the web server.
+    **no-data in the browser** even though the values are correct. The web
+    server has no flag, environment variable or `--as-of` for this:
+    `server.py` constructs `DataBridge` without passing `computed_max_age_s`,
+    so seeing them coloured today means editing that line or refreshing the
+    snapshot. Source-point cells are unaffected, since they are judged by value.
 
 Points written only on change look old
 :   Many RM and DSM points are written only when their value changes, so

@@ -8,8 +8,8 @@ uv run pytest --cov=slama      # coverage (pytest-cov)
 ```
 
 Written against the repository as of this guide, the suite collects **756
-tests and runs in about ten seconds**. None of it needs a SMAX server: tests
-use fakes in place of `SmaxRedisClient` and build a `MonitorSystem` from
+tests and runs in about ten seconds**. None of it needs a SMAX server (a
+run with Valkey up on 6380 opened no connections to it): tests use fakes in place of `SmaxRedisClient` and build a `MonitorSystem` from
 either a small fixture or the real `smax.json`.
 
 | Area | Location | What it covers |
@@ -50,6 +50,5 @@ writes to a shared database.
 ## Linting
 
 ```bash
-uv run ruff check src
-uv run pre-commit run --all-files
+uv run ruff check src      # reports existing findings today
 ```

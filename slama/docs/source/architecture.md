@@ -53,7 +53,9 @@ JSON under `src/slama/conf/`:
 `mpdefs.json`
 :   An older, incomplete list of point definitions. Prefer `smax.json`.
 
-All four use the same shorthand for repetition: an `__each__` block with an
+`smax.json`, `computations.json` and `faults.json` use the same shorthand for
+repetition (display files expand `{ant}` placeholders through a table's
+`columns.var`/`columns.values` instead): an `__each__` block with an
 `over` index spec (`"1-8"`, `"1-3,5,7-9"`, `"H,V"`) and a `template` whose
 `{i}` placeholders are replaced per index. The expander is
 `slama.monitor.monitorsystem._parse_index_set`, shared by every loader.
