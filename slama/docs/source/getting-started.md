@@ -141,8 +141,8 @@ defaults to `localhost:6380`.
 
 `scripts/fakeobs.py` is meant to write simulated tracking, weather and Tsys
 values so the displays move. It currently fails on import
-(`MonitorPointList` is no longer exported by `slama.monitor`), so the
-simulator is not a working part of the dev loop yet. Until it is repaired,
+(`MonitorPointList` is gone) and still loads the retired `mpdefs.json`, so
+the simulator is not a working part of the dev loop yet. Until it is repaired,
 use a snapshot database and [](replay-as-of.md).
 
 ## Run the tests
