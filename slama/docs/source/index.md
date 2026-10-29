@@ -33,6 +33,7 @@ monitor-system
 monitorsystem_writer_design
 fault-system
 display-system
+web_display_design
 replay-as-of
 testing
 ```

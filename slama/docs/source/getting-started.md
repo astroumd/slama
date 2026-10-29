@@ -87,6 +87,12 @@ You can run any subset.
 uv run uvicorn slama.web.server:app --reload --port 8000
 ```
 
+or, setting the SMAX location from options rather than the environment:
+
+```bash
+uv run python -m slama.web.server --smax-port 6380 --web-port 8000 --reload
+```
+
 Open <http://localhost:8000/>. The index lists every file in
 `src/slama/conf/displays/`. Against a static snapshot, cells for ordinary
 source points colour normally from their frozen values, but cells for
