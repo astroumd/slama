@@ -129,3 +129,8 @@ Astronomy helpers (horizontal/equatorial transforms, observed frequency,
 the Sun's position and angular distance) are in {py:mod}`slama.coordinates.core`;
 the compute function {py:func}`sun_distance_degrees <slama.monitor.compute.functions.sun_distance_degrees>`
 calls into them.
+
+The `--smax-log-level` option on the compute and fault CLIs is applied by
+{py:func}`configure_smax_logging <slama.smax_logging.configure_smax_logging>`,
+which also installs a {py:class}`RepeatedMissingKeyFilter <slama.smax_logging.RepeatedMissingKeyFilter>`
+so a missing SMAX key is logged once, then hourly, instead of every tick.
