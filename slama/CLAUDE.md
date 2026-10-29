@@ -67,7 +67,7 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 - `MonitorPointWriter` — Writes values back to SMAX via `smax_share()`.
 - `recursewithtreelib.py` — Utility that recursively builds a `treelib.Tree` from nested JSON.
 
-**`src/slama/web/`** — FastAPI web display (see `web/DESIGN.md` for full architecture):
+**`src/slama/web/`** — FastAPI web display (see `docs/source/web_display_design.md` for full architecture):
 - `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON).
 - `data_bridge.py` — `DataBridge` fetches SMAX values, maps them to `CellData` with validity CSS classes (`cell-good`, `cell-warning`, `cell-error`, `cell-nodata`, `cell-unchecked`), and maintains a per-canonical-name ring buffer (`deque(maxlen=1800)`, ~1 hour at 2s) for history plots. Lazy SMAX connection; graceful degradation on failure.
 - `display_config.py` — Loads `conf/displays/*.json` and expands block templates (`{ant}` placeholders → per-column canonical names). Block types: `table`, `grid`, `cells`.
@@ -82,7 +82,7 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 - `src/slama/conf/smax.json` — Large hierarchical SMAX system configuration used to build `MonitorSystem`.
 - `src/slama/conf/displays/*.json` — One JSON file per display page (e.g. `tracking.json`, `rxH.json`). Discovered automatically by the server — adding a new file requires no code changes.
 - `src/slama/tables/` — Source catalogs (`SystemSource.cat`, `mpound.cat`).
-- `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. `slama.site_paths.site_path("/global/...")` resolves C paths against `$SLAMA_SITE_ROOT`, else live `/` when `/global/configFiles` exists, else this mirror; `slama.sitefiles` ports the C parsers (`rxtype.conf`, `loadtype.conf`, `dewarTemp.conf`, `wselect.conf`, `fire/ignoreAntSmoking.txt`, per-antenna `pointingModel`). `/global` and `/otherInstances` are detected separately (each by its own marker dir). `computations.json` reads them via `"over": "@rxtype:wsma"` / `"@loadtype:!wsma"` and `"@dewarTemp:{i}:ch4_index"` / `"@wselect:{i}"` / `"@smokeIgnore:{i}"` / `"@tiltDefault:{i}"` params; the token grammar and rules are in `docs/monitorsystem_writer_design.md` §9. Provenance in `site/README.md`; tests pin the root to the mirror (`conftest.py`).
+- `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. `slama.site_paths.site_path("/global/...")` resolves C paths against `$SLAMA_SITE_ROOT`, else live `/` when `/global/configFiles` exists, else this mirror; `slama.sitefiles` ports the C parsers (`rxtype.conf`, `loadtype.conf`, `dewarTemp.conf`, `wselect.conf`, `fire/ignoreAntSmoking.txt`, per-antenna `pointingModel`). `/global` and `/otherInstances` are detected separately (each by its own marker dir). `computations.json` reads them via `"over": "@rxtype:wsma"` / `"@loadtype:!wsma"` and `"@dewarTemp:{i}:ch4_index"` / `"@wselect:{i}"` / `"@smokeIgnore:{i}"` / `"@tiltDefault:{i}"` params; the token grammar and rules are in `docs/source/monitorsystem_writer_design.md` §9. Provenance in `site/README.md`; tests pin the root to the mirror (`conftest.py`).
 
 ### Validity States (`monitor/monitorpoint.py`)
 

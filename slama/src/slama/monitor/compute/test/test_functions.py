@@ -315,7 +315,7 @@ class TestSequenceValidity:
 # ---------------------------------------------------------------------------
 # sun_distance -- one antenna per call, paired with a __each__-expanded
 # entry per antenna rather than a single 32-in/8-out multi-output entry
-# (see docs/monitorsystem_writer_design.md and conf/computations.json).
+# (see docs/source/monitorsystem_writer_design.md and conf/computations.json).
 # ---------------------------------------------------------------------------
 
 class TestSunDistance:
