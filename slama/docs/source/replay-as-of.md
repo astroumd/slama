@@ -83,12 +83,18 @@ The web display still uses the real clock
 :   `DataBridge._computed_css_class` compares a computed point's SMAX
     timestamp to `time.time()` and greys the cell when it is older than
     `computed_max_age_s` (6 s). Outputs written with `--as-of` carry the
-    snapshot-day timestamp, so against a static snapshot they render as
-    **no-data in the browser** even though the values are correct. The web
-    server has no flag, environment variable or `--as-of` for this:
-    `server.py` constructs {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` without passing `computed_max_age_s`,
-    so seeing them coloured today means editing that line or refreshing the
-    snapshot. Source-point cells are unaffected, since they are judged by value.
+    snapshot-day timestamp, so by default they render as **no-data in the
+    browser** even though the values are correct. To view a replay, disable
+    the check when starting the server:
+
+    ```bash
+    uv run python -m slama.web.server --computed-max-age inf
+    ```
+
+    The same setting is the `SLAMA_COMPUTED_MAX_AGE_S` environment variable
+    for plain uvicorn. The server has no true `--as-of` clock; `inf` simply
+    trusts the pushed validity whatever its age. Source-point cells are
+    unaffected, since they are judged by value.
 
 Points written only on change look old
 :   Many RM and DSM points are written only when their value changes, so
