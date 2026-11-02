@@ -6,11 +6,13 @@ Usage:
 
 Or with CLI options (sets SMAX_HOST / SMAX_PORT before uvicorn starts):
     python -m slama.web.server [--smax-host HOST] [--smax-port PORT]
+                               [--computed-max-age SECONDS]
                                [--web-port PORT] [--reload]
 
 Environment variables (used when launching via plain uvicorn):
     SMAX_HOST   SMAX/Redis server hostname (default: localhost)
     SMAX_PORT   SMAX/Redis server port     (default: 6380)
+    SLAMA_COMPUTED_MAX_AGE_S   Computed-point no-data age, s (default: 6; inf = off)
 """
 
 import asyncio
@@ -26,7 +28,7 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
 
-from .data_bridge import DataBridge
+from .data_bridge import DEFAULT_COMPUTED_MAX_AGE_S, DataBridge
 from .display_config import (
     DisplayConfig,
     TableBlock,
@@ -59,6 +61,37 @@ jinja_env = Environment(
 app = FastAPI(title="SMA Monitor Display")
 app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
+def _computed_max_age_from_env() -> float:
+    """Read the computed-point freshness limit from the environment.
+
+    Returns
+    -------
+    float
+        ``SLAMA_COMPUTED_MAX_AGE_S`` in seconds (``inf`` allowed, meaning
+        never stale), or :data:`~slama.web.data_bridge.DEFAULT_COMPUTED_MAX_AGE_S`
+        when the variable is unset or empty.
+
+    Raises
+    ------
+    ValueError
+        If the value is not a number, is NaN, or is negative.
+    """
+    raw = os.environ.get("SLAMA_COMPUTED_MAX_AGE_S", "").strip()
+    if not raw:
+        return DEFAULT_COMPUTED_MAX_AGE_S
+    try:
+        value = float(raw)
+    except ValueError:
+        raise ValueError(
+            f"SLAMA_COMPUTED_MAX_AGE_S must be a number or 'inf', got {raw!r}"
+        ) from None
+    if value != value or value < 0:
+        raise ValueError(
+            f"SLAMA_COMPUTED_MAX_AGE_S must be >= 0, got {raw!r}"
+        )
+    return value
+
+
 # DataBridge uses lazy SMAX connection — no blocking at import/startup time.
 # Host/port are read from environment variables so they can be set by the
 # __main__ CLI parser before uvicorn imports this module's app object.
@@ -66,6 +99,7 @@ bridge = DataBridge(
     host=os.environ.get("SMAX_HOST", "localhost"),
     port=int(os.environ.get("SMAX_PORT", "6380")),
     smax_path=_SMAX_JSON_PATH,
+    computed_max_age_s=_computed_max_age_from_env(),
 )
 
 
@@ -350,6 +384,14 @@ if __name__ == "__main__":
         help="SMAX/Redis server port",
     )
     parser.add_argument(
+        "--computed-max-age",
+        type=float,
+        default=os.environ.get("SLAMA_COMPUTED_MAX_AGE_S", DEFAULT_COMPUTED_MAX_AGE_S),
+        metavar="SECONDS",
+        help="Age after which a monitorsystem: point is shown as no-data; "
+             "'inf' disables the check (use when viewing a replay)",
+    )
+    parser.add_argument(
         "--site-root",
         default=os.environ.get("SLAMA_SITE_ROOT"),
         metavar="DIR",
@@ -378,6 +420,7 @@ if __name__ == "__main__":
     # Set env vars so the module-level DataBridge picks them up on import
     os.environ["SMAX_HOST"] = args.smax_host
     os.environ["SMAX_PORT"] = str(args.smax_port)
+    os.environ["SLAMA_COMPUTED_MAX_AGE_S"] = str(args.computed_max_age)
     if args.site_root:
         os.environ["SLAMA_SITE_ROOT"] = args.site_root
     if args.verbose:

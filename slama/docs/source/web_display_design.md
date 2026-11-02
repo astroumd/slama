@@ -289,6 +289,9 @@ python -m slama.web.server --smax-host localhost --smax-port 6380 \
     --web-port 8000 --reload
 ```
 
+`--computed-max-age SECONDS` (or `SLAMA_COMPUTED_MAX_AGE_S`) sets how old a
+`monitorsystem:` point may be before it is greyed; the default is 6 s and `inf`
+disables the check, which is what viewing a `compute --as-of` replay needs.
 `--site-root` (or `SLAMA_SITE_ROOT`) is also accepted, for the benefit of
 anything the process imports that reads site files. On the observatory system
 Valkey listens on 6379, so use `--smax-port 6379` or `SMAX_PORT=6379`. Open
@@ -307,7 +310,8 @@ observatory feeds, a snapshot database, or the compute engine.
   readings. A one-person test does not show this. A
   single shared fetch loop that all connections read from would fix both.
 - **No `--as-of` for the server.** Computed points written with a replayed
-  clock look stale to the freshness rule in section 6; `computed_max_age_s` is
-  not configurable from the command line.
+  clock look stale to the freshness rule in section 6. The workaround is
+  `--computed-max-age inf` (or `SLAMA_COMPUTED_MAX_AGE_S=inf`), which turns the
+  check off; the server has no injected clock of its own.
 - **Deployment.** A reverse proxy (Nginx), a systemd service and WebSocket
   reconnection logic are not yet implemented.

@@ -83,6 +83,10 @@ lazily on first use so the server starts even when SMAX is down.
 before starting uvicorn, or start it with `python -m slama.web.server
 --smax-host H --smax-port P --web-port W`, which sets them for you.
 
+To view a replay against a static snapshot, add `--computed-max-age inf`
+(environment variable `SLAMA_COMPUTED_MAX_AGE_S`) so computed cells are not
+greyed for being old; see [](replay-as-of.md).
+
 ## Adding a page
 
 1. Find canonical names in `smax.json` (or `docs/all_monitor_points.txt`).
