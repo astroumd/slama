@@ -87,6 +87,12 @@ You can run any subset.
 uv run uvicorn slama.web.server:app --reload --port 8000
 ```
 
+or, setting the SMAX location from options rather than the environment:
+
+```bash
+uv run python -m slama.web.server --smax-port 6380 --web-port 8000 --reload
+```
+
 Open <http://localhost:8000/>. The index lists every file in
 `src/slama/conf/displays/`. Against a static snapshot, cells for ordinary
 source points colour normally from their frozen values, but cells for
@@ -135,8 +141,8 @@ defaults to `localhost:6380`.
 
 `scripts/fakeobs.py` is meant to write simulated tracking, weather and Tsys
 values so the displays move. It currently fails on import
-(`MonitorPointList` is no longer exported by `slama.monitor`), so the
-simulator is not a working part of the dev loop yet. Until it is repaired,
+(`MonitorPointList` is gone) and still loads the retired `mpdefs.json`, so
+the simulator is not a working part of the dev loop yet. Until it is repaired,
 use a snapshot database and [](replay-as-of.md).
 
 ## Run the tests

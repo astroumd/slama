@@ -50,9 +50,6 @@ JSON under `src/slama/conf/`:
 `displays/*.json`
 :   One file per web page. Adding a file adds a page; no code change.
 
-`mpdefs.json`
-:   An older, incomplete list of point definitions. Prefer `smax.json`.
-
 `smax.json`, `computations.json` and `faults.json` use the same shorthand for
 repetition (display files expand `{ant}` placeholders through a table's
 `columns.var`/`columns.values` instead): an `__each__` block with an

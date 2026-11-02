@@ -272,7 +272,7 @@ class TestSunDistanceFromCoord:
     """sun_distance_from_coord(solar_altaz, antaz, antel) -- the original
     SkyCoord/EarthLocation-based path (renamed from sun_distance when
     the simpler 4-angle sun_distance() was added; see
-    docs/monitorsystem_writer_design.md and conf/computations.json)."""
+    docs/source/monitorsystem_writer_design.md and conf/computations.json)."""
 
     FIXED_TIME = Time("2025-06-21T20:00:00")
 

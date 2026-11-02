@@ -26,8 +26,8 @@ source_suffix = {".md": "markdown", ".rst": "restructuredtext"}
 root_doc = "index"
 exclude_patterns = ["_build"]
 
-# MyST: ``:::`` fences for directives, and anchors so ``[](#heading)`` links
-# resolve inside the design records pulled in with ``{include}``.
+# MyST: ``:::`` fences for directives, and heading anchors (levels 1-3) so
+# ``[](#heading)`` links resolve within and between the Markdown pages.
 myst_enable_extensions = ["colon_fence", "deflist"]
 myst_heading_anchors = 3
 
