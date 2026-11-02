@@ -1,6 +1,6 @@
-# Curses display styles → SLAMA `Validity`
+# Mapping curses display styles to Validity
 
-Status: **adopted (Marc, 2026-10-21)**; the gating question is open. Applies when porting a curses
+Status: **adopted**; the gating question is open. Applies when porting a curses
 monitor page (`cursesmonitor/src/*.c`) to a computed `monitorsystem`
 point and its `state_validity` / thresholds in `smax.json`.
 
@@ -59,8 +59,7 @@ Apply the first rule that matches.
 6. **Nothing shown** (the C prints a blank) → **GOOD**, unless a SLAMA
    decision says otherwise (§3, "Deliberate deviations").
 7. **Wacko** ranges (physically impossible values, printed `wacko` /
-   `wac` / `Wac`) are treated like any other range (Marc, 2026-10-21,
-   after consulting the observatory team):
+   `wac` / `Wac`) are treated like any other range.
    - **standout = WARNING**, so a wacko range drawn in standout gives
      **WARNING**;
    - a wacko range drawn in red gives **ERROR** (rule 2).
@@ -77,7 +76,7 @@ adds nothing beyond rule 2.
 
 Ported `arrayMonitor.c` indicators with a `state_validity` map, as of #44.
 "Was" is the validity before this check; the last column is the outcome
-(Marc, 2026-10-21; details in §4).
+(details in §4).
 
 | Point | State | C style | Mapping | Was | Outcome |
 |---|---|---|---|---|---|
@@ -117,7 +116,7 @@ Notes:
    when the antenna is in the project. Without that gating, ERROR will
    also show for antennas that are parked on purpose. This is the gating
    question from §1, not a mapping question.
-3. **`smoke_alarm` ignored** is a recorded deviation (Marc, 2026-10-20):
+3. **`smoke_alarm` ignored** is a recorded deviation.
    the C shows nothing for an ignored antenna, but SLAMA keeps a tripped
    sensor visible.
 4. **`hotload_position` NoB.** No optics board is a hardware absence, and
@@ -127,7 +126,7 @@ Notes:
    come from the C's standout and wacko ranges, and rule 7 picks their
    level.
 
-## 4. Decisions (Marc, 2026-10-21)
+## 4. Decisions.
 
 - **Follow the mapping:**
   - `tilt_flag` `T` → GOOD (#45);

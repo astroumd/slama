@@ -1,4 +1,4 @@
-# Monitor Subsystem Writer: Design
+# Monitor Subsystem Writer Design
 
 **Status:** Current design; implemented in `slama.monitor.compute`.
 **Originally drafted:** 2026-08-05. Addenda: §8 (2026-08-19), §9 (2026-10-20).
@@ -15,7 +15,7 @@ from the SMAX database, performs computations on their values, and writes
 new (derived) monitor points back to SMAX under a new top-level table
 `monitorsystem:` whose paths parallel the existing SMAX hierarchy.
 
-Requirements established with Marc:
+Requirements established:
 
 1. **Computation kinds** (all must be supported, scalably):
    - Status/validity rollups (e.g. "antenna 1 overall status = worst
@@ -543,7 +543,7 @@ Files are found through `slama.site_paths.site_path()`: the live
 `/global` on-site, the repo's `site/` mirror offsite (details in
 `site/README.md`). `/global` and `/otherInstances` are detected
 separately, each by its own marker directory, and a WARNING is logged if
-they end up with different roots (Marc, 2026-10-21).
+they end up with different roots.
 
 ### 9.1 Antenna-set selectors (`__each__` `"over"`)
 
@@ -598,21 +598,20 @@ is substituted before the token is resolved.
 
 - **Resolved once, at config load** ({py:meth}`ComputeConfig.from_dict <slama.monitor.compute.computeconfig.ComputeConfig.from_dict>`). The
   engine's node set and params are fixed for the life of the process, so
-  a change to a site file takes effect after an engine restart (Marc,
-  2026-10-20). The C also reads `rxtype.conf` once per process.
+  a change to a site file takes effect after an engine restart 
+  The C also reads `rxtype.conf` once per process.
 - **A missing or unreadable file fails config load** with a
   `ValueError` that names the path. The engine refuses to start rather
   than run with antennas silently missing. Every file a token uses must
-  therefore exist on-site; Marc confirmed this for all four.
+  therefore exist on-site; this has been confirmed for all four.
   - **Exception: `@smokeIgnore:`.** A missing
     `ignoreAntSmoking.txt` logs a warning and ignores nothing, as in the
     C. For a fire alarm, "alarm on every antenna" is the safe fallback,
-    and refusing to start would take down every computed point (Marc,
-    2026-10-20).
+    and refusing to start would take down every computed point.
   - **Likewise `@tiltDefault:`.** A missing `pointingModel` logs a
     warning and uses 0, the C's value before it reads the file (the C
     itself crashes there). A single `T` indicator is not worth stopping
-    every computed point (Marc, 2026-10-21).
+    every computed point.
 - **Malformed tokens fail config load** too (`bad antenna-set selector`
   / `bad site token`).
 - Tests pin the site root to the repo mirror (`conftest.py`), so results

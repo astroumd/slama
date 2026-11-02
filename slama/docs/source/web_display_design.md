@@ -1,4 +1,4 @@
-# SMA Web Display — Design
+# SMA Web Display Design
 
 **Status:** Current design; implemented in `slama.web`.
 **Earlier notes:** the phase-by-phase implementation log this replaces is kept
