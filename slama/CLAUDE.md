@@ -40,11 +40,10 @@ cd src/slama
 uv run fakeobs.py
 ```
 
-**Tests**: the legacy `test/` code is outdated per `README.md`; a pytest
-suite is planned but not yet in place. `monitor/test/test_monitorpoint.py`
-and `monitor/test/test_monitorsystem.py` are the current in-progress unit
-tests.
-
+**Tests**: the legacy `test/` code is outdated per `README.md`. A pytest suite exists:
+```bash
+uv run pytest -n auto
+```
 ## Architecture
 
 ### Data Flow
@@ -78,11 +77,15 @@ JSON config (conf/mpdefs.json, conf/smax.json, conf/displays/*.json)
 
 ### Configuration Files
 
-- `src/slama/conf/mpdefs.json` — Monitor point definitions with validation thresholds (`warn_low`, `warn_high`, `err_low`, `err_high`). **Incomplete** — being filled out; `smax.json` is the authoritative schema source.
+- `src/slama/conf/smax.json` — Monitor point definitions with validation thresholds (`warn_low`, `warn_high`, `err_low`, `err_high`).This is the authoritative schema source.  The database does not contain validities, so they are captured here.
 - `src/slama/conf/smax.json` — Large hierarchical SMAX system configuration used to build `MonitorSystem`.
 - `src/slama/conf/displays/*.json` — One JSON file per display page (e.g. `tracking.json`, `rxH.json`). Discovered automatically by the server — adding a new file requires no code changes.
 - `src/slama/tables/` — Source catalogs (`SystemSource.cat`, `mpound.cat`).
-- `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. `slama.site_paths.site_path("/global/...")` resolves C paths against `$SLAMA_SITE_ROOT`, else live `/` when `/global/configFiles` exists, else this mirror; `slama.sitefiles` ports the C parsers (`rxtype.conf`, `loadtype.conf`, `dewarTemp.conf`, `wselect.conf`, `fire/ignoreAntSmoking.txt`, per-antenna `pointingModel`). `/global` and `/otherInstances` are detected separately (each by its own marker dir). `computations.json` reads them via `"over": "@rxtype:wsma"` / `"@loadtype:!wsma"` and `"@dewarTemp:{i}:ch4_index"` / `"@wselect:{i}"` / `"@smokeIgnore:{i}"` / `"@tiltDefault:{i}"` params; the token grammar and rules are in `docs/source/monitorsystem_writer_design.md` §9. Provenance in `site/README.md`; tests pin the root to the mirror (`conftest.py`).
+- `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. 
+    -  `slama.site_paths.site_path("/global/...")` resolves C paths against `$SLAMA_SITE_ROOT`, else live `/` when `/global/configFiles` exists, else this mirror; 
+    - `slama.sitefiles` ports the C parsers (`rxtype.conf`, `loadtype.conf`, `dewarTemp.conf`, `wselect.conf`, `fire/ignoreAntSmoking.txt`, per-antenna `pointingModel`). `/global` and `/otherInstances` are detected separately (each by its own marker dir). 
+    - `computations.json` reads them via `"over": "@rxtype:wsma"` / `"@loadtype:!wsma"` and `"@dewarTemp:{i}:ch4_index"` / `"@wselect:{i}"` / `"@smokeIgnore:{i}"` / `"@tiltDefault:{i}"` params; the token grammar and rules are in `docs/source/monitorsystem_writer_design.md` §9. 
+    - Provenance in `site/README.md`; tests pin the root to the mirror (`conftest.py`).
 
 ### Validity States (`monitor/monitorpoint.py`)
 
