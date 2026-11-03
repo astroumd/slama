@@ -69,7 +69,10 @@ malformed config fails at load, not at the first fault.
 
 {py:meth}`FaultSystem.tick() <slama.fault.faultsystem.FaultSystem.tick>`:
 
-1. `MonitorSystem.read_all(client)` refreshes every point.
+1. {py:meth}`MonitorSystem.read <slama.monitor.monitorsystem.MonitorSystem.read>`
+   refreshes only the DAG's points
+   ({py:attr}`FaultSystem.watched_names <slama.fault.faultsystem.FaultSystem.watched_names>`),
+   not the whole tree.
 2. Each critical node is classified faulted or not. A node recovering
    resets its debounce and dedup state.
 3. A node is **debounced** once faulted for `transient_filter_s` of
@@ -99,9 +102,11 @@ tail -f /tmp/slama-faults.log
   `smax.json`**. It does not look at the SMAX timestamp, so a stale value
   that is within limits is not a fault. This differs from the web display,
   which does distrust old computed points (see [](display-system.md)).
-- `read_all` pulls the whole tree. The {py:meth}`MonitorSystem.read <slama.monitor.monitorsystem.MonitorSystem.read>` docstring puts
-  that at about 13 s per pass against Valkey for the full `smax.json`, which
-  is longer than the configured 2 s interval. Narrowing the pull to the
-  watched points (as the compute engine does with `read`) is a natural
-  improvement.
+- A tick reads only the watched points, as the compute engine does. A
+  full-tree read is about 13 s against Valkey, longer than the 2 s
+  interval; 466 single-point pulls measured 0.25 s against local Valkey
+  (0.5 ms each, the same with metadata). A fault node whose name is not in
+  `smax.json` is never read and always reports `INVALID_NO_DATA`; the
+  fault system logs one `WARNING` listing such names when it loads or
+  reloads a config.
 - The CLI has no `--as-of`; see [](replay-as-of.md).

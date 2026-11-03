@@ -25,16 +25,23 @@ class FakeMP:
 
 
 class FakeMonitorSystem:
+    """Stand-in MonitorSystem that records which names each tick reads."""
+
     def __init__(self, mps):
         self._mps = {mp.canonical_name: mp for mp in mps}
+        self.reads = []
 
     def get_monitor_point(self, name):
         if name not in self._mps:
             raise KeyError(name)
         return self._mps[name]
 
+    def read(self, canonical_names, client):
+        self.reads.append(tuple(canonical_names))
+
     def read_all(self, client):
-        pass
+        # The fault loop must read only its watched points (#55).
+        raise AssertionError("FaultSystem must not call read_all")
 
 
 class FakeClock:
@@ -61,9 +68,10 @@ class RecordingAction:
 # ---------------------------------------------------------------------------
 
 def _build_system(nodes, mps, action_map=None, clock=None, wall_clock=None,
-                  tmp_path=None):
+                  tmp_path=None, client=None):
     """Build a FaultSystem directly from a list of node dicts, bypassing
-    JSON. `action_map` maps action-key -> Action instance."""
+    JSON. `action_map` maps action-key -> Action instance. Pass any
+    non-None `client` to make tick() call the fake's read()."""
     action_map = action_map or {"rec": RecordingAction()}
     # The config loader validates action names against the declared
     # actions dict, so declare throwaway log_file specs — we replace them
@@ -88,7 +96,7 @@ def _build_system(nodes, mps, action_map=None, clock=None, wall_clock=None,
 
     ms = FakeMonitorSystem(mps)
     system = FaultSystem(
-        cfg, ms, client=None,
+        cfg, ms, client=client,
         clock=clock or FakeClock(),
         wall_clock=wall_clock or (lambda: 1700000000.0),
     )
@@ -364,3 +372,64 @@ class TestReloadConfig:
         # for 'a' because of the still-active ignore.
         events = system.tick()
         assert all(e.canonical_name != "a" for e in events)
+
+
+# ---------------------------------------------------------------------------
+# Watched-point reads (#55)
+# ---------------------------------------------------------------------------
+
+class TestWatchedRead:
+    def test_tick_reads_only_node_names(self):
+        mps = [FakeMP("a"), FakeMP("b"), FakeMP("unwatched")]
+        system = _build_system(
+            [{"canonical_name": "a"}, {"canonical_name": "b"}], mps,
+            client=object(),
+        )
+        system.tick()
+        assert system._monitor_system.reads == [("a", "b")]
+        assert system.watched_names == ("a", "b")
+
+    def test_no_client_means_no_read(self):
+        system = _build_system([{"canonical_name": "a"}], [FakeMP("a")])
+        system.tick()
+        assert system._monitor_system.reads == []
+
+    def test_reload_changes_watched_set(self, tmp_path):
+        import json
+        mps = [FakeMP("a"), FakeMP("b")]
+        system = _build_system(
+            [{"canonical_name": "a"}], mps, client=object(),
+        )
+        new_cfg = {
+            "defaults": {"transient_filter_s": 0, "interval_s": 1},
+            "actions": {
+                "log": {"type": "log_file", "path": str(tmp_path / "f.log")},
+            },
+            "faults": [{"canonical_name": "b", "actions": ["log"]}],
+        }
+        path = tmp_path / "faults.json"
+        path.write_text(json.dumps(new_cfg))
+        system.reload_config(path)
+        system.tick()
+        assert system.watched_names == ("b",)
+        assert system._monitor_system.reads == [("b",)]
+
+    def test_unknown_node_warns_once_at_load(self, caplog):
+        with caplog.at_level("WARNING", logger="slama.fault.faultsystem"):
+            system = _build_system(
+                [{"canonical_name": "a"}, {"canonical_name": "typo"}],
+                [FakeMP("a")],
+            )
+        warnings = [r for r in caplog.records if r.levelname == "WARNING"]
+        assert len(warnings) == 1
+        assert "typo" in warnings[0].getMessage()
+        assert "a," not in warnings[0].getMessage()
+        # Behaviour unchanged: the unknown node still reads as NO_DATA.
+        events = system.tick()
+        assert [(e.canonical_name, e.validity) for e in events] == [
+            ("typo", Validity.INVALID_NO_DATA)]
+
+    def test_all_known_nodes_no_warning(self, caplog):
+        with caplog.at_level("WARNING", logger="slama.fault.faultsystem"):
+            _build_system([{"canonical_name": "a"}], [FakeMP("a")])
+        assert not [r for r in caplog.records if r.levelname == "WARNING"]
