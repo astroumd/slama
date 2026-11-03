@@ -633,3 +633,86 @@ is substituted before the token is resolved.
   (`{"name": ..., "optional": true}`, §3.4), first used by the wSMA LO
   lock to read tables that may not exist on every antenna.
 
+## 10. Points for the fault system
+
+**Added:** 2026-11-03 (fault-system redesign, phase 3; see
+[](fault-system.md)). The fault system judges each node by the validity
+the engine pushes, so the verdicts it needs are computed here. These
+points are *fault-only views*: they reuse an existing point's logic and
+add the gating the fault DAG needs. The display points they are built
+on (`drive_status`, `lo_lock_ok`, `yig1_locked`, ...) are unchanged.
+
+### 10.1 Engine heartbeat
+
+{py:data}`HEARTBEAT_NAME <slama.monitor.compute.engine.HEARTBEAT_NAME>`
+(`monitorsystem:engine:heartbeat`) is written at the start of every
+{py:meth}`tick <slama.monitor.compute.engine.ComputeEngine.tick>`, before
+any node, with the tick's wall-clock epoch as value and `VALID_GOOD`.
+Written first, it is never fresher than the points it vouches for, so a
+stopped engine shows as one stale heartbeat before any other point ages
+out. It is built into the engine, not a `computations.json` entry:
+topological order does not put a no-input node first. A tree that does
+not declare it skips it with a warning.
+
+### 10.2 Gating
+
+Every fault-only point says "not a fault" (`VALID_NOT_CHECKED`) for an
+expected state, and reserves `INVALID_NO_DATA` for a stale reading, so
+the fault system can debounce "no data" longer than a real fault:
+
+| Condition | Verdict | Source |
+|---|---|---|
+| antenna not online | `VALID_NOT_CHECKED` | `receiverMonitor.c` `doWeCare` |
+| TUNE6 busy, code 1-12 | `VALID_GOOD` | goals file; out-of-range codes count as idle (#56-2) |
+| Gunn/VCO off | `VALID_NOT_CHECKED` | `receiverMonitor.c:864, 889` ("disabled") |
+| Gunn the rest frequency does not need | `VALID_NOT_CHECKED` | `lo_lock_ok` |
+| Tune6 gunn1 lock heartbeat stale | `INVALID_NO_DATA` | `PHASE_LOCK_IS_STALE_S` |
+| smainit slot empty, normally dead, or host report stale | `VALID_NOT_CHECKED` | `smainitMonitor.c`, `listDead.c:24` |
+
+### 10.3 The points
+
+- `antenna:{i}:drive_fault`:
+  {py:func}`fault_gate <slama.monitor.compute.functions.fault_gate>`
+  passes `drive_status`'s value and validity through, gated on `online`.
+- `antenna:{i}:yig1_lock_fault`, `gunn1_lock_fault`, `gunn2_lock_fault`
+  and the PLL context `gunn{1,2}_pll_ifpower`, `gunn{1,2}_pll_noise`: one
+  multi-output entry per antenna,
+  {py:func}`lo_lock_faults <slama.monitor.compute.functions.lo_lock_faults>`,
+  with a Tune6 and a wSMA shape as for `lo_lock_ok`. The chains follow
+  the C: yig1 is always required, the Gunn the rest frequency needs
+  (gunn1 below `HI_LO_FREQ_CUTOFF_HZ`, gunn2 above, both at the cutoff)
+  is required, and YIG2 is never required, so it has no fault point. An
+  unlock is `VALID_ERROR`, unlike `yig_locked`'s `VALID_WARNING`. The PLL
+  values are the "IF Power" and "Nz Power" rows of `receiverMonitor.c`:
+  RM points on Tune6, the selected unit's `pll:BPF` / `pll:NF` on wSMA
+  (the unit comes from `_wsma_chain_units`, shared with
+  `_wsma_gunn_locks`). Their `smax.json` levels are the C's wacko ranges
+  only; fault levels are open (#56-1).
+- `smainit:{h}:report_age`:
+  {py:func}`write_age <slama.monitor.compute.functions.write_age>`, the
+  seconds since the host last wrote `SMAINIT_REPORT_X` (its SMAX
+  timestamp, not its value). The host-down levels are `err_low` -70 and
+  `err_high` 70 in `smax.json`: the C tests `labs(seconds) > 70`, so a
+  report from the future also counts as not reporting.
+- `smainit:{h}:slot:{j}:status` and `:name`, `j` 0-23: one 48-output
+  entry per host,
+  {py:func}`smainit_slots <slama.monitor.compute.functions.smainit_slots>`.
+  Status labels come from `STATUSLIST`; `state_validity` maps `running`
+  to GOOD and every other label to ERROR (green / red in
+  `smainitMonitor.c`). A stale host report makes every slot
+  `VALID_NOT_CHECKED`, so a dead host is one fault (host down), not 24.
+  The normally-dead list is a `params` entry in `computations.json`.
+- Hosts: the 13 `listDead.c` hosts that have `SMAINIT_REPORT_X`.
+  `crate1/2/7/8` have none in `smax.json` or the snapshot (#56-3).
+
+### 10.4 Touch points
+
+- `engine.py`: the heartbeat write and its `_apply_config` check.
+- `functions.py`: `fault_gate`, `lo_lock_faults`, `write_age`,
+  `smainit_slots`, helpers `_tune6_busy`, `_is_on`, `_opt_value`,
+  `_wsma_chain_units`.
+- `smax.json`: the `monitorsystem` `engine` and `smainit` subtrees, the
+  new antenna points, and the wSMA `pll:BPF`, `pll:NF` and
+  `vco:is_enabled` declarations the C reads (the H mixer schema names
+  the IF power `bandpass_power`, but Redis and the C use `BPF`).
+

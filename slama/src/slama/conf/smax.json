@@ -8640,10 +8640,27 @@
                   "template": {
                     "pll": {
                       "description": "PLL data",
+                      "BPF": {
+                        "description": "PLL IF power (receiverMonitor.c 'IF Power' row, wSMA)",
+                        "size": "1",
+                        "smax_type": "float64"
+                      },
+                      "NF": {
+                        "description": "PLL noise power (receiverMonitor.c 'Nz Power' row, wSMA)",
+                        "size": "1",
+                        "smax_type": "float64"
+                      },
                       "lock": {
                         "description": "Whether the PLL is locked (nonzero = locked; read by wsma.c wsmaIsLocked)",
                         "size": "1",
                         "smax_type": "integer"
+                      }
+                    },
+                    "vco": {
+                      "is_enabled": {
+                        "description": "Gunn/VCO enabled (nonzero = on; receiverMonitor.c gunnOn, wSMA)",
+                        "size": "1",
+                        "smax_type": "int8"
                       }
                     }
                   }
@@ -8693,7 +8710,24 @@
                     "smax_type": "float",
                     "unit": "Hz"
                   },
+                  "vco": {
+                    "is_enabled": {
+                      "description": "Gunn/VCO enabled (nonzero = on; receiverMonitor.c gunnOn, wSMA)",
+                      "size": "1",
+                      "smax_type": "int8"
+                    }
+                  },
                   "pll": {
+                    "BPF": {
+                      "description": "PLL IF power (receiverMonitor.c 'IF Power' row, wSMA)",
+                      "size": "1",
+                      "smax_type": "float64"
+                    },
+                    "NF": {
+                      "description": "PLL noise power (receiverMonitor.c 'Nz Power' row, wSMA)",
+                      "size": "1",
+                      "smax_type": "float64"
+                    },
                     "bandpass_power": {
                       "description": "Bandpass filter power level",
                       "size": "1",
@@ -12195,6 +12229,57 @@
     }
   },
   "monitorsystem": {
+    "engine": {
+      "heartbeat": {
+        "description": "Wall-clock epoch the compute engine wrote at the start of its last tick; consumers judge the engine alive by this point's SMAX timestamp age. Written by slama.monitor.compute.engine",
+        "size": "1",
+        "smax_type": "float",
+        "unit": "s"
+      }
+    },
+    "smainit": {
+      "__each__": {
+        "over": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus",
+        "template": {
+          "report_age": {
+            "description": "Seconds since host {i} last wrote DSM:{i}:SMAINIT_REPORT_X; more than 70 s old, or more than 70 s in the future, the host is not reporting (smainitMonitor.c 126: labs(seconds) > 70). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "unit": "s",
+            "err_low": -70,
+            "err_high": 70
+          },
+          "slot": {
+            "__each__": {
+              "over": "0-23",
+              "template": {
+                "status": {
+                  "description": "smainit program status label (smainit_report.h STATUSLIST); green when running, red otherwise (smainitMonitor.c setEnabled/setDisabled). VALID_NOT_CHECKED for an empty slot, a normally-dead program, or a stale host report. From slama.monitor.compute",
+                  "size": "1",
+                  "smax_type": "string",
+                  "state_validity": {
+                    "running": "GOOD",
+                    "quit": "ERROR",
+                    "terminated": "ERROR",
+                    "no restarts": "ERROR",
+                    "bad config": "ERROR",
+                    "shutdown": "ERROR",
+                    "suspended": "ERROR",
+                    "unknown": "ERROR"
+                  },
+                  "unknown_state": "ERROR"
+                },
+                "name": {
+                  "description": "smainit program name in this slot (PRG_NAMES_V24_C24); empty for an unused slot. From slama.monitor.compute",
+                  "size": "1",
+                  "smax_type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "array": {
       "antennas_online": {
         "description": "Count of online antennas, derived from DSM:hal9000:DSM_ONLINE_ANTENNAS_V11_B, from slama.monitor.compute",
@@ -12420,6 +12505,54 @@
             "description": "Antenna {i} online per DSM_ONLINE_ANTENNAS_V11_B (arrayMonitor.c OFFLIN), from slama.monitor.compute",
             "size": "1",
             "smax_type": "boolean"
+          },
+          "drive_fault": {
+            "description": "Fault-system view of antenna {i}'s drive_status: same label and validity, but VALID_NOT_CHECKED when the antenna is not online. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "string"
+          },
+          "yig1_lock_fault": {
+            "description": "Fault-system view of antenna {i}'s YIG1 lock (required on every receiver, lo_lock_ok): ERROR when unlocked; GOOD while TUNE6 is busy (codes 1-12); VALID_NOT_CHECKED when not online. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "gunn1_lock_fault": {
+            "description": "Fault-system view of antenna {i}'s Gunn 1 (RxA) lock: ERROR when unlocked and the rest frequency needs it (lo_lock_ok); VALID_NOT_CHECKED when not needed, the Gunn is off, or the antenna is not online; GOOD while TUNE6 is busy; INVALID_NO_DATA when the Tune6 lock heartbeat is stale. From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "gunn2_lock_fault": {
+            "description": "Fault-system view of antenna {i}'s Gunn 2 (RxB) lock, as gunn1_lock_fault (no heartbeat check). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "boolean"
+          },
+          "gunn1_pll_ifpower": {
+            "description": "Antenna {i} Gunn 1 PLL IF power (receiverMonitor.c 'IF Power'): RM_GUNN_PLL_IFPOWER_F on Tune6, the selected pll:BPF on wSMA. Context only: the C's wacko range, printDisabled red (receiverMonitor.c 133, 866), is err_low/err_high; real fault levels are open (issue #50, #56-1). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "err_low": -1000000,
+            "err_high": 1000000
+          },
+          "gunn2_pll_ifpower": {
+            "description": "Antenna {i} Gunn 2 PLL IF power: RM_GUNN2_PLL_IFPOWER_F on Tune6, the selected pll:BPF on wSMA. Context only: wacko range as err_low/err_high (receiverMonitor.c 133, 866/891); fault levels open (#56-1). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "err_low": -1000000,
+            "err_high": 1000000
+          },
+          "gunn1_pll_noise": {
+            "description": "Antenna {i} Gunn 1 PLL noise power (receiverMonitor.c 'Nz Power'): RM_GUNN_PLL_PHASENOISE_F on Tune6, the selected pll:NF on wSMA. Context only: wacko range as err_low/err_high (receiverMonitor.c 133, 866/891); fault levels open (#56-1). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "err_low": -10,
+            "err_high": 10
+          },
+          "gunn2_pll_noise": {
+            "description": "Antenna {i} Gunn 2 PLL noise power: RM_GUNN2_PLL_PHASENOISE_F on Tune6, the selected pll:NF on wSMA. Context only: wacko range as err_low/err_high (receiverMonitor.c 133, 866/891); fault levels open (#56-1). From slama.monitor.compute",
+            "size": "1",
+            "smax_type": "float",
+            "err_low": -10,
+            "err_high": 10
           },
           "waveplate": {
             "description": "Antenna {i} waveplate orientation R, L, or ? (arrayMonitor.c printWPOrientation), from slama.monitor.compute",

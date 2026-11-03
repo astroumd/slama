@@ -105,6 +105,8 @@ Ported `arrayMonitor.c` indicators with a `state_validity` map, as of #44.
 | `azel_flag` (#44) | `I` | standout only, no beep | WARNING | ERROR | → WARNING (#44) |
 | | `C` | normal | GOOD | WARNING | → GOOD (#44) |
 | `wind_source` | all | no C style (a SLAMA label) | n/a | — | — |
+| `smainit` slot `status` | `running` | green (`setEnabled`, `smainitMonitor.c`) | GOOD | GOOD | ✓ |
+| | any other label | red (`setDisabled`) | ERROR | ERROR | ✓ |
 
 Notes:
 
@@ -161,6 +163,9 @@ code. #47 moved these:
 | `wind_direction` | wacko outside (-99, 400] | `err_low` / `err_high` on the output |
 | `hour_angle` | wacko \|HA\| ≥ 100 h | `err_low` / `err_high` ±100 on raw `RM_RA_APP_HR_D`; non-finite stays in code |
 | `scan_age_s` | wacko ≥ 100 days or < -100 s | `err_high` / `err_low` on the output |
+| `gunn{1,2}_pll_ifpower` | wacko outside ±1e6 (`printWacko`, red; `receiverMonitor.c:133, 866`) | `err_low` / `err_high` on the output |
+| `gunn{1,2}_pll_noise` | wacko outside ±10 (`receiverMonitor.c:891`) | `err_low` / `err_high` on the output |
+| `smainit:{h}:report_age` | not reporting when `labs(age) > 70` s (`smainitMonitor.c:126`) | `err_low` -70 / `err_high` 70 on the output |
 
 Wacko levels keep ERROR (rule 7's draw-style check was not redone here).
 
@@ -170,7 +175,11 @@ uses a strict comparison, the level moved anyway and the boundary shifted:
 - tracking error exactly 1.0″ is now off source (C: on source needs `< 1`);
 - wind speed exactly 150 mph and wind direction exactly 400° are now errors
   (C: `> 150`, `<= 400`);
-- scan age exactly -100 s is now an error (C: `< -100`).
+- scan age exactly -100 s is now an error (C: `< -100`);
+- PLL IF power exactly ±1e6 and noise exactly ±10 are now errors (C:
+  `< min || > max`);
+- a smainit report exactly 70 s old (or 70 s in the future) is now not
+  reporting (C: `labs(seconds) > 70`).
 
 **Kept in code.**
 

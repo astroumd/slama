@@ -678,3 +678,57 @@ class TestPolarChain:
         dut_result = results["monitorsystem:array:polar_dut_s"]
         assert dut_result.value == pytest.approx(-0.0117)
         assert dut_result.validity is Validity.VALID_WARNING
+
+
+# ---------------------------------------------------------------------------
+# Engine heartbeat (fault-system phase 3)
+# ---------------------------------------------------------------------------
+
+from slama.monitor.compute.engine import HEARTBEAT_NAME  # noqa: E402
+
+
+class TestHeartbeat:
+    def _engine(self, with_heartbeat=True, function="count_true"):
+        ants = [make_mp("antenna:1:is_online", smax_type="boolean")]
+        set_value(ants[0], True)
+        out = make_mp("monitorsystem:array:antennas_online", smax_type="integer")
+        mps = ants + [out]
+        if with_heartbeat:
+            mps.append(make_mp(HEARTBEAT_NAME, smax_type="float"))
+        ms = FakeMonitorSystem(mps)
+        cfg = ComputeConfig.from_dict({"computations": [{
+            "output": "monitorsystem:array:antennas_online",
+            "function": function,
+            "inputs": ["antenna:1:is_online"],
+        }]}, ms)
+        client = FakeSmaxClient()
+        engine = ComputeEngine(cfg, ms, client=client, wall_clock=lambda: 1_700_000_000.0)
+        return engine, client
+
+    def test_heartbeat_is_the_first_write_of_the_tick(self):
+        engine, client = self._engine()
+        results = engine.tick()
+        assert client.shared[0] == ("monitorsystem:engine", "heartbeat", 1_700_000_000.0)
+        assert client.meta[0] == ("validity", HEARTBEAT_NAME, str(int(Validity.VALID_GOOD)))
+        assert results[0].canonical_name == HEARTBEAT_NAME
+        assert results[0].value == 1_700_000_000.0
+
+    def test_heartbeat_written_even_when_every_node_fails(self):
+        engine, client = self._engine(function="_test_always_raises")
+        results = engine.tick()
+        assert client.shared == [("monitorsystem:engine", "heartbeat", 1_700_000_000.0)]
+        assert results[1].validity == Validity.INVALID_NO_DATA
+
+    def test_heartbeat_follows_as_of_wall_clock(self):
+        engine, client = self._engine()
+        engine._wall_clock = lambda: 1_790_094_623.0
+        engine.tick()
+        assert client.shared[0][2] == 1_790_094_623.0
+
+    def test_undeclared_heartbeat_is_skipped_with_warning(self, caplog):
+        with caplog.at_level("WARNING", logger="slama.monitor.compute.engine"):
+            engine, client = self._engine(with_heartbeat=False)
+        assert any(HEARTBEAT_NAME in r.getMessage() for r in caplog.records)
+        results = engine.tick()
+        assert all(r.canonical_name != HEARTBEAT_NAME for r in results)
+        assert all(t != "monitorsystem:engine" for t, _, _ in client.shared)
