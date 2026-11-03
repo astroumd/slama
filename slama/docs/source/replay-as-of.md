@@ -74,10 +74,17 @@ writes `monitorsystem:*` keys into the database you point it at.
     That is harmless but pointless; use it to check results, not to run a
     live loop.
 
-Only the compute engine has the flag
-:   {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>` takes a `wall_clock` argument, but the `slama.fault` CLI
-    does not expose it. The fault system does not judge staleness (see
-    [](fault-system.md)), so this rarely matters.
+The fault system's flag freezes only the wall clock
+:   `python -m slama.fault ... --once --as-of $EPOCH` passes the constant
+    as {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>`'s
+    `wall_clock`. Its monotonic `clock`, which drives debounce
+    (`transient_filter_s`) and ignore TTLs, stays real: frozen, no debounce
+    could ever elapse and no fault would be confirmed. Today the flag only
+    dates `FaultEvent.timestamp`, because the fault system does not yet
+    judge staleness (see [](fault-system.md)). It matters once the verdict
+    checks timestamp age (issue #56). With a non-zero `transient_filter_s`,
+    a single `--once` tick only starts each debounce timer and dispatches
+    nothing.
 
 The web display still uses the real clock
 :   `DataBridge._computed_css_class` compares a computed point's SMAX
