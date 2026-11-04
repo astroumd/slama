@@ -137,13 +137,45 @@ bridge reads `SMAX_HOST` and `SMAX_PORT` from the environment at import. Routes:
 
 | Route | Type | Purpose |
 |---|---|---|
-| `GET /` | HTTP | index of all pages, one card per display config |
-| `GET /display/{name}` | HTTP | the rendered page with initial values (404 if the config is missing) |
-| `WS /ws/display/{name}` | WebSocket | pushed fragments and received settings (closes with 4004 for a missing config) |
+| `GET /` | HTTP | index of all pages: the generated pages, then one card per display config |
+| `GET /display/{name}` | HTTP | the rendered page with initial values (404 if neither a generated page nor a config) |
+| `WS /ws/display/{name}` | WebSocket | pushed fragments and received settings (closes with 4004 if neither) |
 | `GET /api/history/{name}` | HTTP | JSON history for one point |
 
 Running `python -m slama.web.server` provides a small CLI that sets those
 environment variables before starting Uvicorn (section 7).
+
+**Generated pages.** `GENERATED_PAGES` maps a URL name to a page built in
+code; the routes check it before looking for `displays/{name}.json`. Its
+one entry is the Fault System page (`faults`). Such a page provides the
+index-card attributes (`name`, `description`, `filename`,
+`update_interval`), a blocking `read()` run in `asyncio.to_thread`, and
+`context(data)` for its templates. Its WebSocket pushes the clock and one
+`#fault-body` out-of-band swap every `update_interval` (the fault system's
+`interval_s`) and ignores client messages: it has no settings, since
+refreshing faster than the fault system ticks shows nothing new.
+
+### 4.3.1 `fault_page.py`
+
+{py:mod}`slama.web.fault_page` has three layers, so each can be tested
+without SMAX:
+
+- **Layout** ({py:func}`build_fault_layout <slama.web.fault_page.build_fault_layout>`,
+  pure): places every `FaultConfig` node by name pattern. Each node is owned
+  by exactly one section (a test checks this against the shipped config);
+  the acc `report_age` nodes are owned by the antenna grid and repeated, as
+  a reference, in the host table.
+- **Reading** ({py:class}`FaultPageReader <slama.web.fault_page.FaultPageReader>`):
+  the refresh's pulls, through the shared `DataBridge` connection, returned
+  as {py:class}`FaultPageData <slama.web.fault_page.FaultPageData>`. It
+  never raises; failures become banners.
+- **Views** ({py:func}`cell_view <slama.web.fault_page.cell_view>`,
+  {py:func}`slot_summary <slama.web.fault_page.slot_summary>`, pure): the
+  CSS classes, text and tooltip for a node, so the templates
+  (`fault_page.html`, `components/fault_sections.html`) only draw.
+
+The reader judges heartbeats by their SMAX write timestamp, not their
+value: under `--as-of` the value is the replayed epoch.
 
 ### 4.4 Templates and CSS
 

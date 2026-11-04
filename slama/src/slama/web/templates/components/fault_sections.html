@@ -1,0 +1,113 @@
+{#- Body of the Fault System page; rendered on load and on every WebSocket push.
+    Context from slama.web.fault_page.FaultPage.context(). -#}
+{% macro fcell(cell, tag="td") -%}
+<{{ tag }} class="fault-cell {{ cell.css }}" title="{{ cell.title }}">{{ cell.text }}</{{ tag }}>
+{%- endmacro %}
+
+{% if load_error %}
+<div class="fault-banner">{{ load_error }}</div>
+{% else %}
+
+{# --- Status line --- #}
+<div class="fault-status">
+    {% for hb in [data.fault_hb, data.engine_hb] %}
+    <span class="fault-hb {{ 'cell-good' if hb.fresh else 'cell-error' }}"
+          title="{{ hb.name }}">
+        {{ hb.label }}:
+        {% if hb.age_s is none %}missing{% elif hb.fresh %}running{% else %}stale {{ format_duration(hb.age_s) }}{% endif %}
+    </span>
+    {% endfor %}
+    {% if layout.heartbeat %}
+    <span class="fault-hb-node">Engine heartbeat node: {{ fcell(cell_view(layout.heartbeat, data), "span") }}</span>
+    {% endif %}
+    {% if data.snapshot %}
+    <span class="fault-tick">tick {{ utc(data.snapshot.tick) }}</span>
+    {% endif %}
+    {% if data.counts %}
+    <span class="fault-counts">
+        {% for s in states %}<span class="fault-count fault-count-{{ s }}">{{ s }} {{ data.counts[s] }}</span>{% endfor %}
+    </span>
+    {% endif %}
+</div>
+{% for b in data.banners() %}
+<div class="fault-banner">{{ b }}</div>
+{% endfor %}
+
+{# --- Antenna grid --- #}
+{% if layout.antennas.rows %}
+<h3>Antennas</h3>
+<table class="mp-table fault-table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for i in layout.antennas.antennas %}
+            <th class="{{ 'fault-offarray' if data.online.get(i) == false else '' }}">Ant {{ i }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for label, names in layout.antennas.rows %}
+        <tr>
+            <td class="row-label">{{ label }}</td>
+            {% for name in names %}
+            {% set i = layout.antennas.antennas[loop.index0] %}
+            {{ fcell(cell_view(name, data, data.online.get(i) == false)) }}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{# --- Host table --- #}
+{% if layout.hosts %}
+<h3>Hosts (smainit)</h3>
+<table class="mp-table fault-table fault-hosts">
+    <thead>
+        <tr><th>Host</th><th>Reporting</th><th>Slots faulted</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for row in layout.hosts %}
+        {% set count, faulted = slot_summary(row, data) %}
+        <tr>
+            <td class="row-label">{{ row.host }}</td>
+            {{ fcell(cell_view(row.report_age, data)) }}
+            {{ fcell(count) }}
+            <td class="fault-slot-list">
+                {% if faulted %}
+                <details id="slots-{{ row.host }}">
+                    <summary>{{ faulted | length }} slot(s)</summary>
+                    <ul>
+                        {% for f in faulted %}
+                        <li><span class="fault-cell {{ f.cell.css }}" title="{{ f.cell.title }}">{{ f.cell.text or f.cell.state }}</span>
+                            slot {{ f.slot }}{% if f.name %}: {{ f.name }}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{# --- Other faults --- #}
+{% if layout.other %}
+<h3>Other faults</h3>
+<table class="mp-table fault-table">
+    <tbody>
+        {% for group in layout.other %}
+        {% for name in group.names %}
+        <tr>
+            {% if loop.first %}<td class="row-label" rowspan="{{ group.names | length }}">{{ group.prefix }}</td>{% endif %}
+            <td class="fault-name">{{ name }}</td>
+            {{ fcell(cell_view(name, data)) }}
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endif %}

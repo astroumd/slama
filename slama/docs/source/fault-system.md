@@ -288,6 +288,9 @@ value is the fixed as-of time.
 - Readers parse with
   {py:func}`parse_snapshot <slama.fault.publish.parse_snapshot>`, which
   rejects an unknown `version`, so a format change fails loudly.
+- The reader in this repository is the Fault System display page,
+  `/display/faults` ({py:mod}`slama.web.fault_page`; see
+  [](display-system.md)), which draws the snapshot by antenna and host.
 
 ### Why one snapshot per tick
 
