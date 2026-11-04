@@ -12774,5 +12774,18 @@
         }
       }
     }
+  },
+  "faultsystem": {
+    "state": {
+      "description": "JSON snapshot of every fault node's state this tick (version, tick, interval_s, nodes: state ok/consequence/debouncing/ignored/root, validity, since, hidden_by). Parse with slama.fault.publish.parse_snapshot. Written by slama.fault each tick, before faultsystem:heartbeat",
+      "size": "1",
+      "smax_type": "string"
+    },
+    "heartbeat": {
+      "description": "Wall-clock epoch of the fault system's last tick (the --as-of time when replaying); written after faultsystem:state. Judge freshness by the SMAX write timestamp, not the value. Written by slama.fault",
+      "size": "1",
+      "smax_type": "float",
+      "unit": "s"
+    }
   }
 }

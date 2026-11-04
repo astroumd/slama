@@ -23,6 +23,9 @@ the registered :class:`Action` instances. On each tick it:
    the validity value itself changes.
 7. Calls :meth:`Action.fire` for every action bound to the reporting
    nodes.
+8. Publishes every node's state as one JSON snapshot
+   (``faultsystem:state``, then ``faultsystem:heartbeat``; see
+   :mod:`slama.fault.publish`).
 
 Thread safety
 -------------
@@ -54,6 +57,7 @@ from slama.monitor.monitorsystem import MonitorSystem
 from .actions import Action
 from .faultconfig import FaultConfig
 from .faultnode import FAULT_STATES, FaultEvent, FaultNode
+from .publish import build_snapshot, publish
 
 
 logger = logging.getLogger(__name__)
@@ -98,8 +102,11 @@ class FaultSystem:
     client : SmaxRedisClient or None, optional
         SMAX client used by :meth:`MonitorSystem.read` to refresh the
         watched values, and for each node's ``validity`` metadata
-        (``smax_pull_meta``). If ``None`` (the default), :meth:`tick`
-        refreshes nothing and every node reads ``INVALID_NO_DATA``.
+        (``smax_pull_meta``), and to publish ``faultsystem:state`` /
+        ``faultsystem:heartbeat`` (``smax_share``). If ``None`` (the
+        default), :meth:`tick` refreshes and publishes nothing, and every
+        node reads ``INVALID_NO_DATA``; :attr:`last_snapshot` is still
+        built.
     clock : callable, optional
         Monotonic clock used for debounce and ignore-TTL timers.
         Defaults to :func:`time.monotonic`. Override in tests to
@@ -152,6 +159,7 @@ class FaultSystem:
         self._actions: dict[str, Action] = {}
         self._ignores: list[_Ignore] = []
         self._interval_s: float = 5.0
+        self._last_snapshot: dict | None = None
 
         self._apply_config(config)
 
@@ -230,6 +238,10 @@ class FaultSystem:
            a :class:`FaultEvent` (with the node's value and context
            values), dispatch actions, and record the new last-report
            state.
+        6. Build the tick's snapshot (:attr:`last_snapshot`) and, with a
+           client, publish it to ``faultsystem:state`` and then
+           ``faultsystem:heartbeat`` (:mod:`slama.fault.publish`). A
+           publish failure is logged and does not stop the tick.
 
         Returns
         -------
@@ -273,11 +285,14 @@ class FaultSystem:
             if is_fault:
                 if node.first_fault_t is None:
                     node.first_fault_t = now_mono
+                if node.faulted_since is None:
+                    node.faulted_since = now_wall
                 faulted.add(name)
                 if (now_mono - node.first_fault_t) >= node.filter_for(validity):
                     debounced.add(name)
             else:
                 node.first_fault_t = None
+                node.faulted_since = None
                 node.last_reported_t = None
                 node.last_reported_validity = None
 
@@ -319,6 +334,17 @@ class FaultSystem:
             node.last_reported_t = now_mono
             node.last_reported_validity = validity
             events.append(event)
+
+        self._last_snapshot = build_snapshot(
+            self._nodes, validities=current_validity, faulted=faulted,
+            debounced=debounced, hidden=hidden, is_ignored=self._is_ignored,
+            tick=now_wall, interval_s=self.interval_s,
+        )
+        if self._client is not None:
+            try:
+                publish(self._client, self._last_snapshot)
+            except Exception:
+                logger.exception("FaultSystem: publishing faultsystem:state failed")
         return events
 
     def set_interval(self, seconds: float) -> None:
@@ -450,6 +476,16 @@ class FaultSystem:
         :meth:`reload_config`.
         """
         return self._nodes
+
+    @property
+    def last_snapshot(self) -> dict | None:
+        """dict or None: The snapshot built by the last :meth:`tick`.
+
+        See :mod:`slama.fault.publish` for the format. ``None`` before the
+        first tick. Built even without a client (nothing is published
+        then).
+        """
+        return self._last_snapshot
 
     @property
     def watched_names(self) -> tuple[str, ...]:

@@ -14,7 +14,9 @@ a :class:`MonitorSystem` from the SMAX JSON schema, connects to the
 SMAX (Redis / Valkey) backend, and runs :meth:`FaultSystem.run_forever`
 until the user sends ``SIGINT`` (Ctrl-C), at which point it calls
 :meth:`FaultSystem.stop` and exits cleanly. With ``--once`` it runs a
-single :meth:`FaultSystem.tick` instead.
+single :meth:`FaultSystem.tick` instead. Every tick publishes
+``faultsystem:state`` and ``faultsystem:heartbeat`` (:mod:`slama.fault.publish`),
+so ``--once`` against the static dev snapshot writes those two keys into it.
 
 Environment variables (used when ``--host``/``--port`` are not given,
 as for the compute engine and the web display server)::
@@ -47,6 +49,7 @@ from slama.smax_logging import configure_smax_logging
 
 from .faultconfig import FaultConfig
 from .faultsystem import FaultSystem
+from .publish import state_counts
 
 
 logger = logging.getLogger(__name__)
@@ -144,7 +147,8 @@ def main(argv: list[str] | None = None) -> int:
         Override the config's default polling interval.
     ``--once``
         Run one :meth:`FaultSystem.tick`, log each dispatched event at
-        ``INFO``, and exit. Actions still fire.
+        ``INFO``, log one line of node-state counts, and exit. Actions
+        still fire, and the state is published to SMAX.
     ``--as-of EPOCH``
         Replace only the **wall** clock with the constant ``EPOCH``.
         The monotonic clock behind debounce (``transient_filter_s``)
@@ -191,6 +195,9 @@ def main(argv: list[str] | None = None) -> int:
         for e in events:
             logger.info("%s %s", e.canonical_name, e.validity.name)
         logger.info("--once: %d event(s) dispatched", len(events))
+        counts = state_counts(system.last_snapshot)
+        logger.info("--once: states %s",
+                    ", ".join(f"{k} {v}" for k, v in counts.items()))
         return 0
 
     try:

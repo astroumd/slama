@@ -101,6 +101,11 @@ class _FakeFaultSystem:
         self.ticks += 1
         return []
 
+    @property
+    def last_snapshot(self):
+        return {"nodes": {"a": {"state": "root"}, "b": {"state": "ok"},
+                          "c": {"state": "ok"}}}
+
     def run_forever(self):
         self.ran_forever = True
 
@@ -159,3 +164,13 @@ def test_client_uses_resolved_host_and_port(fake_main, monkeypatch):
     monkeypatch.setenv("SMAX_PORT", "6379")
     _, system = fake_main("--once")
     assert system.client == ("client", "env-host", 6379)
+
+
+def test_once_logs_state_counts(fake_main, monkeypatch):
+    # main() reconfigures logging with force=True, which drops caplog's
+    # handler, so record the logger's calls directly.
+    lines = []
+    monkeypatch.setattr(fault_main.logger, "info",
+                        lambda msg, *args: lines.append(msg % args))
+    fake_main("--once")
+    assert "--once: states ok 2, consequence 0, debouncing 0, ignored 0, root 1" in lines

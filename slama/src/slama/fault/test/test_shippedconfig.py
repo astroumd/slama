@@ -92,3 +92,27 @@ def test_process_state_validity(monitor_system, label, expected):
     mp = monitor_system.get_monitor_point("monitorsystem:smainit:acc4:process:tune6")
     mp.update(_wrap(label, 1_790_000_000.0))
     assert mp.validity is expected
+
+
+def test_faultsystem_points_declared(monitor_system):
+    from slama.fault.publish import FAULT_HEARTBEAT_NAME as FS_HEARTBEAT, STATE_NAME
+    assert monitor_system.get_monitor_point(STATE_NAME).table == "faultsystem"
+    assert monitor_system.get_monitor_point(FS_HEARTBEAT).key == "heartbeat"
+
+
+def test_shipped_snapshot_size(faults):
+    """Worst case (every node hidden, with hidden_by) is about 75 KB.
+
+    Redis allows 512 MB strings; the bound only catches an accidental
+    blow-up of the format. A typical tick (mostly ok) is about 40 KB.
+    """
+    import json
+
+    from slama.fault.publish import build_snapshot
+
+    names = set(faults.nodes)
+    snapshot = build_snapshot(
+        faults.nodes, validities={n: Validity.INVALID_NO_DATA for n in names},
+        faulted=names, debounced=names, hidden=names - {HEARTBEAT_NAME},
+        is_ignored=lambda n: False, tick=1_790_094_623.123456, interval_s=2.0)
+    assert len(json.dumps(snapshot, separators=(",", ":"))) < 128 * 1024

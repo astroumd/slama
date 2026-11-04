@@ -108,6 +108,12 @@ class FaultNode:
         node. If the validity changes (e.g. from ``VALID_ERROR`` to
         ``INVALID_HW_BAD``), the event re-fires; otherwise it is
         suppressed. ``None`` matches ``last_reported_t``.
+    faulted_since : float or None
+        Wall-clock epoch at which the current fault episode began, or
+        ``None`` when the node is not faulted. Set on the rising edge and
+        cleared on recovery; unlike :attr:`first_fault_t` it is **not**
+        reset while a parent hides the node, so it is how long the fault
+        has really lasted (published as ``since``).
     """
 
     canonical_name: str
@@ -122,6 +128,7 @@ class FaultNode:
     first_fault_t: float | None = None
     last_reported_t: float | None = None
     last_reported_validity: Validity | None = None
+    faulted_since: float | None = None
 
     def filter_for(self, validity: Validity) -> float:
         """Return the debounce window that applies to ``validity``.

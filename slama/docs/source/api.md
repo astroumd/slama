@@ -26,6 +26,7 @@ Generated from the numpydoc docstrings in the source.
 .. automodule:: slama.fault.faultconfig
 .. automodule:: slama.fault.faultsystem
 .. automodule:: slama.fault.actions
+.. automodule:: slama.fault.publish
 ```
 
 ## Web display
