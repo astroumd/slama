@@ -1,7 +1,7 @@
 """Tests for the fault-system computed points (fault-system phase 3).
 
 Covers :func:`fault_gate`, :func:`lo_lock_faults`, :func:`write_age` and
-:func:`smainit_slots`, plus the helpers they share. No SMAX needed.
+:func:`smainit_slots`, :func:`smainit_process`, plus the helpers they share. No SMAX needed.
 """
 import numpy as np
 import pytest
@@ -15,6 +15,7 @@ from slama.monitor.compute.functions import (
     _wsma_chain_units,
     fault_gate,
     lo_lock_faults,
+    smainit_process,
     smainit_slots,
     write_age,
 )
@@ -272,3 +273,45 @@ class TestSmainitSlots:
 
     def test_returns_48_roles(self):
         assert len(slots([], [])) == 48
+
+
+def process(statuses, names, program, age_validity=GOOD):
+    """Run smainit_process for ``program`` over up to 24 statuses/names."""
+    rows = np.zeros((24, 6), dtype=np.int32)
+    for j, s in enumerate(statuses):
+        rows[j][0] = s
+    inputs = {
+        "status": ri("s", rows),
+        "names": ri("n", list(names) + [""] * (24 - len(names))),
+        "age": ri("a", 5.0, age_validity),
+    }
+    return smainit_process(inputs, ctx(params={"program": program}))
+
+
+class TestSmainitProcess:
+    # acc4 order on 2026-09-22: tune6 in slot 8, terminated.
+    ACC4 = ["watchdog", "dsm", "messenger", "rm2smax", "antIFServer",
+            "superMonitor", "servo", "cryoMonitor", "tune6"]
+
+    def test_finds_program_by_name_not_slot(self):
+        statuses = [0] * 8 + [2]
+        assert process(statuses, self.ACC4, "tune6") == "terminated"
+        assert process(statuses, self.ACC4, "servo") == "running"
+
+    def test_same_program_in_a_different_slot(self):
+        # acc8 has no antIFServer, so servo moves to slot 5.
+        names = ["watchdog", "dsm", "messenger", "rm2smax", "superMonitor", "servo"]
+        assert process([0, 0, 0, 0, 0, 1], names, "servo") == "quit"
+
+    def test_absent_program_is_not_checked(self):
+        """tune6 on a wSMA antenna: not a fault, and faults.json can list all 8."""
+        assert process([0] * 7, self.ACC4[:7], "tune6") == ("absent", NC)
+
+    def test_stale_host_is_not_checked(self):
+        out = process([0] * 8 + [2], self.ACC4, "tune6",
+                      age_validity=Validity.VALID_ERROR_HIGH)
+        assert out == ("terminated", NC)
+
+    def test_bytes_names(self):
+        names = [n.encode() + b"\x00" for n in self.ACC4]
+        assert process([0] * 9, names, "tune6") == "running"

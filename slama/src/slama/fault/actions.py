@@ -29,6 +29,7 @@ signature.
 """
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -65,9 +66,11 @@ class LogFileAction:
 
     The output line format is::
 
-        <ISO-8601 UTC timestamp> <canonical_name> <validity_name>\\n
+        <ISO-8601 UTC timestamp> <canonical_name> <validity_name> value=<v>[ <context_name>=<v> ...]\\n
 
-    with one line appended per call to :meth:`fire`. The parent
+    with one line appended per call to :meth:`fire`. Values are formatted
+    by :func:`_format_value`: ``None`` when absent, strings containing
+    whitespace JSON-quoted, everything else ``str()``. The parent
     directory is created on construction if it does not already
     exist, so the configured path need not pre-exist.
 
@@ -105,13 +108,40 @@ class LogFileAction:
         event : FaultEvent
             The root-fault event to record. The line written uses
             :attr:`FaultEvent.timestamp` formatted as an ISO-8601
-            UTC string, followed by the canonical name and the
-            validity enum member's ``name``.
+            UTC string, followed by the canonical name, the
+            validity enum member's ``name``, the node's value and its
+            context values.
         """
         iso = datetime.fromtimestamp(event.timestamp, tz=timezone.utc).isoformat()
-        line = f"{iso} {event.canonical_name} {event.validity.name}\n"
+        fields = [iso, event.canonical_name, event.validity.name,
+                  f"value={_format_value(event.value)}"]
+        fields += [f"{name}={_format_value(v)}"
+                   for name, v in event.context.items()]
+        line = " ".join(fields) + "\n"
         with open(self.path, "a", encoding="utf-8") as f:
             f.write(line)
+
+
+def _format_value(value) -> str:
+    """Format one value for a log line, keeping the line space-separated.
+
+    Parameters
+    ----------
+    value : object
+        A pulled SMAX value (``SmaxFloat``, ``SmaxStr``, ...) or ``None``.
+
+    Returns
+    -------
+    str
+        ``"None"`` for ``None``; a JSON-quoted string when ``str(value)``
+        contains whitespace or is empty; otherwise ``str(value)``.
+    """
+    if value is None:
+        return "None"
+    text = str(value)
+    if not text or any(c.isspace() for c in text):
+        return json.dumps(text)
+    return text
 
 
 def _build_log_file(spec: dict) -> Action:

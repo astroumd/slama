@@ -407,6 +407,38 @@
       "__each__": {
         "over": "1-8", "as": "i",
         "template": {
+          "_comment": "Status of the tune6 program on acc{i}, found by name (slots are positional and differ per host). Parent of antenna {i}'s yig1/gunn1/gunn2 lock faults in faults.json. NC when the host report is stale or tune6 is not configured on the host.",
+          "output": "monitorsystem:smainit:acc{i}:process:tune6",
+          "function": "smainit_process",
+          "inputs": {
+            "status": {"name": "DSM:acc{i}:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L", "staleness_s": null},
+            "names": {"name": "DSM:acc{i}:SMAINIT_REPORT_X:PRG_NAMES_V24_C24", "staleness_s": null},
+            "age": "monitorsystem:smainit:acc{i}:report_age"
+          },
+          "params": {"program": "tune6"}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
+          "_comment": "Status of the servo program on acc{i}, found by name (slots are positional and differ per host). Parent of antenna {i}'s drive_fault in faults.json. NC when the host report is stale or servo is not configured on the host.",
+          "output": "monitorsystem:smainit:acc{i}:process:servo",
+          "function": "smainit_process",
+          "inputs": {
+            "status": {"name": "DSM:acc{i}:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L", "staleness_s": null},
+            "names": {"name": "DSM:acc{i}:SMAINIT_REPORT_X:PRG_NAMES_V24_C24", "staleness_s": null},
+            "age": "monitorsystem:smainit:acc{i}:report_age"
+          },
+          "params": {"program": "servo"}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
           "_comment": "Smoke alarm with fire/ignoreAntSmoking.txt applied (arrayMonitor.c 1770-1782). A missing ignore file means nothing is ignored.",
           "output": "monitorsystem:antenna:{i}:smoke_alarm",
           "function": "smoke_alarm",

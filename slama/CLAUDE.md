@@ -43,7 +43,7 @@ Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The faul
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
-**Tests**: a pytest suite exists (about 756 tests, about 10 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
+**Tests**: a pytest suite exists (about 960 tests, about 11 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
 ```bash
 uv run pytest -n auto
 ```
@@ -77,7 +77,7 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 **`src/slama/monitor/compute/`** — Compute engine (see `docs/source/monitorsystem_writer_design.md`): `ComputeConfig` loads `computations.json`; `ComputeEngine` ticks, resolving `ComputeNode` inputs, running registered functions (`functions.py`), and writing derived points and validities under `monitorsystem:`. Accepts an injected clock/client and `--as-of` replay.
 
-**`src/slama/fault/`** — Fault system (see `docs/source/fault-system.md`): `FaultConfig` loads `faults.json` (critical points, causal-dependency DAG, debounce windows, actions); `FaultSystem` polls validities, finds root faults, debounces and de-dupes, and dispatches `Action`s (e.g. `LogFileAction`).
+**`src/slama/fault/`** — Fault system (see `docs/source/fault-system.md`): `FaultConfig` loads `faults.json` (critical `monitorsystem:*` points, causal-dependency DAG with the engine heartbeat as implicit parent, debounce windows, parent-lag check, context points, actions); `FaultSystem` takes each node's verdict from the engine's pushed validity gated on timestamp age (`slama.monitor.computed_verdict`, shared with the web display), finds root faults, debounces (long filter for `INVALID_NO_DATA` only) and de-dupes, and dispatches `Action`s (e.g. `LogFileAction`). The compute engine must run for faults to be meaningful.
 
 **`src/slama/coordinates/`** — Spatial and spectral coordinate helpers (`core.py`).
 

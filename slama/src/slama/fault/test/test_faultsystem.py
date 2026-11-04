@@ -1,7 +1,9 @@
-"""Unit tests for FaultSystem: DAG walking, debounce, ignore, dedup."""
+"""Unit tests for FaultSystem: verdict, DAG walking, debounce, ignore, dedup."""
+from datetime import datetime, timezone
+
 import pytest
 
-from slama.fault.faultconfig import FaultConfig
+from slama.fault.faultconfig import HEARTBEAT_NAME, FaultConfig
 from slama.fault.faultnode import FaultEvent
 from slama.fault.faultsystem import FaultSystem
 from slama.monitor.monitorpoint import Validity
@@ -11,17 +13,48 @@ from slama.monitor.monitorpoint import Validity
 # Fakes — avoid needing a real SmaxRedisClient or MonitorSystem.
 # ---------------------------------------------------------------------------
 
+PREFIX = "monitorsystem:test:"
+WALL_NOW = 1_700_000_000.0
+
+
+def n(short):
+    """Canonical name for a short test node name (fault nodes must be monitorsystem:*)."""
+    return PREFIX + short
+
+
+def short(names):
+    """Strip :data:`PREFIX` from canonical names, for readable assertions."""
+    return [x[len(PREFIX):] if x.startswith(PREFIX) else x for x in names]
+
+
+class FakeResult(float):
+    """Stand-in for an ``SmaxFloat``: a value with a ``.timestamp`` datetime."""
+
+    def __new__(cls, value, epoch):
+        obj = super().__new__(cls, value)
+        obj.timestamp = datetime.fromtimestamp(epoch, tz=timezone.utc)
+        return obj
+
+
 class FakeMP:
-    def __init__(self, canonical_name, validity=Validity.VALID_GOOD):
+    """A computed point: its value (with timestamp) and its pushed validity."""
+
+    def __init__(self, canonical_name, validity=Validity.VALID_GOOD,
+                 value=1.0, written_at=WALL_NOW, present=True):
         self.canonical_name = canonical_name
-        self._validity = validity
+        self.pushed = validity
+        self._value = value
+        self.written_at = written_at
+        self.present = present
 
     @property
-    def validity(self):
-        return self._validity
+    def value(self):
+        if not self.present:
+            return None
+        return FakeResult(self._value, self.written_at)
 
     def set_validity(self, v):
-        self._validity = v
+        self.pushed = v
 
 
 class FakeMonitorSystem:
@@ -42,6 +75,21 @@ class FakeMonitorSystem:
     def read_all(self, client):
         # The fault loop must read only its watched points (#55).
         raise AssertionError("FaultSystem must not call read_all")
+
+
+class FakeClient:
+    """Serves each FakeMP's pushed validity as ``validity`` metadata."""
+
+    def __init__(self, ms):
+        self.ms = ms
+        self.meta_pulls = []
+
+    def smax_pull_meta(self, meta, name):
+        self.meta_pulls.append((meta, name))
+        mp = self.ms._mps.get(name)
+        if mp is None or not mp.present or mp.pushed is None:
+            return None
+        return str(int(mp.pushed))
 
 
 class FakeClock:
@@ -67,40 +115,61 @@ class RecordingAction:
 # Helpers
 # ---------------------------------------------------------------------------
 
+NODE_KEYS = ("transient_filter_s", "no_data_filter_s", "computed_max_age_s",
+             "onset_s")
+
+
 def _build_system(nodes, mps, action_map=None, clock=None, wall_clock=None,
-                  tmp_path=None, client=None):
-    """Build a FaultSystem directly from a list of node dicts, bypassing
-    JSON. `action_map` maps action-key -> Action instance. Pass any
-    non-None `client` to make tick() call the fake's read()."""
+                  tmp_path=None, client=True, defaults=None, heartbeat=None):
+    """Build a FaultSystem from node dicts with short names, bypassing JSON.
+
+    Short names are prefixed with :data:`PREFIX`. A GOOD heartbeat node and
+    point are added unless the test supplies its own (``heartbeat`` = a
+    FakeMP for :data:`HEARTBEAT_NAME`). Defaults are all-zero filters and
+    ``computed_max_age_s`` 0 (points are written at the wall clock), so the
+    old single-filter tests keep their meaning. ``client=False`` builds
+    without a client.
+    """
     action_map = action_map or {"rec": RecordingAction()}
-    # The config loader validates action names against the declared
-    # actions dict, so declare throwaway log_file specs — we replace them
-    # with the real (fake) Action instances below.
     placeholder = "/tmp/slama-fault-test.log"
     raw_actions = {k: {"type": "log_file", "path": placeholder}
                    for k in action_map}
-    raw_faults = [
-        {"canonical_name": n["canonical_name"],
-         "parents": n.get("parents", []),
-         "transient_filter_s": n.get("transient_filter_s", 0),
-         "actions": list(action_map.keys())}
-        for n in nodes
-    ]
+    # onset_s 0 keeps the heartbeat's detection time at its filter, so the
+    # parent-lag check does not force every test to set long filters.
+    raw_faults = [{"canonical_name": HEARTBEAT_NAME, "onset_s": 0,
+                   "actions": list(action_map.keys())}]
+    for node in nodes:
+        entry = {"canonical_name": n(node["canonical_name"]),
+                 "parents": [n(p) for p in node.get("parents", [])],
+                 "context": [n(c) for c in node.get("context", [])],
+                 "actions": list(action_map.keys())}
+        entry.update({k: node[k] for k in NODE_KEYS if k in node})
+        raw_faults.append(entry)
     raw = {
-        "defaults": {"transient_filter_s": 0, "interval_s": 1},
+        "defaults": {"transient_filter_s": 0, "no_data_filter_s": 0,
+                     "computed_max_age_s": 0, "interval_s": 1,
+                     **(defaults or {})},
         "actions": raw_actions,
         "faults": raw_faults,
     }
     cfg = FaultConfig.from_dict(raw)
     cfg.actions = dict(action_map)
 
-    ms = FakeMonitorSystem(mps)
+    for mp in mps:
+        if not mp.canonical_name.startswith("monitorsystem:"):
+            mp.canonical_name = n(mp.canonical_name)
+    hb = heartbeat or FakeMP(HEARTBEAT_NAME)
+    ms = FakeMonitorSystem([hb, *mps])
     system = FaultSystem(
-        cfg, ms, client=client,
+        cfg, ms, client=FakeClient(ms) if client else None,
         clock=clock or FakeClock(),
-        wall_clock=wall_clock or (lambda: 1700000000.0),
+        wall_clock=wall_clock or (lambda: WALL_NOW),
     )
     return system
+
+
+def names(events):
+    return short(e.canonical_name for e in events)
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +184,7 @@ class TestRootFault:
             [{"canonical_name": "a"}], [mp], {"rec": rec},
         )
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["a"]
+        assert names(events) == ["a"]
 
     def test_chain_only_upstream_root_fires(self):
         # A -> B -> C (A is upstream). All three faulted => only A is root.
@@ -134,7 +203,7 @@ class TestRootFault:
             mps, {"rec": rec},
         )
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["a"]
+        assert names(events) == ["a"]
 
     def test_root_flips_when_upstream_recovers(self):
         a = FakeMP("a", Validity.VALID_ERROR)
@@ -147,7 +216,7 @@ class TestRootFault:
         system.tick()  # fires for a
         a.set_validity(Validity.VALID_GOOD)
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["b"]
+        assert names(events) == ["b"]
 
     def test_non_fault_validities_do_not_trigger(self):
         mps = [
@@ -181,7 +250,7 @@ class TestDebounce:
         assert system.tick() == []       # still within window
         clock.advance(6)                 # now > 10s since first fault
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["a"]
+        assert names(events) == ["a"]
 
     def test_brief_blip_does_not_fire(self):
         mp = FakeMP("a", Validity.VALID_ERROR)
@@ -260,9 +329,9 @@ class TestIgnore:
             ],
             [a, b], {"rec": rec},
         )
-        system.ignore("antenna:1:*")
+        system.ignore(n("antenna:1:*"))
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["antenna:2:heater"]
+        assert names(events) == ["antenna:2:heater"]
 
     def test_ttl_expires(self):
         mp = FakeMP("a", Validity.VALID_ERROR)
@@ -271,11 +340,11 @@ class TestIgnore:
         system = _build_system(
             [{"canonical_name": "a"}], [mp], {"rec": rec}, clock=clock,
         )
-        system.ignore("a", seconds=5)
+        system.ignore(n("a"), seconds=5)
         assert system.tick() == []
         clock.advance(10)
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["a"]
+        assert names(events) == ["a"]
 
     def test_seconds_zero_means_indefinite(self):
         mp = FakeMP("a", Validity.VALID_ERROR)
@@ -284,7 +353,7 @@ class TestIgnore:
         system = _build_system(
             [{"canonical_name": "a"}], [mp], {"rec": rec}, clock=clock,
         )
-        system.ignore("a", seconds=0)
+        system.ignore(n("a"), seconds=0)
         clock.advance(10_000_000)
         assert system.tick() == []
 
@@ -294,11 +363,11 @@ class TestIgnore:
         system = _build_system(
             [{"canonical_name": "a"}], [mp], {"rec": rec},
         )
-        system.ignore("a")
+        system.ignore(n("a"))
         assert system.tick() == []
-        system.unignore("a")
+        system.unignore(n("a"))
         events = system.tick()
-        assert [e.canonical_name for e in events] == ["a"]
+        assert names(events) == ["a"]
 
     def test_ignore_does_not_affect_root_detection(self):
         # A is root and ignored; B depends on A. Since A is physically
@@ -313,7 +382,7 @@ class TestIgnore:
             ],
             [a, b], {"rec": rec},
         )
-        system.ignore("a")
+        system.ignore(n("a"))
         assert system.tick() == []       # A suppressed; B is downstream
 
 
@@ -343,35 +412,38 @@ class TestSetInterval:
 # reload_config preserves ignores
 # ---------------------------------------------------------------------------
 
+def _file_config(tmp_path, short_names):
+    """Write a minimal valid faults.json (heartbeat + the given nodes)."""
+    import json
+    cfg = {
+        "defaults": {"transient_filter_s": 0, "no_data_filter_s": 0,
+                     "computed_max_age_s": 0, "interval_s": 1},
+        "actions": {
+            "log": {"type": "log_file", "path": str(tmp_path / "f.log")},
+        },
+        "faults": [{"canonical_name": HEARTBEAT_NAME, "actions": ["log"]}]
+        + [{"canonical_name": n(s), "actions": ["log"]} for s in short_names],
+    }
+    path = tmp_path / "faults.json"
+    path.write_text(json.dumps(cfg))
+    return path
+
+
 class TestReloadConfig:
     def test_reload_keeps_ignores(self, tmp_path):
-        import json
         mp = FakeMP("a", Validity.VALID_ERROR)
         rec = RecordingAction()
         system = _build_system(
             [{"canonical_name": "a"}], [mp], {"rec": rec},
         )
-        system.ignore("a")
-
-        new_cfg = {
-            "defaults": {"transient_filter_s": 0, "interval_s": 1},
-            "actions": {
-                "log": {"type": "log_file", "path": str(tmp_path / "f.log")},
-            },
-            "faults": [
-                {"canonical_name": "a", "actions": ["log"]},
-                {"canonical_name": "b", "actions": ["log"]},
-            ],
-        }
-        path = tmp_path / "faults.json"
-        path.write_text(json.dumps(new_cfg))
-        system.reload_config(path)
+        system.ignore(n("a"))
+        system.reload_config(_file_config(tmp_path, ["a", "b"]))
 
         # "a" still ignored; the original RecordingAction is replaced by
         # the new LogFileAction, so we just check the tick returns no event
         # for 'a' because of the still-active ignore.
         events = system.tick()
-        assert all(e.canonical_name != "a" for e in events)
+        assert "a" not in names(events)
 
 
 # ---------------------------------------------------------------------------
@@ -383,36 +455,45 @@ class TestWatchedRead:
         mps = [FakeMP("a"), FakeMP("b"), FakeMP("unwatched")]
         system = _build_system(
             [{"canonical_name": "a"}, {"canonical_name": "b"}], mps,
-            client=object(),
         )
         system.tick()
-        assert system._monitor_system.reads == [("a", "b")]
-        assert system.watched_names == ("a", "b")
+        assert system._monitor_system.reads == [(HEARTBEAT_NAME, n("a"), n("b"))]
+        assert system.watched_names == (HEARTBEAT_NAME, n("a"), n("b"))
 
-    def test_no_client_means_no_read(self):
-        system = _build_system([{"canonical_name": "a"}], [FakeMP("a")])
+    def test_context_points_are_watched_once(self):
+        mps = [FakeMP("a"), FakeMP("b"), FakeMP("ctx")]
+        system = _build_system(
+            [{"canonical_name": "a", "context": ["ctx"]},
+             {"canonical_name": "b", "context": ["ctx"]}], mps,
+        )
+        assert system.watched_names == (HEARTBEAT_NAME, n("a"), n("b"), n("ctx"))
+
+    def test_meta_pulled_for_nodes_not_context(self):
+        mps = [FakeMP("a"), FakeMP("ctx")]
+        system = _build_system(
+            [{"canonical_name": "a", "context": ["ctx"]}], mps,
+        )
         system.tick()
+        pulled = [name for _, name in system._client.meta_pulls]
+        assert pulled == [HEARTBEAT_NAME, n("a")]
+
+    def test_no_client_means_no_read_and_no_data(self):
+        system = _build_system([{"canonical_name": "a"}], [FakeMP("a")],
+                               client=False)
+        events = system.tick()
         assert system._monitor_system.reads == []
+        # Without a client nothing can be verified: every node is NO_DATA,
+        # and the heartbeat (their parent) is the one root.
+        assert [(e.canonical_name, e.validity) for e in events] == [
+            (HEARTBEAT_NAME, Validity.INVALID_NO_DATA)]
 
     def test_reload_changes_watched_set(self, tmp_path):
-        import json
         mps = [FakeMP("a"), FakeMP("b")]
-        system = _build_system(
-            [{"canonical_name": "a"}], mps, client=object(),
-        )
-        new_cfg = {
-            "defaults": {"transient_filter_s": 0, "interval_s": 1},
-            "actions": {
-                "log": {"type": "log_file", "path": str(tmp_path / "f.log")},
-            },
-            "faults": [{"canonical_name": "b", "actions": ["log"]}],
-        }
-        path = tmp_path / "faults.json"
-        path.write_text(json.dumps(new_cfg))
-        system.reload_config(path)
+        system = _build_system([{"canonical_name": "a"}], mps)
+        system.reload_config(_file_config(tmp_path, ["b"]))
         system.tick()
-        assert system.watched_names == ("b",)
-        assert system._monitor_system.reads == [("b",)]
+        assert system.watched_names == (HEARTBEAT_NAME, n("b"))
+        assert system._monitor_system.reads == [(HEARTBEAT_NAME, n("b"))]
 
     def test_unknown_node_warns_once_at_load(self, caplog):
         with caplog.at_level("WARNING", logger="slama.fault.faultsystem"):
@@ -423,13 +504,280 @@ class TestWatchedRead:
         warnings = [r for r in caplog.records if r.levelname == "WARNING"]
         assert len(warnings) == 1
         assert "typo" in warnings[0].getMessage()
-        assert "a," not in warnings[0].getMessage()
-        # Behaviour unchanged: the unknown node still reads as NO_DATA.
+        assert n("a") + "," not in warnings[0].getMessage()
+        # The unknown node reads as NO_DATA.
         events = system.tick()
         assert [(e.canonical_name, e.validity) for e in events] == [
-            ("typo", Validity.INVALID_NO_DATA)]
+            (n("typo"), Validity.INVALID_NO_DATA)]
 
     def test_all_known_nodes_no_warning(self, caplog):
         with caplog.at_level("WARNING", logger="slama.fault.faultsystem"):
             _build_system([{"canonical_name": "a"}], [FakeMP("a")])
         assert not [r for r in caplog.records if r.levelname == "WARNING"]
+
+
+# ---------------------------------------------------------------------------
+# Verdict: pushed validity gated on timestamp age (#56)
+# ---------------------------------------------------------------------------
+
+class TestVerdict:
+    def test_pushed_validity_is_the_verdict(self):
+        mp = FakeMP("a", Validity.VALID_ERROR_HIGH)
+        system = _build_system([{"canonical_name": "a"}], [mp])
+        assert [(e.validity) for e in system.tick()] == [Validity.VALID_ERROR_HIGH]
+
+    def test_point_absent_from_redis_faults(self):
+        """The old path left an absent point VALID_NOT_CHECKED forever."""
+        mp = FakeMP("a", present=False)
+        system = _build_system([{"canonical_name": "a"}], [mp])
+        events = system.tick()
+        assert [(e.canonical_name, e.validity) for e in events] == [
+            (n("a"), Validity.INVALID_NO_DATA)]
+
+    def test_missing_metadata_is_no_data(self):
+        mp = FakeMP("a", validity=None)
+        system = _build_system([{"canonical_name": "a"}], [mp])
+        assert [e.validity for e in system.tick()] == [Validity.INVALID_NO_DATA]
+
+    def test_stale_point_is_no_data_even_if_last_verdict_good(self):
+        mp = FakeMP("a", Validity.VALID_GOOD, written_at=WALL_NOW - 60)
+        system = _build_system([{"canonical_name": "a"}], [mp],
+                               defaults={"computed_max_age_s": 6})
+        assert [(e.canonical_name, e.validity) for e in system.tick()] == [
+            (n("a"), Validity.INVALID_NO_DATA)]
+
+    def test_per_node_max_age(self):
+        mp = FakeMP("a", Validity.VALID_GOOD, written_at=WALL_NOW - 60)
+        system = _build_system(
+            [{"canonical_name": "a", "computed_max_age_s": 120}], [mp],
+            defaults={"computed_max_age_s": 6})
+        assert system.tick() == []
+
+    def test_staleness_uses_injected_wall_clock(self):
+        """--as-of replay: snapshot points are fresh relative to the as-of time."""
+        as_of = WALL_NOW - 86_400 * 60
+        hb = FakeMP(HEARTBEAT_NAME, written_at=as_of)
+        mp = FakeMP("a", Validity.VALID_GOOD, written_at=as_of - 1)
+        system = _build_system([{"canonical_name": "a"}], [mp],
+                               defaults={"computed_max_age_s": 6},
+                               wall_clock=lambda: as_of, heartbeat=hb)
+        assert system.tick() == []
+
+    def test_non_fault_verdicts_do_not_fault(self):
+        mps = [FakeMP("nc", Validity.VALID_NOT_CHECKED),
+               FakeMP("warn", Validity.VALID_WARNING)]
+        system = _build_system(
+            [{"canonical_name": "nc"}, {"canonical_name": "warn"}], mps)
+        assert system.tick() == []
+
+
+# ---------------------------------------------------------------------------
+# Debounce by verdict and parent lag (#56)
+# ---------------------------------------------------------------------------
+
+class TestVerdictFilters:
+    def _system(self, mp, clock):
+        return _build_system(
+            [{"canonical_name": "a", "transient_filter_s": 5,
+              "no_data_filter_s": 15}],
+            [mp], clock=clock)
+
+    def test_error_uses_short_filter(self):
+        mp = FakeMP("a", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = self._system(mp, clock)
+        assert system.tick() == []
+        clock.advance(5)
+        assert names(system.tick()) == ["a"]
+
+    def test_no_data_waits_long_filter(self):
+        mp = FakeMP("a", present=False)
+        clock = FakeClock()
+        system = self._system(mp, clock)
+        system.tick()
+        clock.advance(10)
+        assert system.tick() == []
+        clock.advance(5)
+        events = system.tick()
+        assert [(e.canonical_name, e.validity, e.transient_filter_s) for e in events] == [
+            (n("a"), Validity.INVALID_NO_DATA, 15.0)]
+
+    def test_error_then_no_data_keeps_episode_but_uses_long_filter(self):
+        mp = FakeMP("a", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = self._system(mp, clock)
+        system.tick()                       # episode starts at t=0
+        clock.advance(3)
+        mp.present = False                  # NO_DATA from t=3
+        assert system.tick() == []
+        clock.advance(9)                    # t=12 < 15
+        assert system.tick() == []
+        clock.advance(3)                    # t=15, measured from t=0
+        assert names(system.tick()) == ["a"]
+
+    def test_no_data_then_error_debounces_immediately(self):
+        mp = FakeMP("a", present=False)
+        clock = FakeClock()
+        system = self._system(mp, clock)
+        system.tick()                       # NO_DATA episode starts at t=0
+        clock.advance(10)
+        mp.present = True
+        mp.set_validity(Validity.VALID_ERROR)
+        assert names(system.tick()) == ["a"]   # 10 >= 5
+
+
+class TestParentLag:
+    def test_faulted_parent_hides_child_before_parent_debounces(self):
+        parent = FakeMP("p", Validity.VALID_ERROR)
+        child = FakeMP("c", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "p", "transient_filter_s": 30},
+             {"canonical_name": "c", "parents": ["p"], "transient_filter_s": 1,
+              "no_data_filter_s": 40}],
+            [parent, child], clock=clock)
+        system.tick()
+        clock.advance(2)
+        assert system.tick() == []          # child debounced, parent only faulted
+        clock.advance(30)
+        assert names(system.tick()) == ["p"]
+
+    def test_heartbeat_outage_is_one_root(self):
+        hb = FakeMP(HEARTBEAT_NAME, written_at=WALL_NOW - 60)
+        mps = [FakeMP(x, written_at=WALL_NOW - 60) for x in ("a", "b", "c")]
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": x} for x in ("a", "b", "c")], mps,
+            defaults={"computed_max_age_s": 6, "no_data_filter_s": 6},
+            heartbeat=hb, clock=clock)
+        assert system.tick() == []
+        clock.advance(6)
+        assert [e.canonical_name for e in system.tick()] == [HEARTBEAT_NAME]
+
+    def test_host_down_hides_stale_children_and_frozen_lock(self):
+        """acc{i} dies: drive goes NO_DATA in seconds, yig1 freezes GOOD,
+        gunn1 goes NO_DATA; only host-down reports, once report_age errs."""
+        host = FakeMP("host", Validity.VALID_GOOD)
+        yig1 = FakeMP("yig1", Validity.VALID_GOOD)       # frozen GOOD
+        drive = FakeMP("drive", present=False)            # stale input
+        gunn1 = FakeMP("gunn1", present=False)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "host", "onset_s": 70, "transient_filter_s": 5,
+              "no_data_filter_s": 15},
+             {"canonical_name": "drive", "parents": ["host"], "no_data_filter_s": 100},
+             {"canonical_name": "yig1", "parents": ["host"], "no_data_filter_s": 100},
+             {"canonical_name": "gunn1", "parents": ["yig1", "host"],
+              "no_data_filter_s": 110}],
+            [host, yig1, drive, gunn1], clock=clock)
+        reported = []
+        for t in range(0, 120, 2):
+            if t == 70:
+                host.set_validity(Validity.VALID_ERROR_HIGH)
+            reported += names(system.tick())
+            clock.advance(2)
+        assert reported == ["host"]
+
+    def test_real_unlock_alerts_on_short_filter(self):
+        host = FakeMP("host", Validity.VALID_GOOD)
+        yig1 = FakeMP("yig1", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "host", "onset_s": 70, "transient_filter_s": 5,
+              "no_data_filter_s": 15},
+             {"canonical_name": "yig1", "parents": ["host"], "transient_filter_s": 5,
+              "no_data_filter_s": 100}],
+            [host, yig1], clock=clock)
+        system.tick()
+        clock.advance(6)
+        assert names(system.tick()) == ["yig1"]
+
+
+# ---------------------------------------------------------------------------
+# FaultEvent value and context
+# ---------------------------------------------------------------------------
+
+class TestEventContext:
+    def test_event_carries_value_and_context(self):
+        gunn = FakeMP("gunn1", Validity.VALID_ERROR, value=0.0)
+        ifp = FakeMP("ifpower", value=12.5)
+        missing = "absent_ctx"
+        system = _build_system(
+            [{"canonical_name": "gunn1", "context": ["ifpower", missing]}],
+            [gunn, ifp])
+        (event,) = system.tick()
+        assert event.value == 0.0
+        assert event.context == {n("ifpower"): 12.5, n(missing): None}
+
+
+# ---------------------------------------------------------------------------
+# Recovery: a parent clears while children are still stale
+# ---------------------------------------------------------------------------
+
+class TestRecovery:
+    def test_engine_restart_does_not_flood(self):
+        """The engine writes the heartbeat first, then ~1 s of other outputs."""
+        hb = FakeMP(HEARTBEAT_NAME, written_at=WALL_NOW - 60)
+        kids = [FakeMP(x, written_at=WALL_NOW - 60) for x in ("a", "b", "c")]
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": x} for x in ("a", "b", "c")], kids,
+            defaults={"computed_max_age_s": 6, "transient_filter_s": 5,
+                      "no_data_filter_s": 15},
+            heartbeat=hb, clock=clock)
+        system.tick()
+        clock.advance(200)
+        assert [e.canonical_name for e in system.tick()] == [HEARTBEAT_NAME]
+        hb.written_at = WALL_NOW            # engine back; children not yet rewritten
+        clock.advance(2)
+        assert system.tick() == []
+
+    def test_host_recovery_with_lagging_child(self):
+        host = FakeMP("host", Validity.VALID_ERROR_HIGH)
+        drive = FakeMP("drive", present=False)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "host", "onset_s": 70, "transient_filter_s": 5,
+              "no_data_filter_s": 15},
+             {"canonical_name": "drive", "parents": ["host"],
+              "no_data_filter_s": 100}],
+            [host, drive], clock=clock)
+        system.tick()
+        clock.advance(200)
+        assert names(system.tick()) == ["host"]
+        host.set_validity(Validity.VALID_GOOD)   # host reports again
+        clock.advance(2)
+        assert system.tick() == []               # drive's inputs one tick behind
+
+    def test_child_with_own_fault_reports_a_full_filter_after_parent_clears(self):
+        host = FakeMP("host", Validity.VALID_ERROR_HIGH)
+        drive = FakeMP("drive", Validity.VALID_ERROR)     # a real, separate fault
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "host", "onset_s": 70, "transient_filter_s": 5,
+              "no_data_filter_s": 15},
+             {"canonical_name": "drive", "parents": ["host"], "transient_filter_s": 5,
+              "no_data_filter_s": 100}],
+            [host, drive], clock=clock)
+        system.tick()
+        clock.advance(200)
+        assert names(system.tick()) == ["host"]
+        host.set_validity(Validity.VALID_GOOD)
+        clock.advance(2)
+        assert system.tick() == []               # clock restarted at the last hidden tick
+        clock.advance(4)                         # 6 s since last hidden >= 5
+        assert names(system.tick()) == ["drive"]
+
+    def test_reported_child_does_not_refire_after_parent_episode(self):
+        parent = FakeMP("p", Validity.VALID_GOOD)
+        child = FakeMP("c", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "p"},
+             {"canonical_name": "c", "parents": ["p"]}],
+            [parent, child], clock=clock)
+        assert names(system.tick()) == ["c"]     # reported on its own
+        parent.set_validity(Validity.VALID_ERROR)
+        assert names(system.tick()) == ["p"]     # c hidden, clock reset
+        parent.set_validity(Validity.VALID_GOOD)
+        assert system.tick() == []               # same validity: dedup holds

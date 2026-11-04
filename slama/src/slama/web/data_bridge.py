@@ -291,20 +291,16 @@ class DataBridge:
             ``CSS_NODATA`` if the timestamp is missing or older than
             ``computed_max_age_s``, or the metadata is missing or
             unparseable; otherwise :func:`validity_to_css` of the pushed
-            validity.
+            validity. The gate itself is
+            :func:`slama.monitor.computed_verdict.computed_validity`,
+            shared with the fault system.
         """
-        from slama.monitor.monitorpoint import Validity
+        from slama.monitor.computed_verdict import computed_validity
 
         now = time.time() if now is None else now
-        ts = getattr(result, "timestamp", None)
-        if ts is None or now - ts.timestamp() > self._computed_max_age_s:
-            return CSS_NODATA
         raw = client.smax_pull_meta("validity", canonical_name)
-        try:
-            validity = Validity(int(raw))
-        except (TypeError, ValueError):
-            return CSS_NODATA
-        return validity_to_css(validity)
+        return validity_to_css(
+            computed_validity(result, raw, now, self._computed_max_age_s))
 
     def _record_history(self, canonical_name: str, raw_value) -> None:
         """Append a numeric value to the history ring buffer.
