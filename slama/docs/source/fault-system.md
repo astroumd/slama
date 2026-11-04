@@ -26,7 +26,8 @@ Root fault
 
 Debounce (`transient_filter_s`)
 :   A fault must persist continuously for this many seconds before it
-    counts. `0` disables the filter.
+    counts. `0` disables the filter. The exact rules are in
+    [Debounce](#debounce).
 
 Action
 :   Anything with `fire(event: FaultEvent) -> None`. Version 1 ships
@@ -83,6 +84,31 @@ malformed config fails at load, not at the first fault.
    a cause does not promote its consequences to roots.
 6. Dedup: an event fires once per validity transition, not every tick.
 7. `Action.fire(FaultEvent)` for each action bound to the node.
+
+## Debounce
+
+A node is **debounced** once it has been in a fault state continuously for
+at least its `transient_filter_s`. Only a debounced node can be reported.
+
+- **Any fault state counts.** The node need not stay in the *same* state:
+  `VALID_ERROR` followed by `INVALID_NO_DATA` is one continuous episode.
+- **Start time.** The first tick that sees the node in a fault state sets
+  {py:attr}`FaultNode.first_fault_t <slama.fault.faultnode.FaultNode.first_fault_t>`,
+  on the monotonic clock. `--as-of` sets only the wall clock, so it does
+  not change debounce.
+- **Reset.** Any tick that reads a non-fault state (`VALID_GOOD`, a
+  warning, `VALID_NOT_CHECKED`) clears the start time and the dedup state.
+  The next fault starts a new episode.
+- **Tick granularity.** The check runs only at ticks, so the real delay is
+  the filter rounded up to the next tick (5 s at a 2 s interval is 6 s).
+  For the same reason `--once` (one tick) reports nothing unless the
+  filter is `0`.
+- **Debounced is not reported.** A debounced node is still dropped when a
+  parent is debounced (not a root), when an ignore pattern matches it, or
+  when it was already reported with the same validity (dedup).
+- **Flapping.** A node that alternates between fault and non-fault faster
+  than its filter never debounces, because each non-fault tick resets it.
+  This is a persistence filter, not a chatter filter.
 
 `run_forever()` ticks at the interval and catches and logs a failed tick
 rather than dying. `ignore`, `unignore`, `set_interval`, `reload_config`
