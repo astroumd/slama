@@ -7,7 +7,7 @@ uv run pytest src/slama/fault -k debounce
 uv run pytest --cov=slama      # coverage (pytest-cov)
 ```
 
-Written against the repository as of this guide, the suite collects **1098
+Written against the repository as of this guide, the suite collects **1105
 tests and runs in about fifteen seconds**. None of it needs a SMAX server (a
 run with Valkey up on 6380 opened no connections to it): tests use fakes in place of `SmaxRedisClient` and build a {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` from
 either a small fixture or the real `smax.json`.

@@ -43,7 +43,7 @@ Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The faul
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
-**Tests**: a pytest suite exists (about 1098 tests, about 15 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
+**Tests**: a pytest suite exists (about 1105 tests, about 15 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
 ```bash
 uv run pytest -n auto
 ```
