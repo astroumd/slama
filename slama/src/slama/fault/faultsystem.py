@@ -4,7 +4,9 @@
 :class:`MonitorSystem`, the DAG defined in :class:`FaultConfig`, and
 the registered :class:`Action` instances. On each tick it:
 
-1. Asks the :class:`MonitorSystem` to refresh all values from SMAX.
+1. Asks the :class:`MonitorSystem` to refresh, from SMAX, only the
+   points the DAG watches (:meth:`MonitorSystem.read`), not the whole
+   tree.
 2. Classifies each critical node as currently faulted or not.
 3. Applies the per-node transient filter (``transient_filter_s``).
 4. Walks the DAG to find root faults — a node is a root fault iff
@@ -86,10 +88,10 @@ class FaultSystem:
         interval.
     monitor_system : MonitorSystem
         The tree of monitor points to observe. Must provide
-        ``get_monitor_point(name)`` and ``read_all(client)``.
+        ``get_monitor_point(name)`` and ``read(names, client)``.
     client : SmaxRedisClient or None, optional
-        SMAX client used by :meth:`MonitorSystem.read_all` to refresh
-        values at the start of each tick. If ``None`` (the default),
+        SMAX client used by :meth:`MonitorSystem.read` to refresh the
+        watched values at the start of each tick. If ``None`` (the default),
         :meth:`tick` skips the refresh — useful for tests that
         inject a fake :class:`MonitorSystem` with pre-set values.
     clock : callable, optional
@@ -108,6 +110,9 @@ class FaultSystem:
     nodes : dict of str to FaultNode
         Read-only view of the current DAG. Replaced wholesale by
         :meth:`reload_config`.
+    watched_names : tuple of str
+        Read-only view of the canonical names :meth:`tick` refreshes
+        from SMAX. Rebuilt with the DAG by :meth:`reload_config`.
 
     Notes
     -----
@@ -135,6 +140,7 @@ class FaultSystem:
         self._stop_event = threading.Event()
 
         self._nodes: dict[str, FaultNode] = {}
+        self._watched: tuple[str, ...] = ()
         self._actions: dict[str, Action] = {}
         self._ignores: list[_Ignore] = []
         self._interval_s: float = 5.0
@@ -193,8 +199,11 @@ class FaultSystem:
 
         The algorithm, in order, is:
 
-        1. If ``client`` was provided, call
-           :meth:`MonitorSystem.read_all` to refresh current values.
+        1. If ``client`` was provided, call :meth:`MonitorSystem.read`
+           to refresh current values for :attr:`watched_names` only.
+           A full-tree read takes about 13 s against valkey, longer
+           than the interval; the watched set takes well under a
+           second.
         2. Read the monotonic and wall clocks.
         3. Purge any expired ignore entries.
         4. For each DAG node, read its current
@@ -226,7 +235,7 @@ class FaultSystem:
         the parent is being alert-suppressed.
         """
         if self._client is not None:
-            self._monitor_system.read_all(self._client)
+            self._monitor_system.read(self._watched, self._client)
 
         now_mono = self._clock()
         now_wall = self._wall_clock()
@@ -407,6 +416,15 @@ class FaultSystem:
         """
         return self._nodes
 
+    @property
+    def watched_names(self) -> tuple[str, ...]:
+        """tuple of str: Canonical names :meth:`tick` refreshes from SMAX.
+
+        Currently the DAG node names, in config order. Replaced
+        wholesale by :meth:`reload_config`.
+        """
+        return self._watched
+
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
@@ -414,16 +432,32 @@ class FaultSystem:
     def _apply_config(self, config: FaultConfig) -> None:
         """Copy resolved config into the system's mutable state.
 
+        Also rebuilds :attr:`watched_names` from the new nodes and logs
+        one ``WARNING`` naming every node absent from the
+        :class:`MonitorSystem`. Such a node is never refreshed
+        (:meth:`MonitorSystem.read` skips unknown names) and always
+        reads as ``INVALID_NO_DATA``, so it is almost certainly a
+        typo or a point missing from ``smax.json``.
+
         Parameters
         ----------
         config : FaultConfig
-            Parsed config to apply. Replaces ``_nodes``, ``_actions``,
-            and ``_interval_s`` wholesale. Caller is responsible for
-            holding ``self._lock``.
+            Parsed config to apply. Replaces ``_nodes``, ``_watched``,
+            ``_actions``, and ``_interval_s`` wholesale. Caller is
+            responsible for holding ``self._lock``.
         """
         self._nodes = config.nodes
+        self._watched = tuple(config.nodes)
         self._actions = config.actions
         self._interval_s = config.default_interval_s
+
+        missing = [n for n in self._watched if self._get_mp(n) is None]
+        if missing:
+            logger.warning(
+                "FaultSystem: %d fault node(s) not in the MonitorSystem; "
+                "they will always read INVALID_NO_DATA: %s",
+                len(missing), ", ".join(missing),
+            )
 
     def _get_mp(self, canonical_name: str) -> MonitorPoint | None:
         """Fetch a monitor point by canonical name, tolerating absence.
