@@ -668,7 +668,7 @@ the fault system can debounce "no data" longer than a real fault:
 | Condition | Verdict | Source |
 |---|---|---|
 | antenna not online | `VALID_NOT_CHECKED` | `receiverMonitor.c` `doWeCare` |
-| TUNE6 busy, code 1-12 | `VALID_GOOD` | goals file; out-of-range codes count as idle (#56-2) |
+| TUNE6 busy, code 1-12, while the Tune6 gunn1 lock heartbeat is fresh | `VALID_GOOD` | goals file; out-of-range codes count as idle (#56-2); a code latched by a dead tune6 is not trusted |
 | Gunn/VCO off | `VALID_NOT_CHECKED` | `receiverMonitor.c:864, 889` ("disabled") |
 | Gunn the rest frequency does not need | `VALID_NOT_CHECKED` | `lo_lock_ok` |
 | Tune6 gunn1 lock heartbeat stale | `INVALID_NO_DATA` | `PHASE_LOCK_IS_STALE_S` |
@@ -679,6 +679,9 @@ the fault system can debounce "no data" longer than a real fault:
 - `antenna:{i}:drive_fault`:
   {py:func}`fault_gate <slama.monitor.compute.functions.fault_gate>`
   passes `drive_status`'s value and validity through, gated on `online`.
+  `drive_status` is an optional input, so an off-array antenna is not
+  checked even when its drive status has no data (servo off, `acc{i}`
+  down); only an online antenna gives `INVALID_NO_DATA`.
 - `antenna:{i}:yig1_lock_fault`, `gunn1_lock_fault`, `gunn2_lock_fault`
   and the PLL context `gunn{1,2}_pll_ifpower`, `gunn{1,2}_pll_noise`: one
   multi-output entry per antenna,
@@ -692,7 +695,10 @@ the fault system can debounce "no data" longer than a real fault:
   RM points on Tune6, the selected unit's `pll:BPF` / `pll:NF` on wSMA
   (the unit comes from `_wsma_chain_units`, shared with
   `_wsma_gunn_locks`). Their `smax.json` levels are the C's wacko ranges
-  only; fault levels are open (#56-1).
+  only; fault levels are open (#56-1). A PLL value that is not one
+  number becomes `INVALID_NO_DATA` on its own output only, never on the
+  lock verdicts in the same entry. Whether gunn2 should follow the
+  observed band or its own chain is open (#56-7).
 - `smainit:{h}:report_age`:
   {py:func}`write_age <slama.monitor.compute.functions.write_age>`, the
   seconds since the host last wrote `SMAINIT_REPORT_X` (its SMAX

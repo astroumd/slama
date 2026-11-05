@@ -243,11 +243,11 @@
       "__each__": {
         "over": "1-8", "as": "i",
         "template": {
-          "_comment": "Fault-system view of drive_status: same verdict, VALID_NOT_CHECKED when the antenna is not online (receiverMonitor.c doWeCare).",
+          "_comment": "Fault-system view of drive_status: same verdict, VALID_NOT_CHECKED when the antenna is not online (receiverMonitor.c doWeCare). subject is optional so an off-array antenna with no drive data is still NOT_CHECKED, not NO_DATA.",
           "output": "monitorsystem:antenna:{i}:drive_fault",
           "function": "fault_gate",
           "inputs": {
-            "subject": "monitorsystem:antenna:{i}:drive_status",
+            "subject": {"name": "monitorsystem:antenna:{i}:drive_status", "optional": true},
             "online": "monitorsystem:antenna:{i}:online"
           }
         }
