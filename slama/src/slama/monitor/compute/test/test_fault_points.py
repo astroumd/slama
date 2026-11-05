@@ -94,6 +94,15 @@ class TestFaultGate:
         out = fault_gate({"subject": ri("d", "ESTOP", ERROR), "online": ri("o", False)}, ctx())
         assert out == ("ESTOP", NC)
 
+    def test_offline_with_no_drive_data_is_not_checked(self):
+        # hangar antenna, servo off or acc down: drive_status is NO_DATA
+        out = fault_gate({"subject": ri("d", None, NO_DATA), "online": ri("o", False)}, ctx())
+        assert out == (None, NC)
+
+    def test_online_with_no_drive_data_is_no_data(self):
+        out = fault_gate({"subject": ri("d", None, NO_DATA), "online": ri("o", True)}, ctx())
+        assert out == (None, NO_DATA)
+
 
 # ---------------------------------------------------------------------------
 # lo_lock_faults
@@ -145,6 +154,13 @@ class TestLoLockFaultsTune6:
     def test_valid_busy_code_is_good(self, busy):
         assert verdicts(tune6(g1=0, y1=0, busy=busy)) == (GOOD, GOOD, GOOD)
 
+    def test_busy_latched_with_stale_heartbeat_is_not_trusted(self):
+        # tune6 died mid-tune: busy keeps its last code, the heartbeat ages
+        out = tune6(g1=0, y1=0, busy=1, age=PHASE_LOCK_IS_STALE_S + 1)
+        assert out["gunn1"] == (False, NO_DATA)
+        assert out["yig1"] == (False, ERROR)
+        assert verdicts(tune6(busy=1, age=PHASE_LOCK_IS_STALE_S + 1)) == (GOOD, NO_DATA, NC)
+
     @pytest.mark.parametrize("busy", [0, 30334, -702, None])
     def test_idle_or_garbage_busy_still_alerts(self, busy):
         assert verdicts(tune6(g1=0, busy=busy))[1] == ERROR
@@ -168,6 +184,13 @@ class TestLoLockFaultsTune6:
         assert out["gunn1_ifpower"] == 0.25 and out["gunn2_ifpower"] == 0.5
         assert out["gunn1_noise"] == 0.01
         assert out["gunn2_noise"] == (None, NO_DATA)
+
+    @pytest.mark.parametrize("bad", ["garbage", "", np.array([1.0, 2.0]), object()])
+    def test_bad_pll_value_keeps_the_lock_verdicts(self, bad):
+        out = tune6(g1=0, gunn1_ifpower=bad, gunn1_noise=np.array([0.5]))
+        assert out["gunn1_ifpower"] == (None, NO_DATA)
+        assert out["gunn1_noise"] == 0.5
+        assert verdicts(out) == (GOOD, ERROR, NC)
 
     def test_returns_exactly_the_declared_roles(self):
         assert set(tune6()) == {"yig1", "gunn1", "gunn2", "gunn1_ifpower", "gunn2_ifpower",
