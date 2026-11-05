@@ -104,7 +104,24 @@ The web display still uses the real clock
     The same setting is the `SLAMA_COMPUTED_MAX_AGE_S` environment variable
     for plain uvicorn. The server has no true `--as-of` clock; `inf` simply
     trusts the pushed validity whatever its age. Source-point cells are
-    unaffected, since they are judged by value.
+    unaffected, since they are judged by value. The same limit gates the
+    heartbeats on the Fault System and Processes pages.
+
+A replay that reaches root faults
+:   Because `--once` only starts the debounce timers, seeing roots on the
+    Fault System page needs the fault system to keep running:
+
+    ```bash
+    uv run python -m slama.fault src/slama/conf/faults.json --as-of $EPOCH
+    # with the web server at --computed-max-age inf
+    ```
+
+    Error faults debounce on `transient_filter_s`, so they reach `root`
+    within a few ticks (about 6 s). A no-data fault waits its
+    `no_data_filter_s`, up to 110 s in the shipped DAG, so about two minutes
+    covers every filter. Against the 2026-09-22 snapshot all 14 roots are
+    error verdicts, and 9 nodes are consequences. Durations on the page read `0s`, because `--as-of`
+    freezes the wall clock the snapshot's times come from.
 
 Points written only on change look old
 :   Many RM and DSM points are written only when their value changes, so

@@ -12,7 +12,8 @@ pages:
 - shows SMA monitor data in real time to about 100 concurrent users;
 - supports many pages, each showing a different subsystem or collection of
   points;
-- makes a new page a configuration change, not a code change;
+- makes a new page a configuration change, not a code change (the two
+  generated pages, §4.3, are the exception: their layout depends on data);
 - colour-codes every cell by validity (good, warning, error, no data);
 - lets each client adjust its own update rate and which rows are visible;
 - lets a user click any numeric cell for an interactive time series.
@@ -78,6 +79,9 @@ concurrent tasks sharing one per-connection `state` dict:
 - **receive**: parse JSON settings from the client and update `state`.
 
 When either task ends (normally a client disconnect) the other is cancelled.
+
+The generated pages (§4.3) use the same two routes, but push one
+`#page-body` fragment per cycle and ignore client messages.
 
 ### 3.3 Client settings
 
@@ -218,7 +222,10 @@ scripts). `index.html` lists pages. `display.html` renders the layout blocks
 through `components/table.html`, `grid.html` and `cells.html`, then holds the
 settings menu, the plot panel and the page script. Table rows whose label is in
 `hidden_rows` are skipped. A numeric cell gets the `plotable` class and a
-`data-canonical` attribute.
+`data-canonical` attribute. The generated pages have their own pair each:
+`fault_page.html` with `components/fault_sections.html`, and
+`process_page.html` with `components/process_sections.html`; the first of
+each pair holds the `#page-body` element, the second is what is pushed.
 
 `static/style.css` is a dark theme with monospace type. Validity classes:
 
@@ -358,6 +365,10 @@ python -m slama.web.server --smax-host localhost --smax-port 6380 \
 `--computed-max-age SECONDS` (or `SLAMA_COMPUTED_MAX_AGE_S`) sets how old a
 `monitorsystem:` point may be before it is greyed; the default is 6 s and `inf`
 disables the check, which is what viewing a `compute --as-of` replay needs.
+The same limit judges the heartbeats on the generated pages, so `inf` also
+keeps a replayed engine and fault system from reading as stopped.
+`--faults-json` and `--processes-json` (`SLAMA_FAULTS_JSON`,
+`SLAMA_PROCESSES_JSON`) point the generated pages at other config files.
 `--site-root` (or `SLAMA_SITE_ROOT`) is also accepted, for the benefit of
 anything the process imports that reads site files. On the observatory system
 Valkey listens on 6379, so use `--smax-port 6379` or `SMAX_PORT=6379`. Open
@@ -375,6 +386,16 @@ observatory feeds, a snapshot database, or the compute engine.
   and keeps only about 6 minutes of history, in clusters of near-identical
   readings. A one-person test does not show this. A
   single shared fetch loop that all connections read from would fix both.
+  The generated pages have the same shape: the Processes page reads about
+  350 values per viewer per refresh (0.2 s locally), about 10% of the server
+  per viewer, far short of the §1 goal of about 100 users. Rollout is under
+  10 viewers; load is to be measured on site against viewers and pages
+  (#56-6 in #50).
+- **Generated pages replace their whole body on each push.** Simple and
+  consistent (one tick's data at a time), but a tooltip probably disappears
+  while it is being read (not yet checked in a browser), and an open
+  `<details>` needs script to stay open (the Fault System page has it).
+  In-place cell updates would fix the tooltips.
 - **No `--as-of` for the server.** Computed points written with a replayed
   clock look stale to the freshness rule in section 6. The workaround is
   `--computed-max-age inf` (or `SLAMA_COMPUTED_MAX_AGE_S=inf`), which turns the

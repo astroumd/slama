@@ -72,9 +72,9 @@ export SMAX_HOST=localhost
 export SMAX_PORT=6380
 ```
 
-The compute engine, the web server and `fakeobs.py` read these variables.
-The fault system does not; it takes only `--host` and `--port` (see
-[](#fault-cli-differences)).
+The compute engine, the fault system, the web server and `fakeobs.py` read
+these variables; `--host` and `--port` (`--smax-host` and `--smax-port` on
+the web server) override them.
 
 ## Run the pieces
 
@@ -93,11 +93,21 @@ or, setting the SMAX location from options rather than the environment:
 uv run python -m slama.web.server --smax-port 6380 --web-port 8000 --reload
 ```
 
-Open <http://localhost:8000/>. The index lists every file in
-`src/slama/conf/displays/`. Against a static snapshot, cells for ordinary
+Open <http://localhost:8000/>. The index lists two generated pages
+first, then every file in `src/slama/conf/displays/`:
+
+- **Fault System** (`/display/faults`) draws the fault system's published
+  state, so it needs the fault system running (and the compute engine,
+  which the fault system judges).
+- **Processes** (`/display/processes`) shows the compute engine and fault
+  system heartbeats and every smainit program, so it needs the compute
+  engine running.
+
+See [](display-system.md). Against a static snapshot, cells for ordinary
 source points colour normally from their frozen values, but cells for
 computed `monitorsystem:` points show grey ("no data") because the web
-server distrusts their old timestamps; see [](replay-as-of.md).
+server distrusts their old timestamps; start it with `--computed-max-age
+inf` to see them, and see [](replay-as-of.md).
 
 ### Compute engine
 
@@ -126,15 +136,19 @@ tell whoever owns the copy first, and keep a backup.
 uv run python -m slama.fault src/slama/conf/faults.json
 ```
 
-The fault system only reads SMAX. It logs root faults to the file named in
-`faults.json` (`/tmp/slama-faults.log` in the shipped config).
+The fault system reads the compute engine's `monitorsystem:` points named
+in `faults.json`, logs root faults to the file named there
+(`/tmp/slama-faults.log` in the shipped config), and writes its own state to
+SMAX each tick (`faultsystem:state` and `faultsystem:heartbeat`), which the
+Fault System page draws. It is meaningful only while the compute engine
+runs.
 
 (fault-cli-differences)=
 :::{note}
-The two daemons deliberately mirror each other but are not identical. The
-compute engine has `--as-of`, `--once`, `--site-root` and honours
-`SMAX_HOST`/`SMAX_PORT`; the fault system has none of these and always
-defaults to `localhost:6380`.
+The two daemons deliberately mirror each other: both have `--once`,
+`--interval`, `--as-of`, `--host`/`--port` (defaulting to
+`SMAX_HOST`/`SMAX_PORT`) and `--log-level`. Only the compute engine has
+`--site-root`, because the fault system reads no site files.
 :::
 
 ### Simulated observatory

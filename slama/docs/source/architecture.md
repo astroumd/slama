@@ -9,14 +9,17 @@
  ┌────────────────────────────────┐
  │  SMAX  (Valkey/Redis :6380)    │◄──────────────┐ write monitorsystem:*
  │  table:key → value + metadata  │               │ (value + validity)
- └───────┬───────────┬────────────┘        ┌──────┴─────────────┐
-         │ read      │ read                │  compute engine    │
-         ▼           ▼                     │  slama.monitor.    │
- ┌──────────────┐ ┌──────────────┐         │  compute           │
- │ fault system │ │ web server   │         └──────▲─────────────┘
- │ slama.fault  │ │ slama.web    │                │ read
- │ → log/alerts │ │ → browsers   │                │
- └──────────────┘ └──────────────┘         (same SMAX, source points)
+ └──┬────────▲──────────┬─────────┘        ┌──────┴─────────────┐
+    │ read   │ write    │ read             │  compute engine    │
+    │ mon-   │ fault-   │ everything,      │  slama.monitor.    │
+    │ itor-  │ system:* │ incl. fault-     │  compute           │
+    │ system │          │ system:*         └──────▲─────────────┘
+    ▼        │          ▼                         │ read
+ ┌───────────┴──┐ ┌──────────────┐                │
+ │ fault system │ │ web server   │         (same SMAX, source points)
+ │ slama.fault  │ │ slama.web    │
+ │ → log/alerts │ │ → browsers   │
+ └──────────────┘ └──────────────┘
 ```
 
 SLAMA never talks to the hardware. Other programs publish into SMAX; SLAMA
@@ -24,6 +27,12 @@ reads, derives, judges and presents. The three SLAMA processes are
 independent: none imports another's runtime state, and they communicate only
 through SMAX keys. That is what lets each be restarted, replayed or tested on
 its own.
+
+Each writer also says that it is alive: the compute engine writes
+`monitorsystem:engine:heartbeat` and the fault system writes
+`faultsystem:heartbeat` every tick. Readers judge both by their SMAX write
+time, so a stopped process shows as one stale heartbeat (a root fault, a
+banner on the pages) rather than as every point it writes going grey.
 
 ## Configuration drives behaviour
 
@@ -49,6 +58,10 @@ JSON under `src/slama/conf/`:
 
 `displays/*.json`
 :   One file per web page. Adding a file adds a page; no code change.
+
+`processes.json`
+:   The Processes page: heartbeat processes and smainit hosts. The Fault
+    System page has no file of its own; it is generated from `faults.json`.
 
 `smax.json`, `computations.json` and `faults.json` use the same shorthand for
 repetition (display files expand `{ant}` placeholders through a table's
