@@ -12,10 +12,13 @@
             <span class="fault-cell cell-good">running</span>
             <span class="fault-cell cell-error">not running</span>
             <span class="fault-cell cell-unchecked">not checked</span>
-            <span class="fault-cell cell-nodata">no data</span>
+            <span class="fault-cell cell-unchecked">no report</span>
+            <span class="fault-cell cell-nodata">---</span>
         </span>
-        Not checked: an empty slot, a program that normally exits, or a host
-        whose report is stale. Hover a program for its slot and point.
+        Not checked: a program that normally exits. "no report": the host has
+        stopped reporting, and "---": no data; both count as unknown, and the
+        last reported state is in the tooltip. Hover a program for its slot
+        and point.
     </p>
 </div>
 

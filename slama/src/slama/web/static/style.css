@@ -393,7 +393,7 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
 .process-counts { display: flex; gap: 8px; }
 .process-count { padding: 2px 6px; border-radius: 3px; background: var(--color-surface);
                  border: 1px solid var(--color-border); }
-.process-count-not-running { color: #ff6b6b; font-weight: bold; }
+.process-count-alert { color: #ff6b6b; font-weight: bold; }
 .process-heartbeats { display: flex; flex-wrap: wrap; gap: 16px; }
 .process-hb { display: flex; align-items: center; gap: 6px; }
 .process-label { color: #aaa; }

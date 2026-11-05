@@ -8,7 +8,9 @@
 {% set counts = data.counts %}
 <div class="fault-status">
     <span class="process-counts">
-        {% for key in count_order %}{% if counts[key] or key != "no data" %}<span class="process-count process-count-{{ key | replace(' ', '-') }}">{{ key }} {{ counts[key] }}</span>{% endif %}{% endfor %}
+        {% for key in count_order %}<span class="process-count process-count-{{ key | replace(' ', '-') }}{{ ' process-count-alert' if counts[key] and key in ('not running', 'unknown') else '' }}">{{ key }} {{ counts[key] }}</span>{% endfor %}
+        {% set down = data.hosts_not_reporting %}
+        <span class="process-count process-count-hosts{{ ' process-count-alert' if down else '' }}">hosts not reporting {{ down }}</span>
     </span>
 </div>
 {% endif %}
@@ -40,7 +42,7 @@
         <table class="process-table">
             <tbody>
                 {% for prog in card.programs %}
-                <tr title="slot {{ prog.slot }}: {{ prog.point }}">
+                <tr title="slot {{ prog.slot }}: {{ prog.point }}{% if prog.unknown and prog.last_status %}&#10;last reported: {{ prog.last_status }}{% endif %}">
                     <td class="process-name">{{ prog.name }}</td>
                     <td class="fault-cell {{ prog.css }}">{{ prog.status }}</td>
                 </tr>

@@ -28,6 +28,7 @@ from slama.web.process_page import (
     ProgramRow,
     SmainitGroup,
     heartbeat_view,
+    program_row,
 )
 
 CONF = Path(__file__).resolve().parents[2] / "conf"
@@ -261,8 +262,22 @@ class TestReader:
         cells = FakeCells({f"{P}:hal9000:report_age": ("10800.0000", "cell-error")})
         data = _reader(FakeClient({}), cells).read(_config())
         card = data.groups[1].hosts[0]
-        assert card.report_age_s == 10800.0
+        assert card.report_age_s == 10800.0 and card.stale
         assert card.header_text == "no report for 3h" and card.header_css == "cell-error"
+        assert data.hosts_not_reporting == 1
+
+    def test_stale_host_replaces_running(self):
+        # the engine marks a stale host's programs NOT_CHECKED but keeps the label
+        client = FakeClient(_names(hal9000=["watchdog", "dsm"]))
+        cells = FakeCells({f"{P}:hal9000:report_age": ("7756043.0", "cell-error"),
+                           f"{P}:hal9000:slot:0:status": ("running", "cell-unchecked"),
+                           f"{P}:hal9000:slot:1:status": ("terminated", "cell-unchecked")})
+        data = _reader(client, cells).read(_config())
+        progs = data.groups[1].hosts[0].programs
+        assert [(p.status, p.css, p.unknown, p.last_status) for p in progs] == [
+            ("no report", "cell-unchecked", True, "running"),
+            ("no report", "cell-unchecked", True, "terminated")]
+        assert data.counts == {"running": 0, "not running": 0, "not checked": 0, "unknown": 2}
 
 
 # ----------------------------------------------------------------------
@@ -280,6 +295,32 @@ def _data(engine_fresh=True, cards=(), error=None):
     hb = HeartbeatStatus("Compute engine", HEARTBEAT_NAME, engine_fresh, 1.0 if engine_fresh else 180.0)
     return ProcessPageData([GroupData(cfg.groups[0], heartbeats=[hb]),
                             GroupData(cfg.groups[1], hosts=list(cards))], error)
+
+
+class TestProgramRow:
+    @pytest.mark.parametrize("value, css, stale, status, out_css, unknown, last", [
+        ("running", "cell-good", False, "running", "cell-good", False, None),
+        ("terminated", "cell-error", False, "terminated", "cell-error", False, None),
+        ("running", "cell-unchecked", False, "running", "cell-unchecked", False, None),
+        ("running", "cell-unchecked", True, "no report", "cell-unchecked", True, "running"),
+        ("running", "cell-good", True, "no report", "cell-unchecked", True, "running"),
+        ("running", "cell-nodata", False, "---", "cell-nodata", True, "running"),
+        ("---", "cell-nodata", False, "---", "cell-nodata", True, None),
+    ])
+    def test_rules(self, value, css, stale, status, out_css, unknown, last):
+        row = program_row(3, "dsm", "p:q", CellData("p:q", value, css, "x"), stale)
+        assert (row.status, row.css, row.unknown, row.last_status) == (
+            status, out_css, unknown, last)
+
+    def test_engine_stopped_never_shows_running(self):
+        # fetch_cell keeps the label text when the computed-point gate says no data
+        cells = FakeCells({f"{P}:hal9000:report_age": ("0.5", "cell-nodata"),
+                           f"{P}:hal9000:slot:0:status": ("running", "cell-nodata")})
+        data = _reader(FakeClient(_names(hal9000=["watchdog"])), cells).read(_config())
+        card = data.groups[1].hosts[0]
+        assert card.programs[0].status == "---" and card.header_text == "no data"
+        assert not card.stale and data.hosts_not_reporting == 0
+        assert data.counts["unknown"] == 1
 
 
 class TestViews:
@@ -308,8 +349,9 @@ class TestViews:
         cards = [_card(programs=[("a", "running", "cell-good"), ("b", "terminated", "cell-error"),
                                  ("c", "running", "cell-unchecked"), ("d", "---", "cell-nodata"),
                                  ("e", "quit", "cell-warning")])]
+        cards[0].programs[3].unknown = True
         assert _data(cards=cards).counts == {"running": 1, "not running": 2,
-                                             "not checked": 1, "no data": 1}
+                                             "not checked": 1, "unknown": 1}
 
     def test_engine_banner(self):
         assert _data().banners() == []
@@ -370,15 +412,17 @@ class TestRendering:
         cards = [_card(programs=[("watchdog", "running", "cell-good"),
                                  ("tune6", "terminated", "cell-error")]),
                  HostCard("newdds", f"{P}:newdds:report_age", "cell-error", 7756043.0,
-                          [ProgramRow(0, "dsm", f"{P}:newdds:slot:0:status", "running",
-                                      "cell-unchecked")]),
+                          [ProgramRow(0, "dsm", f"{P}:newdds:slot:0:status", "no report",
+                                      "cell-unchecked", True, "running")]),
                  HostCard("m5", f"{P}:m5:report_age", "cell-good", 1.0, [])]
         page = _page(tmp_path, _data(cards=cards))
         assert page.update_interval == 3.0
         html = server._render_generated(page, page.read())
         assert 'id="page-body" hx-swap-oob="innerHTML"' in html
-        assert "running 1" in html and "not running 1" in html and "not checked 1" in html
-        assert "no data 0" not in html
+        assert "running 1" in html and "not running 1" in html and "unknown 1" in html
+        assert "not checked 0" in html and "hosts not reporting 1" in html
+        assert '<td class="fault-cell cell-unchecked">no report</td>' in html
+        assert "last reported: running" in html
         assert '<td class="fault-cell cell-error">terminated</td>' in html
         assert "no report for 89d" in html
         assert "no programs reported" in html

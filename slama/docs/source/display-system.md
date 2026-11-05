@@ -171,17 +171,28 @@ file order. A group has a `title` and a `type`:
     host: the host name, then each named slot's program name and status
     label (`running`, `terminated`, `quit`, ...), coloured by the
     `monitorsystem:smainit:{h}:slot:{j}:status` validity: green running,
-    red otherwise, grey (not checked) for a program that normally exits or
-    a host whose report is stale. The card header says "no report for 3h"
-    (red) when `report_age` is stale, and "no data" when it is missing.
-    Hover a program for its slot and point.
+    red otherwise, grey (not checked) for a program that normally exits.
+    The card header says "no report for 3h" (red) when `report_age` is
+    stale, and "no data" when it is missing. Hover a program for its slot
+    and point.
 
-Above the cards a count line gives running, not running and not checked
-programs (161 on the 2026-11-04 snapshot: 143, 3, 15). A banner says
-"Compute engine not running: program states are not being updated" when
-the engine heartbeat is stale; the program cells are grey anyway, because
-`DataBridge.fetch_cell` gates every `monitorsystem:` point on its write
-time.
+A label that is not current is never shown, because an operator reads
+the text before the colour. On a host that has stopped reporting, the
+engine marks every program not checked but keeps its last label, so a
+dead host's programs would read a grey "running". The page shows them as
+"no report" instead, and a status with no data (the point is missing, or
+the compute engine has stopped) as "---". Both are counted as unknown,
+and the last label read is in the tooltip
+({py:func}`program_row <slama.web.process_page.program_row>`).
+
+Above the cards a count line gives running, not running, not checked and
+unknown programs, and the number of hosts not reporting; "not running",
+"unknown" and the host count are red when non-zero. On the 2026-11-04
+snapshot: 143, 3, 0 and 15 of 161, with 3 hosts not reporting (`newdds`,
+`corcon`, `m5`). A banner says "Compute engine not running: program
+states are not being updated" when the engine heartbeat is stale; every
+program then reads "---", because `DataBridge.fetch_cell` gates every
+`monitorsystem:` point on its write time.
 
 A hand-written `displays/*.json` page cannot draw the smainit group,
 because slots are positional: which program is in which slot is only

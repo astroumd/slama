@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "PAGE_NAME", "SMAINIT_PREFIX", "HeartbeatProcess", "HeartbeatGroup", "SmainitGroup",
-    "ProcessConfig", "ProgramRow", "HostCard", "GroupData", "ProcessPageData",
+    "ProcessConfig", "ProgramRow", "program_row", "HostCard", "GroupData", "ProcessPageData",
     "ProcessPageReader", "ProcessCell", "heartbeat_view", "ProcessPage",
 ]
 
@@ -77,12 +77,21 @@ _COUNT_KEYS: dict[str, str] = {
     CSS_ERROR: "not running",
     CSS_WARNING: "not running",
     CSS_UNCHECKED: "not checked",
-    CSS_NODATA: "no data",
+    CSS_NODATA: "unknown",
 }
-"""dict: a program cell's CSS class to its count-line category."""
+"""dict: a known program cell's CSS class to its count-line category.
+Programs whose state is unknown (:attr:`ProgramRow.unknown`) count as
+``"unknown"`` whatever their class."""
 
-COUNT_ORDER: tuple[str, ...] = ("running", "not running", "not checked", "no data")
+COUNT_ORDER: tuple[str, ...] = ("running", "not running", "not checked", "unknown")
 """tuple of str: count-line categories, in display order."""
+
+NO_REPORT_TEXT: str = "no report"
+"""str: program text when its host has stopped reporting."""
+
+NO_DATA_TEXT: str = "---"
+"""str: program text when its status cannot be read (missing point, or the
+compute engine stopped)."""
 
 
 # ----------------------------------------------------------------------
@@ -306,15 +315,61 @@ class ProgramRow:
     point : str
         The slot's ``status`` canonical name.
     status : str
-        The status label (``running``, ``terminated``, ...) or ``---``.
+        Text to draw: the status label (``running``, ``terminated``, ...)
+        while it is current, else :data:`NO_REPORT_TEXT` or
+        :data:`NO_DATA_TEXT`.
     css : str
-        Validity CSS class of the status point.
+        CSS class to draw it with.
+    unknown : bool, optional
+        True when the program's current state is unknown: its host has
+        stopped reporting, or its status has no data. A stale label must
+        never read as "running", so it is replaced.
+    last_status : str or None, optional
+        For an unknown program, the last label read (for the tooltip), if
+        any.
     """
     slot: int
     name: str
     point: str
     status: str
     css: str
+    unknown: bool = False
+    last_status: str | None = None
+
+
+def program_row(slot: int, name: str, point: str, cell: CellData,
+                host_stale: bool) -> ProgramRow:
+    """Build one program's row, replacing a label that is not current.
+
+    Parameters
+    ----------
+    slot : int
+        Slot number.
+    name : str
+        Program name.
+    point : str
+        The slot's ``status`` canonical name.
+    cell : CellData
+        ``fetch_cell(point)``.
+    host_stale : bool
+        Whether the host's ``report_age`` says it has stopped reporting.
+
+    Returns
+    -------
+    ProgramRow
+        - host stale: :data:`NO_REPORT_TEXT`, grey (not checked), unknown;
+        - status no data (point missing, or the compute engine stopped):
+          :data:`NO_DATA_TEXT`, no-data grey, unknown;
+        - otherwise the label, coloured by its validity.
+
+        An unknown row keeps the label read in ``last_status``.
+    """
+    last = cell.value if cell.value != NO_DATA_TEXT else None
+    if host_stale:
+        return ProgramRow(slot, name, point, NO_REPORT_TEXT, CSS_UNCHECKED, True, last)
+    if cell.css_class == CSS_NODATA:
+        return ProgramRow(slot, name, point, NO_DATA_TEXT, CSS_NODATA, True, last)
+    return ProgramRow(slot, name, point, cell.value, cell.css_class)
 
 
 @dataclass
@@ -343,11 +398,20 @@ class HostCard:
     programs: list[ProgramRow] = field(default_factory=list)
 
     @property
+    def stale(self) -> bool:
+        """bool: whether ``report_age`` says the host has stopped reporting.
+
+        No data (missing point, or the compute engine stopped) is not
+        stale: whether the host reports is then unknown.
+        """
+        return self.report_css in (CSS_ERROR, CSS_WARNING)
+
+    @property
     def header_text(self) -> str:
         """str: reporting state beside the host name; blank while reporting."""
         if self.report_css == CSS_NODATA:
             return "no data"
-        if self.report_css in (CSS_ERROR, CSS_WARNING):
+        if self.stale:
             if self.report_age_s is None:
                 return "no report"
             if self.report_age_s < 0:
@@ -395,13 +459,23 @@ class ProcessPageData:
 
     @property
     def counts(self) -> dict[str, int]:
-        """dict of str to int: smainit programs per :data:`COUNT_ORDER` category."""
+        """dict of str to int: smainit programs per :data:`COUNT_ORDER` category.
+
+        Unknown programs (stale host, or no data) count as ``"unknown"``,
+        never under the label they last showed.
+        """
         out = dict.fromkeys(COUNT_ORDER, 0)
         for g in self.groups:
             for card in g.hosts:
                 for prog in card.programs:
-                    out[_COUNT_KEYS.get(prog.css, "not checked")] += 1
+                    key = "unknown" if prog.unknown else _COUNT_KEYS.get(prog.css, "not checked")
+                    out[key] += 1
         return out
+
+    @property
+    def hosts_not_reporting(self) -> int:
+        """int: smainit hosts whose report is stale (:attr:`HostCard.stale`)."""
+        return sum(card.stale for g in self.groups for card in g.hosts)
 
     @property
     def has_programs(self) -> bool:
@@ -441,8 +515,9 @@ class ProcessPageReader:
         :meth:`DataBridge.fetch_cell
         <slama.web.data_bridge.DataBridge.fetch_cell>`: it applies the
         computed-point gate (pushed validity, trusted only while the
-        point's write time is fresh), so a stopped compute engine greys
-        every program with no extra logic here.
+        point's write time is fresh). A program whose status then has no
+        data, or whose host has stopped reporting, has its label replaced
+        (:func:`program_row`), so a stale "running" is never shown.
     max_age_s : float
         Heartbeat freshness limit, seconds; ``inf`` disables the check.
     clock : callable, optional
@@ -520,8 +595,8 @@ class ProcessPageReader:
         card = HostCard(host, report_point, report.css_class, age)
         for slot, name in sorted(self._names.get(host, {}).items()):
             point = f"{SMAINIT_PREFIX}:{host}:slot:{slot}:status"
-            cell = self._fetch_cell(point)
-            card.programs.append(ProgramRow(slot, name, point, cell.value, cell.css_class))
+            card.programs.append(
+                program_row(slot, name, point, self._fetch_cell(point), card.stale))
         return card
 
     def read(self, config: ProcessConfig) -> ProcessPageData:
