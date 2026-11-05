@@ -27,21 +27,14 @@ from pathlib import Path
 from smax import SmaxRedisClient
 
 from slama import site_paths
+from slama.cli_common import DEFAULT_SMAX_HOST, DEFAULT_SMAX_PORT, add_smax_args
 from slama.smax_logging import configure_smax_logging
 from slama.monitor.monitorsystem import MonitorSystem
 
 from .computeconfig import ComputeConfig
 from .engine import ComputeEngine
 
-DEFAULT_SMAX_HOST = "localhost"
-"""SMAX host used when neither ``--host`` nor ``SMAX_HOST`` is given."""
-
-DEFAULT_SMAX_PORT = 6380
-"""SMAX port used when neither ``--port`` nor ``SMAX_PORT`` is given.
-
-The SLAMA development convention (OS Redis owns 6379); the observatory
-itself uses 6379, set via ``SMAX_PORT`` or ``--port``.
-"""
+__all__ = ["DEFAULT_SMAX_HOST", "DEFAULT_SMAX_PORT", "main"]
 
 
 def _build_parser(environ=None) -> argparse.ArgumentParser:
@@ -59,19 +52,13 @@ def _build_parser(environ=None) -> argparse.ArgumentParser:
     argparse.ArgumentParser
         Parser whose ``--host``/``--port`` defaults come from
         ``SMAX_HOST``/``SMAX_PORT`` when set, else
-        :data:`DEFAULT_SMAX_HOST`/:data:`DEFAULT_SMAX_PORT`. An explicit
+        :data:`~slama.cli_common.DEFAULT_SMAX_HOST` /
+        :data:`~slama.cli_common.DEFAULT_SMAX_PORT` (see
+        :func:`slama.cli_common.add_smax_args`). An explicit
         ``--host``/``--port`` always wins over the environment.
     """
-    env = os.environ if environ is None else environ
-    host_default = env.get("SMAX_HOST") or DEFAULT_SMAX_HOST
-    port_env = env.get("SMAX_PORT")
-    port_default = DEFAULT_SMAX_PORT
     parser = argparse.ArgumentParser(prog="[uv run] python -m slama.monitor.compute")
-    if port_env:
-        try:
-            port_default = int(port_env)
-        except ValueError:
-            parser.error(f"SMAX_PORT must be an integer port number, got {port_env!r}")
+    add_smax_args(parser, environ)
     parser.add_argument(
         "config",
         type=Path,
@@ -82,14 +69,6 @@ def _build_parser(environ=None) -> argparse.ArgumentParser:
         type=Path,
         default=Path(__file__).resolve().parents[2] / "conf" / "smax.json",
         help="Path to the SMAX monitor-system JSON (default: conf/smax.json)",
-    )
-    parser.add_argument(
-        "--host", default=host_default,
-        help=f"SMAX host (default: $SMAX_HOST, else {DEFAULT_SMAX_HOST}; now {host_default})",
-    )
-    parser.add_argument(
-        "--port", type=int, default=port_default,
-        help=f"SMAX Redis port (default: $SMAX_PORT, else {DEFAULT_SMAX_PORT}; now {port_default})",
     )
     parser.add_argument(
         "--interval", type=float, default=None,

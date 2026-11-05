@@ -37,9 +37,9 @@ Then open `http://localhost:8000/`.
 **Run the compute engine and fault system** (each a blocking foreground process; both default to SMAX `localhost:6380`):
 ```bash
 uv run python -m slama.monitor.compute src/slama/conf/computations.json   # --interval N, --once, --as-of
-uv run python -m slama.fault src/slama/conf/faults.json                   # --interval N, --smax-json, --host, --port
+uv run python -m slama.fault src/slama/conf/faults.json                   # --interval N, --once, --as-of, --smax-json, --host, --port
 ```
-The compute engine also honours `SMAX_HOST`/`SMAX_PORT`. See `docs/source/replay-as-of.md` for `--as-of` against the static dev snapshot.
+Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The fault CLI's `--as-of` sets only the wall clock (debounce stays on the real monotonic clock); it has no `--site-root` because it reads no site files. See `docs/source/replay-as-of.md` for `--as-of` against the static dev snapshot.
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
@@ -81,7 +81,7 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 **`src/slama/coordinates/`** — Spatial and spectral coordinate helpers (`core.py`).
 
-**`src/slama/sitefiles.py`, `site_paths.py`, `smax_logging.py`** — Site-file parsers and path resolution (see Configuration Files), and shared SMAX logging setup.
+**`src/slama/sitefiles.py`, `site_paths.py`, `smax_logging.py`, `cli_common.py`** — Site-file parsers and path resolution (see Configuration Files), shared SMAX logging setup, and the shared CLI `--host`/`--port` (`SMAX_HOST`/`SMAX_PORT`) defaults.
 
 **`src/slama/web/`** — FastAPI web display (see `docs/source/web_display_design.md` for full architecture):
 

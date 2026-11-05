@@ -57,6 +57,7 @@ Generated from the numpydoc docstrings in the source.
 ## Command-line entry points
 
 ```{eval-rst}
+.. automodule:: slama.cli_common
 .. automodule:: slama.monitor.compute.__main__
 .. automodule:: slama.fault.__main__
 ```
