@@ -1115,21 +1115,26 @@ def fault_gate(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     ----------
     inputs : dict of str to ResolvedInput
         ``"subject"``: the point to pass through (its validity is the
-        verdict); ``"online"``: ``monitorsystem:antenna:{i}:online``.
-        A stale or missing subject never reaches here: the engine
-        short-circuits the node to ``INVALID_NO_DATA``.
+        verdict), declared **optional** in ``computations.json`` so a
+        stale or missing subject still reaches here (``value=None``);
+        ``"online"``: ``monitorsystem:antenna:{i}:online``.
     ctx : ComputeContext
         Unused.
 
     Returns
     -------
     tuple of (Any, Validity)
-        ``(subject value, VALID_NOT_CHECKED)`` when not online, else
-        ``(subject value, subject validity)``.
+        ``(subject value, VALID_NOT_CHECKED)`` when not online, whatever
+        the subject's state: an antenna in the hangar with its servo off
+        or its acc down must not raise a no-data fault. Otherwise
+        ``(None, INVALID_NO_DATA)`` when the subject could not be read,
+        else ``(subject value, subject validity)``.
     """
     subject = inputs["subject"]
     if not _is_one(inputs["online"].value):
         return subject.value, Validity.VALID_NOT_CHECKED
+    if subject.value is None:
+        return None, Validity.INVALID_NO_DATA
     return subject.value, subject.validity
 
 
@@ -1147,7 +1152,10 @@ def lo_lock_faults(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dic
 
     1. antenna not online: ``VALID_NOT_CHECKED``;
     2. TUNE6 busy with a valid code 1-12 (:func:`_tune6_busy`; Tune6
-       only, the C forces busy 0 on wSMA): ``VALID_GOOD``;
+       only, the C forces busy 0 on wSMA): ``VALID_GOOD``. The busy code
+       is written only on change, so it is trusted only while the
+       ``RM_GUNN1_LOCKED_TIMESTAMP_L`` heartbeat is fresh: a code latched
+       by a tune6 that died mid-tune must not report GOOD forever;
     3. Gunn only: the Gunn is off (:func:`_is_on`) or the band does not
        need it: ``VALID_NOT_CHECKED``;
     4. gunn1 on Tune6 only: the ``RM_GUNN1_LOCKED_TIMESTAMP_L``
@@ -1184,7 +1192,8 @@ def lo_lock_faults(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dic
         Validity)``; ``"gunn1_ifpower"``, ``"gunn2_ifpower"``,
         ``"gunn1_noise"``, ``"gunn2_noise"`` -> the bare PLL value (no
         levels, issue #50 #56-1), or ``(None, INVALID_NO_DATA)`` when
-        it could not be read.
+        it is missing or not a single number (:func:`_context_float`),
+        so a bad context value never costs the lock verdicts.
     """
     online = _is_one(inputs["online"].value)
     if "selector" in inputs:
@@ -1196,12 +1205,13 @@ def lo_lock_faults(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dic
         noise = [_opt_value(inputs, f"nf_{s}") for s in suffixes]
         stale = [False, False]
     else:
-        tuning = _tune6_busy(_opt_value(inputs, "busy"))
+        hb_stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
+        tuning = _tune6_busy(_opt_value(inputs, "busy")) and not hb_stale
         gunns = (inputs["gunn1"].value, inputs["gunn2"].value)
         on = [_is_on(_opt_value(inputs, f"gunn{n}_on")) for n in (1, 2)]
         ifpower = [_opt_value(inputs, f"gunn{n}_ifpower") for n in (1, 2)]
         noise = [_opt_value(inputs, f"gunn{n}_noise") for n in (1, 2)]
-        stale = [_age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S, False]
+        stale = [hb_stale, False]
 
     rest = float(_array_elem(inputs["rest_freq"].value, 0))
     needed = [not rest > HI_LO_FREQ_CUTOFF_HZ, not rest < HI_LO_FREQ_CUTOFF_HZ]
@@ -1232,9 +1242,39 @@ def lo_lock_faults(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dic
             v = verdict(g)
         out[f"gunn{n + 1}"] = (g, v)
         for role, values in (("ifpower", ifpower), ("noise", noise)):
-            val = values[n]
-            out[f"gunn{n + 1}_{role}"] = (None, Validity.INVALID_NO_DATA) if val is None else float(val)
+            out[f"gunn{n + 1}_{role}"] = _context_float(values[n])
     return out
+
+
+def _context_float(val):
+    """Convert a PLL context value, never raising.
+
+    The PLL values ride in the same node as the lock verdicts, so an
+    exception here would make the engine mark every output, including
+    yig1, gunn1 and gunn2, ``INVALID_NO_DATA``.
+
+    Parameters
+    ----------
+    val : Any
+        The raw input value: a number, a one-element array, ``None``, or
+        anything else a writer might store.
+
+    Returns
+    -------
+    float or tuple of (None, Validity)
+        ``float(val)``, or ``(None, INVALID_NO_DATA)`` when ``val`` is
+        ``None`` or cannot be read as one number (a non-numeric string,
+        an array of more than one element, ...).
+    """
+    if val is None:
+        return None, Validity.INVALID_NO_DATA
+    try:
+        arr = np.asarray(val, dtype=float)
+    except (TypeError, ValueError):
+        return None, Validity.INVALID_NO_DATA
+    if arr.size != 1:
+        return None, Validity.INVALID_NO_DATA
+    return float(arr.reshape(-1)[0])
 
 
 SMAINIT_STATUS_LABELS = {
