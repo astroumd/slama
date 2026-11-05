@@ -95,6 +95,16 @@ uv run python -m slama.fault src/slama/conf/faults.json --interval 2
 tail -f /tmp/slama-faults.log
 ```
 
+- `--host`/`--port` default to the `SMAX_HOST`/`SMAX_PORT` environment
+  variables, else `localhost:6380`, as for the compute engine
+  ({py:func}`slama.cli_common.add_smax_args`).
+- `--once` runs a single tick, logs each dispatched event, and exits.
+  Actions still fire.
+- `--as-of EPOCH` replaces only the wall clock, for replaying the static
+  snapshot; see [](replay-as-of.md).
+- There is no `--site-root`: the fault system reads no site files. Add it
+  if `faults.json` ever gains `@` tokens.
+
 ## Things to know
 
 - The fault system takes its verdict from `MonitorPoint.validity`, which
@@ -109,4 +119,3 @@ tail -f /tmp/slama-faults.log
   `smax.json` is never read and always reports `INVALID_NO_DATA`; the
   fault system logs one `WARNING` listing such names when it loads or
   reloads a config.
-- The CLI has no `--as-of`; see [](replay-as-of.md).
