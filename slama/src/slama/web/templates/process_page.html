@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.name }} - SMA Monitor{% endblock %}
+
+{% block clock %}{{ clock_html }}{% endblock %}
+
+{% block content %}
+<div class="display-header">
+    <h1>{{ page.name }}</h1>
+    <p class="display-desc">{{ page.description }}.
+        <span class="fault-legend">
+            <span class="fault-cell cell-good">running</span>
+            <span class="fault-cell cell-error">not running</span>
+            <span class="fault-cell cell-unchecked">not checked</span>
+            <span class="fault-cell cell-nodata">no data</span>
+        </span>
+        Not checked: an empty slot, a program that normally exits, or a host
+        whose report is stale. Hover a program for its slot and point.
+    </p>
+</div>
+
+<div hx-ext="ws" ws-connect="/ws/display/{{ page.filename }}">
+    <div id="page-body" class="layout-block">
+        {% include "components/process_sections.html" %}
+    </div>
+</div>
+
+<script>
+    // --- Connection status (as display.html) ---
+    document.body.addEventListener("htmx:wsOpen", function() {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Connected";
+        el.classList.add("connected");
+        el.classList.remove("disconnected");
+    });
+    document.body.addEventListener("htmx:wsClose", function() {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Disconnected";
+        el.classList.add("disconnected");
+        el.classList.remove("connected");
+    });
+</script>
+{% endblock %}

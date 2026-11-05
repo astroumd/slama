@@ -36,6 +36,7 @@ Generated from the numpydoc docstrings in the source.
 .. automodule:: slama.web.data_bridge
 .. automodule:: slama.web.server
 .. automodule:: slama.web.fault_page
+.. automodule:: slama.web.process_page
 ```
 
 ## Coordinates

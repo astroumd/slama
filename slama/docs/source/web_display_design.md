@@ -146,14 +146,25 @@ Running `python -m slama.web.server` provides a small CLI that sets those
 environment variables before starting Uvicorn (section 7).
 
 **Generated pages.** `GENERATED_PAGES` maps a URL name to a page built in
-code; the routes check it before looking for `displays/{name}.json`. Its
-one entry is the Fault System page (`faults`). Such a page provides the
-index-card attributes (`name`, `description`, `filename`,
-`update_interval`), a blocking `read()` run in `asyncio.to_thread`, and
-`context(data)` for its templates. Its WebSocket pushes the clock and one
-`#fault-body` out-of-band swap every `update_interval` (the fault system's
-`interval_s`) and ignores client messages: it has no settings, since
-refreshing faster than the fault system ticks shows nothing new.
+code; the routes check it before looking for `displays/{name}.json`. It
+has two entries, the Fault System page (`faults`) and the Processes page
+(`processes`). Such a page provides:
+
+- the index-card attributes `name`, `description`, `filename` and
+  `update_interval`;
+- `page_template`, the full page, whose body element has id `page-body`,
+  and `body_template`, that body alone;
+- a blocking `read()`, run in `asyncio.to_thread`;
+- `unavailable(message)`, the data to draw when `read()` raises or times
+  out (the server passes `READ_FAILED`; `None` when the page's config
+  failed to load, which has its own banner);
+- `context(data)`, the template variables.
+
+The server code (`_generated_page`, `_render_generated`, `_ws_generated`)
+is the same for every generated page. Its WebSocket pushes the clock and
+one `#page-body` out-of-band swap every `update_interval` and ignores
+client messages: generated pages have no settings, since refreshing faster
+than the processes they show tick shows nothing new.
 
 ### 4.3.1 `fault_page.py`
 
@@ -175,7 +186,30 @@ without SMAX:
   (`fault_page.html`, `components/fault_sections.html`) only draw.
 
 The reader judges heartbeats by their SMAX write timestamp, not their
-value: under `--as-of` the value is the replayed epoch.
+value: under `--as-of` the value is the replayed epoch. The rule is
+{py:func}`heartbeat_status <slama.web.fault_page.heartbeat_status>`, shared
+with the Processes page.
+
+### 4.3.2 `process_page.py`
+
+{py:mod}`slama.web.process_page` has the same three layers:
+
+- **Config** ({py:class}`ProcessConfig <slama.web.process_page.ProcessConfig>`):
+  loads and validates `processes.json`; errors name the group.
+- **Reading** ({py:class}`ProcessPageReader <slama.web.process_page.ProcessPageReader>`):
+  heartbeats through `heartbeat_status`; smainit program names from a
+  cache refreshed every `names_refresh_s`; each named slot's status and
+  each host's `report_age` through `DataBridge.fetch_cell`, so the
+  computed-point gate applies with no extra logic. The cache is replaced
+  in one assignment, so the per-viewer refresh loops can share the reader.
+- **Views** ({py:func}`heartbeat_view <slama.web.process_page.heartbeat_view>`
+  and the {py:class}`HostCard <slama.web.process_page.HostCard>` header
+  properties, pure); the templates are `process_page.html` and
+  `components/process_sections.html`.
+
+Each viewer has its own refresh loop, so SMAX load grows with viewers and
+open pages; measuring it on site is #56-6 in #50. If it is too high, the
+fix is one shared refresh loop per page.
 
 ### 4.4 Templates and CSS
 

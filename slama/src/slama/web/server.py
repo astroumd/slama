@@ -7,7 +7,7 @@ Usage:
 Or with CLI options (sets SMAX_HOST / SMAX_PORT before uvicorn starts):
     python -m slama.web.server [--smax-host HOST] [--smax-port PORT]
                                [--computed-max-age SECONDS]
-                               [--faults-json PATH]
+                               [--faults-json PATH] [--processes-json PATH]
                                [--web-port PORT] [--reload]
 
 Environment variables (used when launching via plain uvicorn):
@@ -15,6 +15,7 @@ Environment variables (used when launching via plain uvicorn):
     SMAX_PORT   SMAX/Redis server port     (default: 6380)
     SLAMA_COMPUTED_MAX_AGE_S   Computed-point no-data age, s (default: 6; inf = off)
     SLAMA_FAULTS_JSON          faults.json drawn by /display/faults (default: conf/faults.json)
+    SLAMA_PROCESSES_JSON       processes.json drawn by /display/processes (default: conf/processes.json)
 """
 
 import asyncio
@@ -42,8 +43,12 @@ from .display_config import (
 from .fault_page import (
     PAGE_NAME as FAULT_PAGE_NAME,
     FaultPage,
-    FaultPageData,
     FaultPageReader,
+)
+from .process_page import (
+    PAGE_NAME as PROCESS_PAGE_NAME,
+    ProcessPage,
+    ProcessPageReader,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,6 +61,10 @@ _CONF_DIR = _WEB_DIR.parent / "conf"
 _DISPLAYS_DIR = _CONF_DIR / "displays"
 _SMAX_JSON_PATH = _CONF_DIR / "smax.json"
 _FAULTS_JSON_PATH = _CONF_DIR / "faults.json"
+_PROCESSES_JSON_PATH = _CONF_DIR / "processes.json"
+
+READ_FAILED = "Could not read the data for this page from SMAX"
+"""str: banner for a generated-page refresh that raised or timed out."""
 
 # Hawaii Standard Time (UTC-10, no daylight saving)
 _HST = timezone(timedelta(hours=-10))
@@ -112,12 +121,20 @@ bridge = DataBridge(
 )
 
 # Pages generated in code rather than from conf/displays/*.json, by URL
-# name. Each has name/description/filename/update_interval for the index
-# card, read() (blocking) and context(data) for its templates.
-GENERATED_PAGES: dict[str, FaultPage] = {
+# name. Each provides, for the index card, name / description / filename /
+# update_interval; for rendering, page_template (the full page, whose body
+# element has id "page-body"), body_template (that body, pushed over the
+# WebSocket), read() (blocking), unavailable(message) (data for a failed
+# read) and context(data) (template variables).
+GENERATED_PAGES: dict[str, FaultPage | ProcessPage] = {
     FAULT_PAGE_NAME: FaultPage(
         os.environ.get("SLAMA_FAULTS_JSON") or _FAULTS_JSON_PATH,
         FaultPageReader(bridge._get_client, bridge._computed_max_age_s),
+    ),
+    PROCESS_PAGE_NAME: ProcessPage(
+        os.environ.get("SLAMA_PROCESSES_JSON") or _PROCESSES_JSON_PATH,
+        ProcessPageReader(bridge._get_client, bridge.fetch_cell,
+                          bridge._computed_max_age_s),
     ),
 }
 
@@ -228,24 +245,22 @@ async def _generated_page(page) -> str:
 
     Parameters
     ----------
-    page : FaultPage
+    page : FaultPage or ProcessPage
         The page.
 
     Returns
     -------
     str
-        The rendered ``fault_page.html``. If the read fails or takes over
-        5 s, the page renders with no data and the stale-heartbeat banners.
+        The rendered ``page.page_template``. If the read fails or takes
+        over 5 s, the page renders ``page.unavailable(READ_FAILED)``.
     """
     try:
         data = await asyncio.wait_for(asyncio.to_thread(page.read), timeout=5.0)
     except Exception:
         logger.warning("Could not fetch initial data for '%s'", page.filename,
                        exc_info=True)
-        data = None
-    if data is None and page.load_error is None:
-        data = FaultPageData.unavailable("Could not read the fault state from SMAX")
-    template = jinja_env.get_template("fault_page.html")
+        data = page.unavailable(READ_FAILED)
+    template = jinja_env.get_template(page.page_template)
     return template.render(clock_html=Markup(_get_clock_html()), **page.context(data))
 
 
@@ -254,20 +269,20 @@ def _render_generated(page, data) -> str:
 
     Parameters
     ----------
-    page : FaultPage
+    page : FaultPage or ProcessPage
         The page.
-    data : FaultPageData or None
-        From ``page.read()``.
+    data : object or None
+        From ``page.read()`` or ``page.unavailable()``.
 
     Returns
     -------
     str
-        The clock and the ``#fault-body`` out-of-band swap.
+        The clock and the ``#page-body`` out-of-band swap of
+        ``page.body_template``.
     """
-    body = jinja_env.get_template("components/fault_sections.html").render(
-        **page.context(data))
+    body = jinja_env.get_template(page.body_template).render(**page.context(data))
     return (_get_clock_html() + "\n"
-            f'<div id="fault-body" hx-swap-oob="innerHTML">{body}</div>')
+            f'<div id="page-body" hx-swap-oob="innerHTML">{body}</div>')
 
 
 async def _ws_generated(websocket: WebSocket, page) -> None:
@@ -277,10 +292,10 @@ async def _ws_generated(websocket: WebSocket, page) -> None:
     ----------
     websocket : WebSocket
         Accepted connection.
-    page : FaultPage
-        The page. Client messages are read and ignored: the page has no
-        settings (refreshing faster than the fault system ticks shows
-        nothing new).
+    page : FaultPage or ProcessPage
+        The page. Client messages are read and ignored: generated pages
+        have no settings (refreshing faster than the processes they show
+        tick shows nothing new).
     """
     async def send_updates():
         while True:
@@ -290,8 +305,7 @@ async def _ws_generated(websocket: WebSocket, page) -> None:
             except Exception:
                 # Never let one bad refresh end the socket: show a banner.
                 logger.exception("Reading '%s' failed", page.filename)
-                data = (None if page.load_error else
-                        FaultPageData.unavailable("Could not read the fault state from SMAX"))
+                data = page.unavailable(READ_FAILED)
             await websocket.send_text(_render_generated(page, data))
 
     async def receive_messages():
@@ -527,6 +541,13 @@ if __name__ == "__main__":
              "(default: conf/faults.json)",
     )
     parser.add_argument(
+        "--processes-json",
+        default=os.environ.get("SLAMA_PROCESSES_JSON"),
+        metavar="PATH",
+        help="processes.json drawn by the Processes page "
+             "(default: conf/processes.json)",
+    )
+    parser.add_argument(
         "--web-port",
         type=int,
         default=8000,
@@ -553,6 +574,8 @@ if __name__ == "__main__":
         os.environ["SLAMA_SITE_ROOT"] = args.site_root
     if args.faults_json:
         os.environ["SLAMA_FAULTS_JSON"] = args.faults_json
+    if args.processes_json:
+        os.environ["SLAMA_PROCESSES_JSON"] = args.processes_json
     if args.verbose:
         print(args)
 

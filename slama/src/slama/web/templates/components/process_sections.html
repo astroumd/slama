@@ -1,0 +1,59 @@
+{#- Body of the Processes page; rendered on load and on every WebSocket push.
+    Context from slama.web.process_page.ProcessPage.context(). -#}
+{% if load_error %}
+<div class="fault-banner">{{ load_error }}</div>
+{% elif data %}
+
+{% if data.has_programs %}
+{% set counts = data.counts %}
+<div class="fault-status">
+    <span class="process-counts">
+        {% for key in count_order %}{% if counts[key] or key != "no data" %}<span class="process-count process-count-{{ key | replace(' ', '-') }}">{{ key }} {{ counts[key] }}</span>{% endif %}{% endfor %}
+    </span>
+</div>
+{% endif %}
+{% for b in data.banners() %}
+<div class="fault-banner">{{ b }}</div>
+{% endfor %}
+
+{% for gd in data.groups %}
+<h3>{{ gd.group.title }}</h3>
+{% if gd.group.type == "heartbeat" %}
+<div class="process-heartbeats">
+    {% for hb in gd.heartbeats %}
+    {% set cell = heartbeat_view(hb) %}
+    <span class="process-hb">
+        <span class="process-label">{{ hb.label }}</span>
+        <span class="fault-cell {{ cell.css }}" title="{{ cell.title }}">{{ cell.text }}</span>
+    </span>
+    {% endfor %}
+</div>
+{% else %}
+<div class="process-grid">
+    {% for card in gd.hosts %}
+    <div class="process-card">
+        <div class="process-card-header" title="{{ card.report_point }}">
+            <span class="process-host">{{ card.host }}</span>
+            {% if card.header_text %}<span class="fault-cell {{ card.header_css }}">{{ card.header_text }}</span>{% endif %}
+        </div>
+        {% if card.programs %}
+        <table class="process-table">
+            <tbody>
+                {% for prog in card.programs %}
+                <tr title="slot {{ prog.slot }}: {{ prog.point }}">
+                    <td class="process-name">{{ prog.name }}</td>
+                    <td class="fault-cell {{ prog.css }}">{{ prog.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="process-empty">no programs reported</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endfor %}
+
+{% endif %}

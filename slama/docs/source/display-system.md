@@ -28,13 +28,14 @@ of blocks rendered top to bottom:
 A row or cell may carry a `format` string to override the default four
 decimal places.
 
-One page is generated in code instead: the Fault System page (see
-[The Fault System page](#the-fault-system-page)).
+Two pages are generated in code instead: the Fault System page (see
+[The Fault System page](#the-fault-system-page)) and the Processes page
+(see [The Processes page](#the-processes-page)).
 
 ## Request flow
 
 ```text
-GET  /                       index: the Fault System page, then all display configs
+GET  /                       index: the generated pages, then all display configs
 GET  /display/{name}         full page, rendered with initial values
 WS   /ws/display/{name}      server pushes HTML fragments; client sends settings
 GET  /api/history/{name}     JSON time series for the click-to-plot feature
@@ -150,6 +151,52 @@ write time, with the same `computed_max_age_s` as computed cells.
 | Engine heartbeat stale, fault system running | banner "Compute engine not running"; cells as published |
 | A node missing from the snapshot | that cell grey; one warning logged |
 
+## The Processes page
+
+`/display/processes` shows whether each critical process is running. It
+is defined by `conf/processes.json` (path from `--processes-json` or
+`SLAMA_PROCESSES_JSON`), loaded by {py:mod}`slama.web.process_page`: page
+name, `update_interval`, `names_refresh_s`, and a list of groups drawn in
+file order. A group has a `title` and a `type`:
+
+`heartbeat`
+:   `processes`, each a `label` and a heartbeat `point`. Each shows
+    `running` (green), `stopped 3m` (red, the age of the last write) or
+    `missing`, judged by the point's SMAX write time with
+    `computed_max_age_s`, as on the Fault System page. The shipped group
+    has the compute engine and the fault system.
+
+`smainit`
+:   `hosts` and `slots` in the `__each__` grammar (`"0-23"`). One card per
+    host: the host name, then each named slot's program name and status
+    label (`running`, `terminated`, `quit`, ...), coloured by the
+    `monitorsystem:smainit:{h}:slot:{j}:status` validity: green running,
+    red otherwise, grey (not checked) for a program that normally exits or
+    a host whose report is stale. The card header says "no report for 3h"
+    (red) when `report_age` is stale, and "no data" when it is missing.
+    Hover a program for its slot and point.
+
+Above the cards a count line gives running, not running and not checked
+programs (161 on the 2026-11-04 snapshot: 143, 3, 15). A banner says
+"Compute engine not running: program states are not being updated" when
+the engine heartbeat is stale; the program cells are grey anyway, because
+`DataBridge.fetch_cell` gates every `monitorsystem:` point on its write
+time.
+
+A hand-written `displays/*.json` page cannot draw the smainit group,
+because slots are positional: which program is in which slot is only
+known from the `name` points. Program names change only when smainit is
+reconfigured, so they are read for every slot (312 pulls) on the first
+refresh and then every `names_refresh_s` (60 s); each refresh pulls the
+status of the named slots only and each host's `report_age`, about 350
+values (about 0.2 s against the dev snapshot). Programs are in slot
+order; whether some should be listed first is open (#56-5 in #50).
+
+Adding a heartbeat process or an smainit host is a config edit; a new
+kind of process is a new group `type` plus a reader for it. The smainit
+host list is also in `smax.json`, `computations.json` and `faults.json`;
+a test checks that `processes.json` matches `smax.json`.
+
 ## Adding a page
 
 1. Find canonical names in `smax.json` (or `docs/all_monitor_points.txt`).
@@ -168,4 +215,5 @@ derived from).
   colouring, plots, known limitations); [](history/web_display_phases.md) is the
   implementation log it replaces.
 - {py:mod}`slama.web.server`, {py:mod}`slama.web.data_bridge`,
-  {py:mod}`slama.web.display_config`, {py:mod}`slama.web.fault_page`.
+  {py:mod}`slama.web.display_config`, {py:mod}`slama.web.fault_page`,
+  {py:mod}`slama.web.process_page`.

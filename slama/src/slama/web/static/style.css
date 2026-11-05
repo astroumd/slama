@@ -388,3 +388,37 @@ h3 { margin: 15px 0 8px 0; color: var(--color-text); font-size: 15px; }
 .fault-slot-list details summary { cursor: pointer; color: #aaa; }
 .fault-slot-list ul { list-style: none; margin: 4px 0 0 0; }
 .fault-slot-list li { margin: 2px 0; }
+
+/* --- Processes page (generated, slama.web.process_page) --- */
+.process-counts { display: flex; gap: 8px; }
+.process-count { padding: 2px 6px; border-radius: 3px; background: var(--color-surface);
+                 border: 1px solid var(--color-border); }
+.process-count-not-running { color: #ff6b6b; font-weight: bold; }
+.process-heartbeats { display: flex; flex-wrap: wrap; gap: 16px; }
+.process-hb { display: flex; align-items: center; gap: 6px; }
+.process-label { color: #aaa; }
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+.process-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+.process-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.process-host { color: var(--color-brand); font-weight: bold; }
+.process-card-header span.fault-cell { min-width: 0; }
+.process-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.process-table td { padding: 1px 4px; }
+.process-table td.fault-cell { text-align: center; border-radius: 3px; min-width: 70px; }
+.process-name { color: var(--color-text); overflow-wrap: anywhere; }
+.process-empty { color: #aaa; font-style: italic; margin: 0; }

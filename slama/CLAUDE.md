@@ -43,7 +43,7 @@ Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The faul
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
-**Tests**: a pytest suite exists (about 1048 tests, about 12 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
+**Tests**: a pytest suite exists (about 1089 tests, about 15 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
 ```bash
 uv run pytest -n auto
 ```
@@ -85,8 +85,9 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 **`src/slama/web/`** — FastAPI web display (see `docs/source/web_display_design.md` for full architecture):
 
-- `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON). `GENERATED_PAGES` (checked before `displays/*.json`) holds pages built in code: `faults`.
-- `fault_page.py` — the generated Fault System page (`/display/faults`): layout built from `FaultConfig` (antenna grid, smainit host table, "Other faults"), filled from one `faultsystem:state` pull plus both heartbeats (gated on SMAX write time), the `online` points, and names of faulted slots only. `--faults-json` / `SLAMA_FAULTS_JSON`.
+- `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON). `GENERATED_PAGES` (checked before `displays/*.json`) holds pages built in code (`faults`, `processes`); each provides `page_template`, `body_template` (body id `page-body`), `read()`, `unavailable(message)` and `context(data)`, and the server's render and push code is shared.
+- `fault_page.py` — the generated Fault System page (`/display/faults`): layout built from `FaultConfig` (antenna grid, smainit host table, "Other faults"), filled from one `faultsystem:state` pull plus both heartbeats (gated on SMAX write time), the `online` points, and names of faulted slots only. `--faults-json` / `SLAMA_FAULTS_JSON`. `heartbeat_status` (write-time heartbeat rule) is shared with the Processes page.
+- `process_page.py` — the generated Processes page (`/display/processes`) from `conf/processes.json`: `heartbeat` groups (engine, fault system) and `smainit` groups (one card per host, every named slot's status label coloured by validity). Program names cached, re-read every `names_refresh_s`; statuses via `DataBridge.fetch_cell`. `--processes-json` / `SLAMA_PROCESSES_JSON`.
 - `data_bridge.py` — `DataBridge` fetches SMAX values, maps them to `CellData` with validity CSS classes (`cell-good`, `cell-warning`, `cell-error`, `cell-nodata`, `cell-unchecked`), and maintains a per-canonical-name ring buffer (`deque(maxlen=1800)`, ~1 hour at 2s) for history plots. Lazy SMAX connection; graceful degradation on failure.
 - `display_config.py` — Loads `conf/displays/*.json` and expands block templates (`{ant}` placeholders → per-column canonical names). Block types: `table`, `grid`, `cells`.
 - `templates/` — Jinja2 templates (`base.html`, `index.html`, `display.html`, `components/{table,grid,cells}.html`).
@@ -99,6 +100,7 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 - `src/slama/conf/smax.json` — Monitor point definitions with validation thresholds (`warn_low`, `warn_high`, `err_low`, `err_high`). This is the authoritative schema source and the hierarchical system configuration used to build `MonitorSystem`. The database does not contain validities, so they are captured here, and only here (never as code constants).
 - `src/slama/conf/computations.json` — Compute engine definitions: each derived `monitorsystem:` output, its function and inputs.
 - `src/slama/conf/faults.json` — Fault system config: critical points, causal DAG, debounce, actions.
+- `src/slama/conf/processes.json` — Processes page groups (heartbeat processes, smainit hosts and slots). Its smainit host list must match `smax.json` (a test checks).
 - `src/slama/conf/displays/*.json` — One JSON file per display page (e.g. `tracking.json`, `rxH.json`). Discovered automatically by the server — adding a new file requires no code changes.
 - `src/slama/tables/` — Source catalogs (`SystemSource.cat`, `mpound.cat`).
 - `site/` — Offsite mirror of the observatory's `/global` and `/otherInstances`, laid out as a fake filesystem root. 

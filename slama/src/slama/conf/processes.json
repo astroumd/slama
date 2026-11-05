@@ -1,0 +1,15 @@
+{
+  "name": "Processes",
+  "description": "Whether each critical process is running",
+  "update_interval": 2,
+  "names_refresh_s": 60,
+  "groups": [
+    {"title": "SLAMA", "type": "heartbeat", "processes": [
+      {"label": "Compute engine", "point": "monitorsystem:engine:heartbeat"},
+      {"label": "Fault system",   "point": "faultsystem:heartbeat"}
+    ]},
+    {"title": "smainit", "type": "smainit",
+     "hosts": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus",
+     "slots": "0-23"}
+  ]
+}
