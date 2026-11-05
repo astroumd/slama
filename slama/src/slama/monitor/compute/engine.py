@@ -30,6 +30,18 @@ from .functions import get_function
 
 logger = logging.getLogger(__name__)
 
+HEARTBEAT_NAME = "monitorsystem:engine:heartbeat"
+"""str: Canonical name the engine writes at the start of every tick.
+
+Its value is the tick's wall-clock epoch seconds and its validity is
+``VALID_GOOD``. A consumer (the fault system) judges the engine alive
+by this point's SMAX timestamp age, so a stopped engine shows up as one
+stale heartbeat rather than every computed point going stale at once.
+It is written *before* any node so it never ages less than the points
+the engine produces. Declared in ``smax.json``; if the tree lacks it,
+the engine skips it (and logs a warning at config load).
+"""
+
 
 @dataclass
 class ComputeResult:
@@ -167,6 +179,7 @@ class ComputeEngine:
         self._interval_s: float = 5.0
         self._tick_outputs: dict[str, tuple[Any, Validity]] = {}
         self._read_names: list[str] = []
+        self._heartbeat: str | None = None
 
         self._apply_config(config)
 
@@ -275,6 +288,10 @@ class ComputeEngine:
     def tick(self) -> list[ComputeResult]:
         """Run one evaluation pass over every node, in dependency order.
 
+        0. Write :data:`HEARTBEAT_NAME` (value = this tick's wall-clock
+           epoch, ``VALID_GOOD``) before any node, so the heartbeat is
+           never fresher than the points it vouches for. Skipped if the
+           tree does not declare it.
         1. If a client was provided, refresh source values via
            :meth:`MonitorSystem.read`, for only the canonical names some
            node reads (:attr:`_read_names`) -- not the whole tree, which
@@ -304,16 +321,22 @@ class ComputeEngine:
         Returns
         -------
         list of ComputeResult
-            One entry per canonical name written (one per node for a
-            single-output entry, one per role for a multi-output entry —
-            see design doc §8), in topological order of the owning node.
+            The heartbeat first (when declared), then one entry per
+            canonical name written (one per node for a single-output
+            entry, one per role for a multi-output entry — see design
+            doc §8), in topological order of the owning node.
         """
-        if self._client is not None:
-            self._monitor_system.read(self._read_names, self._client)
-
         now_wall = self._wall_clock()
         self._tick_outputs = {}
         results: list[ComputeResult] = []
+
+        if self._heartbeat is not None:
+            self._tick_outputs[self._heartbeat] = (now_wall, Validity.VALID_GOOD)
+            self._write_one(self._heartbeat, now_wall, Validity.VALID_GOOD, now_wall)
+            results.append(ComputeResult(self._heartbeat, now_wall, Validity.VALID_GOOD))
+
+        if self._client is not None:
+            self._monitor_system.read(self._read_names, self._client)
 
         for node in self._nodes:
             per_output = self._evaluate_node(node, now_wall)
@@ -341,6 +364,15 @@ class ComputeEngine:
         """
         self._nodes = config.nodes
         self._interval_s = config.default_interval_s
+        try:
+            self._monitor_system.get_monitor_point(HEARTBEAT_NAME)
+            self._heartbeat = HEARTBEAT_NAME
+        except KeyError:
+            self._heartbeat = None
+            logger.warning(
+                "%s is not declared in the MonitorSystem; the engine will "
+                "not write a heartbeat", HEARTBEAT_NAME,
+            )
         names: dict[str, None] = {}
         for node in config.nodes:
             ins = node.inputs.values() if isinstance(node.inputs, dict) else node.inputs

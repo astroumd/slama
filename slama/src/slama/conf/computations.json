@@ -243,6 +243,170 @@
       "__each__": {
         "over": "1-8", "as": "i",
         "template": {
+          "_comment": "Fault-system view of drive_status: same verdict, VALID_NOT_CHECKED when the antenna is not online (receiverMonitor.c doWeCare). subject is optional so an off-array antenna with no drive data is still NOT_CHECKED, not NO_DATA.",
+          "output": "monitorsystem:antenna:{i}:drive_fault",
+          "function": "fault_gate",
+          "inputs": {
+            "subject": {"name": "monitorsystem:antenna:{i}:drive_status", "optional": true},
+            "online": "monitorsystem:antenna:{i}:online"
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "@rxtype:!wsma", "as": "i",
+        "template": {
+          "_comment": "Tune6 LO-lock fault verdicts (lo_lock_ok rules, per chain: yig1 always, the Gunn the rest frequency needs) and PLL context (receiverMonitor.c 597, 860, 885). Optional inputs default to not busy / Gunn on / no context.",
+          "output": {
+            "yig1": "monitorsystem:antenna:{i}:yig1_lock_fault",
+            "gunn1": "monitorsystem:antenna:{i}:gunn1_lock_fault",
+            "gunn2": "monitorsystem:antenna:{i}:gunn2_lock_fault",
+            "gunn1_ifpower": "monitorsystem:antenna:{i}:gunn1_pll_ifpower",
+            "gunn2_ifpower": "monitorsystem:antenna:{i}:gunn2_pll_ifpower",
+            "gunn1_noise": "monitorsystem:antenna:{i}:gunn1_pll_noise",
+            "gunn2_noise": "monitorsystem:antenna:{i}:gunn2_pll_noise"
+          },
+          "function": "lo_lock_faults",
+          "inputs": {
+            "online": "monitorsystem:antenna:{i}:online",
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "rest_freq": {"name": "DSM:hal9000:DSM_REQUESTED_FREQUENCY_V2_D", "staleness_s": null},
+            "gunn1": {"name": "RM:acc{i}:RM_GUNN1_LOCKED_S", "staleness_s": null},
+            "gunn2": {"name": "RM:acc{i}:RM_GUNN2_LOCKED_S", "staleness_s": null},
+            "gunn1_ts": {"name": "RM:acc{i}:RM_GUNN1_LOCKED_TIMESTAMP_L", "staleness_s": null},
+            "busy": {"name": "RM:acc{i}:RM_TUNE6_COMMAND_BUSY_S", "staleness_s": null, "optional": true},
+            "gunn1_on": {"name": "RM:acc{i}:RM_GUNN_ON_S", "staleness_s": null, "optional": true},
+            "gunn2_on": {"name": "RM:acc{i}:RM_GUNN2_ON_S", "staleness_s": null, "optional": true},
+            "gunn1_ifpower": {"name": "RM:acc{i}:RM_GUNN_PLL_IFPOWER_F", "staleness_s": null, "optional": true},
+            "gunn2_ifpower": {"name": "RM:acc{i}:RM_GUNN2_PLL_IFPOWER_F", "staleness_s": null, "optional": true},
+            "gunn1_noise": {"name": "RM:acc{i}:RM_GUNN_PLL_PHASENOISE_F", "staleness_s": null, "optional": true},
+            "gunn2_noise": {"name": "RM:acc{i}:RM_GUNN2_PLL_PHASENOISE_F", "staleness_s": null, "optional": true}
+          }
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "@rxtype:wsma", "as": "i",
+        "template": {
+          "_comment": "wSMA LO-lock fault verdicts and PLL context: the units wsmaSelection picks per chain (receiverMonitor.c 313-317, 594, 857, 882); no busy (the C forces 0) and no heartbeat.",
+          "output": {
+            "yig1": "monitorsystem:antenna:{i}:yig1_lock_fault",
+            "gunn1": "monitorsystem:antenna:{i}:gunn1_lock_fault",
+            "gunn2": "monitorsystem:antenna:{i}:gunn2_lock_fault",
+            "gunn1_ifpower": "monitorsystem:antenna:{i}:gunn1_pll_ifpower",
+            "gunn2_ifpower": "monitorsystem:antenna:{i}:gunn2_pll_ifpower",
+            "gunn1_noise": "monitorsystem:antenna:{i}:gunn1_pll_noise",
+            "gunn2_noise": "monitorsystem:antenna:{i}:gunn2_pll_noise"
+          },
+          "function": "lo_lock_faults",
+          "inputs": {
+            "online": "monitorsystem:antenna:{i}:online",
+            "yig1": {"name": "RM:acc{i}:RM_YIG1_LOCKED_S", "staleness_s": null},
+            "rest_freq": {"name": "DSM:hal9000:DSM_REQUESTED_FREQUENCY_V2_D", "staleness_s": null},
+            "selector": {"name": "antenna:{i}:receiver:wsma:cryostat:selector:position", "staleness_s": null},
+            "cart_a": {"name": "antenna:{i}:receiver:a:cartridge", "staleness_s": null, "optional": true},
+            "mix_a": {"name": "antenna:{i}:receiver:a:mixer_index", "staleness_s": null, "optional": true},
+            "cart_b": {"name": "antenna:{i}:receiver:b:cartridge", "staleness_s": null, "optional": true},
+            "mix_b": {"name": "antenna:{i}:receiver:b:mixer_index", "staleness_s": null, "optional": true},
+            "lock_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "vco_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:vco:is_enabled", "staleness_s": null, "optional": true},
+            "bpf_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:pll:BPF", "staleness_s": null, "optional": true},
+            "nf_L1": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:1:pll:NF", "staleness_s": null, "optional": true},
+            "lock_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:pll:lock", "staleness_s": null, "optional": true},
+            "vco_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:vco:is_enabled", "staleness_s": null, "optional": true},
+            "bpf_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:pll:BPF", "staleness_s": null, "optional": true},
+            "nf_L2": {"name": "antenna:{i}:receiver:L:lo_plate:mixer:2:pll:NF", "staleness_s": null, "optional": true},
+            "lock_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:pll:lock", "staleness_s": null, "optional": true},
+            "vco_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:vco:is_enabled", "staleness_s": null, "optional": true},
+            "bpf_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:pll:BPF", "staleness_s": null, "optional": true},
+            "nf_H1": {"name": "antenna:{i}:receiver:H:lo_plate:mixer:1:pll:NF", "staleness_s": null, "optional": true}
+          },
+          "params": {"wselect": "@wselect:{i}"}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus", "as": "h",
+        "template": {
+          "_comment": "Seconds since host {h} last wrote SMAINIT_REPORT_X (smainitMonitor.c 125); err_high 70 in smax.json makes it host-down. The 13 listDead.c hosts present in smax.json (crate1/2/7/8 are absent: #56-3 in issue #50).",
+          "output": "monitorsystem:smainit:{h}:report_age",
+          "function": "write_age",
+          "inputs": {"report": {"name": "DSM:{h}:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L", "staleness_s": null}}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus", "as": "h",
+        "template": {
+          "_comment": "Per-slot smainit program status and name (smainitMonitor.c 160-175). VALID_NOT_CHECKED for empty slots, normally-dead programs (listDead.c 24) and a stale host report.",
+          "output": {
+            "status_0": "monitorsystem:smainit:{h}:slot:0:status",
+            "name_0": "monitorsystem:smainit:{h}:slot:0:name",
+            "status_1": "monitorsystem:smainit:{h}:slot:1:status",
+            "name_1": "monitorsystem:smainit:{h}:slot:1:name",
+            "status_2": "monitorsystem:smainit:{h}:slot:2:status",
+            "name_2": "monitorsystem:smainit:{h}:slot:2:name",
+            "status_3": "monitorsystem:smainit:{h}:slot:3:status",
+            "name_3": "monitorsystem:smainit:{h}:slot:3:name",
+            "status_4": "monitorsystem:smainit:{h}:slot:4:status",
+            "name_4": "monitorsystem:smainit:{h}:slot:4:name",
+            "status_5": "monitorsystem:smainit:{h}:slot:5:status",
+            "name_5": "monitorsystem:smainit:{h}:slot:5:name",
+            "status_6": "monitorsystem:smainit:{h}:slot:6:status",
+            "name_6": "monitorsystem:smainit:{h}:slot:6:name",
+            "status_7": "monitorsystem:smainit:{h}:slot:7:status",
+            "name_7": "monitorsystem:smainit:{h}:slot:7:name",
+            "status_8": "monitorsystem:smainit:{h}:slot:8:status",
+            "name_8": "monitorsystem:smainit:{h}:slot:8:name",
+            "status_9": "monitorsystem:smainit:{h}:slot:9:status",
+            "name_9": "monitorsystem:smainit:{h}:slot:9:name",
+            "status_10": "monitorsystem:smainit:{h}:slot:10:status",
+            "name_10": "monitorsystem:smainit:{h}:slot:10:name",
+            "status_11": "monitorsystem:smainit:{h}:slot:11:status",
+            "name_11": "monitorsystem:smainit:{h}:slot:11:name",
+            "status_12": "monitorsystem:smainit:{h}:slot:12:status",
+            "name_12": "monitorsystem:smainit:{h}:slot:12:name",
+            "status_13": "monitorsystem:smainit:{h}:slot:13:status",
+            "name_13": "monitorsystem:smainit:{h}:slot:13:name",
+            "status_14": "monitorsystem:smainit:{h}:slot:14:status",
+            "name_14": "monitorsystem:smainit:{h}:slot:14:name",
+            "status_15": "monitorsystem:smainit:{h}:slot:15:status",
+            "name_15": "monitorsystem:smainit:{h}:slot:15:name",
+            "status_16": "monitorsystem:smainit:{h}:slot:16:status",
+            "name_16": "monitorsystem:smainit:{h}:slot:16:name",
+            "status_17": "monitorsystem:smainit:{h}:slot:17:status",
+            "name_17": "monitorsystem:smainit:{h}:slot:17:name",
+            "status_18": "monitorsystem:smainit:{h}:slot:18:status",
+            "name_18": "monitorsystem:smainit:{h}:slot:18:name",
+            "status_19": "monitorsystem:smainit:{h}:slot:19:status",
+            "name_19": "monitorsystem:smainit:{h}:slot:19:name",
+            "status_20": "monitorsystem:smainit:{h}:slot:20:status",
+            "name_20": "monitorsystem:smainit:{h}:slot:20:name",
+            "status_21": "monitorsystem:smainit:{h}:slot:21:status",
+            "name_21": "monitorsystem:smainit:{h}:slot:21:name",
+            "status_22": "monitorsystem:smainit:{h}:slot:22:status",
+            "name_22": "monitorsystem:smainit:{h}:slot:22:name",
+            "status_23": "monitorsystem:smainit:{h}:slot:23:status",
+            "name_23": "monitorsystem:smainit:{h}:slot:23:name"
+          },
+          "function": "smainit_slots",
+          "inputs": {
+            "status": {"name": "DSM:{h}:SMAINIT_REPORT_X:PRG_STATUS_V24_V6_L", "staleness_s": null},
+            "names": {"name": "DSM:{h}:SMAINIT_REPORT_X:PRG_NAMES_V24_C24", "staleness_s": null},
+            "age": "monitorsystem:smainit:{h}:report_age"
+          },
+          "params": {"normally_dead": ["int_control", "c1DCInit"]}
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8", "as": "i",
+        "template": {
           "_comment": "Smoke alarm with fire/ignoreAntSmoking.txt applied (arrayMonitor.c 1770-1782). A missing ignore file means nothing is ignored.",
           "output": "monitorsystem:antenna:{i}:smoke_alarm",
           "function": "smoke_alarm",

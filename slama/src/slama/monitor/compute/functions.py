@@ -878,24 +878,69 @@ def _wsma_gunn_locks(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> t
     tuple
         ``(gunn1, gunn2)`` raw lock values for RxA and RxB.
     """
+    locks = []
+    for band, mixer in _wsma_chain_units(inputs, ctx):
+        lock = _opt_value(inputs, _WSMA_LOCK_INPUTS.get((band, mixer), ""))
+        locks.append(0 if lock is None else lock)
+    return tuple(locks)
+
+
+def _opt_value(inputs: dict[str, ResolvedInput], role: str):
+    """Value of an optional dict-form input, or ``None`` if absent or missing.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        Resolved inputs; an optional input the engine could not resolve
+        is present with ``value=None``.
+    role : str
+        Input role name. A role not in ``inputs`` gives ``None``.
+
+    Returns
+    -------
+    Any or None
+        The input's value, or ``None``.
+    """
+    ri = inputs.get(role)
+    return None if ri is None else ri.value
+
+
+def _wsma_chain_units(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> list:
+    """Band and LO unit feeding each wSMA receiver chain, RxA then RxB.
+
+    ``wsmaSelection`` (``wsma.c:281-337``) per chain, then the H band
+    forced to mixer 1 (``receiverMonitor.c:317``). The unit is what the
+    C uses for every per-chain LO table:
+    ``antenna:N:receiver:{band}:lo_plate:mixer:{unit}:{pll,vco}``.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"selector"`` (wheel position) and optional ``"cart_a"``,
+        ``"mix_a"``, ``"cart_b"``, ``"mix_b"``.
+    ctx : ComputeContext
+        ``params["wselect"]``: position (``"1"``-``"4"``) -> mode, from
+        the ``@wselect:{i}`` token.
+
+    Returns
+    -------
+    list of tuple of (str, int)
+        ``[(band, unit), (band, unit)]`` for RxA and RxB; ``("?", -1)``
+        for a chain whose mode is unknown.
+    """
     try:
         pos = int(inputs["selector"].value)
     except (TypeError, ValueError):
         pos = -1
     mode = ctx.params.get("wselect", {}).get(str(pos)) if 1 <= pos <= WSMA_SELECTOR_POSITIONS else None
-
-    def value(role):
-        ri = inputs.get(role)
-        return None if ri is None else ri.value
-
-    locks = []
+    units = []
     for rx, chain in ((1, "a"), (2, "b")):
-        band, mixer = _wsma_selection(mode, rx, value(f"cart_{chain}"), value(f"mix_{chain}"))
+        band, mixer = _wsma_selection(mode, rx, _opt_value(inputs, f"cart_{chain}"),
+                                      _opt_value(inputs, f"mix_{chain}"))
         if band == "H":
             mixer = 1
-        lock = value(_WSMA_LOCK_INPUTS.get((band, mixer), ""))
-        locks.append(0 if lock is None else lock)
-    return tuple(locks)
+        units.append((band, mixer))
+    return units
 
 
 @compute_function("lo_status")
@@ -1002,6 +1047,337 @@ def lo_lock_ok(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
         or (rest > HI_LO_FREQ_CUTOFF_HZ and g2 and y1) \
         or (rest < HI_LO_FREQ_CUTOFF_HZ and g1 and y1)
     return ok, (Validity.VALID_GOOD if ok and not stale else Validity.VALID_ERROR)
+
+
+def _tune6_busy(code) -> bool:
+    """True iff ``code`` is a valid TUNE6 busy code, ``1``-:data:`_TUNE6_MAX_CODE`.
+
+    ``RM_TUNE6_COMMAND_BUSY_S`` is ``> 0`` while tuning scripts are
+    active, but the 2026-09-22 snapshot holds out-of-range garbage on
+    most antennas (``30334``, ``-8224``, ...). Anything outside the valid
+    codes counts as **not busy**, so a garbage value cannot silence the
+    LO-lock faults (Marc, 2026-11-03; open question #56-2 in issue #50).
+
+    Parameters
+    ----------
+    code : int, float, numpy scalar or None
+        Raw busy value; ``None`` (a missing optional input) is not busy.
+
+    Returns
+    -------
+    bool
+    """
+    try:
+        f = float(code)
+    except (TypeError, ValueError):
+        return False
+    return f.is_integer() and 1 <= f <= _TUNE6_MAX_CODE
+
+
+def _is_on(v) -> bool:
+    """Gunn/VCO on-flag test (the C's ``if (!r->gunnOn.value)``, ``receiverMonitor.c:864``).
+
+    Parameters
+    ----------
+    v : int, float, numpy scalar or None
+        ``RM_GUNN_ON_S`` / ``RM_GUNN2_ON_S`` or ``vco:is_enabled``.
+        ``None`` (missing) counts as **on**, so an unreadable flag never
+        hides a lock fault.
+
+    Returns
+    -------
+    bool
+        ``False`` only for a readable zero.
+    """
+    if v is None:
+        return True
+    try:
+        return float(v) != 0
+    except (TypeError, ValueError):
+        return True
+
+
+_WSMA_UNIT_SUFFIX = {("L", 1): "L1", ("L", 2): "L2", ("H", 1): "H1"}
+"""``(band, unit)`` -> input-role suffix for the per-unit wSMA LO tables."""
+
+
+@compute_function("fault_gate")
+def fault_gate(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Pass a point's verdict to the fault system, unless the antenna is off-array.
+
+    A fault-only view of an existing computed point (``drive_status``):
+    the same value and validity, except that an antenna not in the
+    array is not a fault. ``receiverMonitor.c`` only highlights when
+    ``doWeCare[ant]``; the fault system needs the same gate so an
+    antenna in the hangar does not alert constantly.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"subject"``: the point to pass through (its validity is the
+        verdict), declared **optional** in ``computations.json`` so a
+        stale or missing subject still reaches here (``value=None``);
+        ``"online"``: ``monitorsystem:antenna:{i}:online``.
+    ctx : ComputeContext
+        Unused.
+
+    Returns
+    -------
+    tuple of (Any, Validity)
+        ``(subject value, VALID_NOT_CHECKED)`` when not online, whatever
+        the subject's state: an antenna in the hangar with its servo off
+        or its acc down must not raise a no-data fault. Otherwise
+        ``(None, INVALID_NO_DATA)`` when the subject could not be read,
+        else ``(subject value, subject validity)``.
+    """
+    subject = inputs["subject"]
+    if not _is_one(inputs["online"].value):
+        return subject.value, Validity.VALID_NOT_CHECKED
+    if subject.value is None:
+        return None, Validity.INVALID_NO_DATA
+    return subject.value, subject.validity
+
+
+@compute_function("lo_lock_faults")
+def lo_lock_faults(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
+    """Fault-system LO lock verdicts and PLL context for one antenna.
+
+    The per-chain counterpart of :func:`lo_lock_ok`
+    (``arrayMonitor.c:2152-2158``), which requires yig1 plus the Gunn
+    the rest frequency needs: gunn1 below :data:`HI_LO_FREQ_CUTOFF_HZ`,
+    gunn2 above, both at exactly the cutoff. YIG2 is never required.
+    The fault DAG is ``yig1 -> gunn1`` and ``yig1 -> gunn2``.
+
+    Each lock verdict, in order of precedence:
+
+    1. antenna not online: ``VALID_NOT_CHECKED``;
+    2. TUNE6 busy with a valid code 1-12 (:func:`_tune6_busy`; Tune6
+       only, the C forces busy 0 on wSMA): ``VALID_GOOD``. The busy code
+       is written only on change, so it is trusted only while the
+       ``RM_GUNN1_LOCKED_TIMESTAMP_L`` heartbeat is fresh: a code latched
+       by a tune6 that died mid-tune must not report GOOD forever;
+    3. Gunn only: the Gunn is off (:func:`_is_on`) or the band does not
+       need it: ``VALID_NOT_CHECKED``;
+    4. gunn1 on Tune6 only: the ``RM_GUNN1_LOCKED_TIMESTAMP_L``
+       heartbeat older than :data:`PHASE_LOCK_IS_STALE_S`:
+       ``INVALID_NO_DATA`` (the reading is stale, not an unlock, so the
+       fault system's long NO_DATA debounce applies);
+    5. locked: ``VALID_GOOD``; unlocked: ``VALID_ERROR``.
+
+    Two input shapes, as for :func:`lo_lock_ok`:
+
+    * Tune6: ``"gunn1"``, ``"gunn2"``, ``"gunn1_ts"``, optional
+      ``"busy"``, ``"gunn1_on"``, ``"gunn2_on"``, ``"gunn1_ifpower"``,
+      ``"gunn2_ifpower"``, ``"gunn1_noise"``, ``"gunn2_noise"`` (the RM
+      points ``receiverMonitor.c:597, 860, 885`` reads).
+    * wSMA (has ``"selector"``): the :func:`_wsma_gunn_locks` inputs,
+      plus optional ``"vco_L1"``/``"vco_L2"``/``"vco_H1"``
+      (``vco:is_enabled``), ``"bpf_*"`` and ``"nf_*"`` (``pll:BPF``,
+      ``pll:NF``) for the units :func:`_wsma_chain_units` selects
+      (``receiverMonitor.c:594, 857, 882``).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"online"``, ``"yig1"`` and ``"rest_freq"``
+        (``DSM_REQUESTED_FREQUENCY_V2_D``, element 0) on both shapes,
+        plus the shape-specific inputs above.
+    ctx : ComputeContext
+        Supplies the wall clock; ``params["wselect"]`` for wSMA.
+
+    Returns
+    -------
+    dict
+        Roles ``"yig1"``, ``"gunn1"``, ``"gunn2"`` -> ``(locked,
+        Validity)``; ``"gunn1_ifpower"``, ``"gunn2_ifpower"``,
+        ``"gunn1_noise"``, ``"gunn2_noise"`` -> the bare PLL value (no
+        levels, issue #50 #56-1), or ``(None, INVALID_NO_DATA)`` when
+        it is missing or not a single number (:func:`_context_float`),
+        so a bad context value never costs the lock verdicts.
+    """
+    online = _is_one(inputs["online"].value)
+    if "selector" in inputs:
+        tuning = False
+        gunns = _wsma_gunn_locks(inputs, ctx)
+        suffixes = [_WSMA_UNIT_SUFFIX.get(u, "") for u in _wsma_chain_units(inputs, ctx)]
+        on = [_is_on(_opt_value(inputs, f"vco_{s}")) for s in suffixes]
+        ifpower = [_opt_value(inputs, f"bpf_{s}") for s in suffixes]
+        noise = [_opt_value(inputs, f"nf_{s}") for s in suffixes]
+        stale = [False, False]
+    else:
+        hb_stale = _age_s(inputs["gunn1_ts"].value, ctx) > PHASE_LOCK_IS_STALE_S
+        tuning = _tune6_busy(_opt_value(inputs, "busy")) and not hb_stale
+        gunns = (inputs["gunn1"].value, inputs["gunn2"].value)
+        on = [_is_on(_opt_value(inputs, f"gunn{n}_on")) for n in (1, 2)]
+        ifpower = [_opt_value(inputs, f"gunn{n}_ifpower") for n in (1, 2)]
+        noise = [_opt_value(inputs, f"gunn{n}_noise") for n in (1, 2)]
+        stale = [hb_stale, False]
+
+    rest = float(_array_elem(inputs["rest_freq"].value, 0))
+    needed = [not rest > HI_LO_FREQ_CUTOFF_HZ, not rest < HI_LO_FREQ_CUTOFF_HZ]
+
+    def verdict(locked: bool) -> Validity:
+        return Validity.VALID_GOOD if locked else Validity.VALID_ERROR
+
+    y1 = _is_one(inputs["yig1"].value)
+    if not online:
+        yig1 = (y1, Validity.VALID_NOT_CHECKED)
+    elif tuning:
+        yig1 = (y1, Validity.VALID_GOOD)
+    else:
+        yig1 = (y1, verdict(y1))
+    out = {"yig1": yig1}
+
+    for n in (0, 1):
+        g = _is_one(gunns[n])
+        if not online:
+            v = Validity.VALID_NOT_CHECKED
+        elif tuning:
+            v = Validity.VALID_GOOD
+        elif not on[n] or not needed[n]:
+            v = Validity.VALID_NOT_CHECKED
+        elif stale[n]:
+            v = Validity.INVALID_NO_DATA
+        else:
+            v = verdict(g)
+        out[f"gunn{n + 1}"] = (g, v)
+        for role, values in (("ifpower", ifpower), ("noise", noise)):
+            out[f"gunn{n + 1}_{role}"] = _context_float(values[n])
+    return out
+
+
+def _context_float(val):
+    """Convert a PLL context value, never raising.
+
+    The PLL values ride in the same node as the lock verdicts, so an
+    exception here would make the engine mark every output, including
+    yig1, gunn1 and gunn2, ``INVALID_NO_DATA``.
+
+    Parameters
+    ----------
+    val : Any
+        The raw input value: a number, a one-element array, ``None``, or
+        anything else a writer might store.
+
+    Returns
+    -------
+    float or tuple of (None, Validity)
+        ``float(val)``, or ``(None, INVALID_NO_DATA)`` when ``val`` is
+        ``None`` or cannot be read as one number (a non-numeric string,
+        an array of more than one element, ...).
+    """
+    if val is None:
+        return None, Validity.INVALID_NO_DATA
+    try:
+        arr = np.asarray(val, dtype=float)
+    except (TypeError, ValueError):
+        return None, Validity.INVALID_NO_DATA
+    if arr.size != 1:
+        return None, Validity.INVALID_NO_DATA
+    return float(arr.reshape(-1)[0])
+
+
+SMAINIT_STATUS_LABELS = {
+    0: "running", 1: "quit", 2: "terminated", 3: "no restarts",
+    4: "bad config", 5: "shutdown", 6: "suspended", 7: "unknown",
+}
+"""``prg_status`` code -> label (``smainit_report.h`` ``STATUSLIST``)."""
+
+SMAINIT_N_SLOTS = 24
+"""Program slots per host (``smainit_report.h`` ``DSM_ARRAY_SIZE``)."""
+
+SMAINIT_N_FIELDS = 6
+"""Ints per slot in ``PRG_STATUS_V24_V6_L`` (``smainit_dsm_fields``); ``prg_status`` is field 0."""
+
+
+@compute_function("write_age")
+def write_age(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Seconds since an input's last SMAX write (its timestamp, not its value).
+
+    For a point whose *write time* is the liveness signal, such as
+    ``SMAINIT_REPORT_X`` (``smainitMonitor.c:125``: ``curTime -
+    statusTimestamp``). The level that makes it a fault lives on the
+    output point in ``smax.json`` (``err_high``), not here.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"report"``: the point to age. Configure it with
+        ``staleness_s: null`` so a stale report reaches this function
+        instead of short-circuiting the node.
+    ctx : ComputeContext
+        Supplies the wall clock.
+
+    Returns
+    -------
+    float or tuple of (None, Validity)
+        The age in seconds (validity from the output's ``smax.json``
+        levels), or ``(None, INVALID_NO_DATA)`` if the input has no
+        usable timestamp.
+    """
+    ts = inputs["report"].timestamp
+    if ts is None:
+        return None, Validity.INVALID_NO_DATA
+    return ctx.wall_clock() - float(ts)
+
+
+@compute_function("smainit_slots")
+def smainit_slots(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
+    """Per-slot program status and name for one smainit host.
+
+    Ports the status column of ``smainitMonitor.c`` (``:160-175``):
+    ``running`` is drawn ``setEnabled`` (green), everything else
+    ``setDisabled`` (red); the output's ``state_validity`` in
+    ``smax.json`` maps those labels to GOOD / ERROR. A status is
+    ``VALID_NOT_CHECKED`` instead when the slot is empty (blank name;
+    the C stops at the first one), the program is normally dead
+    (``listDead.c:24``), or the host's report is too old to trust. That
+    last case keeps slots from racing the host-down fault: a dead host
+    reports as one fault, not one per program.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"status"``: ``PRG_STATUS_V24_V6_L``, a ``(24, 6)`` array (or
+        the flat 144 values); ``"names"``: ``PRG_NAMES_V24_C24``;
+        ``"age"``: this host's ``report_age`` computed point, whose
+        validity (from its ``smax.json`` ``err_high``) says whether the
+        report is fresh.
+    ctx : ComputeContext
+        ``params["normally_dead"]``: program names exempt from alerting.
+
+    Returns
+    -------
+    dict
+        Roles ``"status_{j}"`` -> status label, or ``(label,
+        VALID_NOT_CHECKED)``; ``"name_{j}"`` -> ``(name,
+        VALID_NOT_CHECKED)``, for ``j`` in 0-23.
+
+    Raises
+    ------
+    ValueError
+        If ``"status"`` cannot be reshaped to 24 x 6 (the engine then
+        marks every slot ``INVALID_NO_DATA`` for the tick).
+    """
+    rows = np.asarray(inputs["status"].value).reshape(SMAINIT_N_SLOTS, SMAINIT_N_FIELDS)
+    names = list(inputs["names"].value)
+    normally_dead = set(ctx.params.get("normally_dead", ()))
+    host_stale = inputs["age"].validity in (
+        Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW,
+    )
+    out = {}
+    for j in range(SMAINIT_N_SLOTS):
+        raw = names[j] if j < len(names) else ""
+        if isinstance(raw, (bytes, bytearray)):
+            raw = raw.decode("utf-8", errors="replace")
+        name = str(raw).strip("\x00 ")
+        label = _label(rows[j][0], SMAINIT_STATUS_LABELS)
+        if not name or name in normally_dead or host_stale:
+            out[f"status_{j}"] = (label, Validity.VALID_NOT_CHECKED)
+        else:
+            out[f"status_{j}"] = label
+        out[f"name_{j}"] = (name, Validity.VALID_NOT_CHECKED)
+    return out
 
 
 @compute_function("hotload_position")
