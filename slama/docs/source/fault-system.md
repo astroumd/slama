@@ -1,7 +1,8 @@
 # Fault system
 
-The fault system watches a configured set of critical monitor points and
-reports **root causes**. When an upstream failure takes down a dozen
+The fault system watches a configured set of critical monitor points,
+reports **root causes**, and publishes every node's state to SMAX
+(`faultsystem:state`). When an upstream failure takes down a dozen
 downstream points, the operator should get one alert, not thirteen.
 
 ## Concepts
@@ -184,6 +185,10 @@ behind it alerts after 100-110 s.
 7. Dedup: an event fires once per validity transition, not every tick.
 8. `Action.fire(FaultEvent)` for each action bound to the node. The event
    carries the node's value and its context values.
+9. Every node's state is published as one JSON snapshot:
+   `faultsystem:state`, then `faultsystem:heartbeat` (see
+   [Published state](#published-state)). A publish failure is logged and
+   does not stop the tick.
 
 ## Debounce
 
@@ -232,6 +237,99 @@ debounced node can be reported.
 rather than dying. `ignore`, `unignore`, `set_interval`, `reload_config`
 and `stop` are thread-safe and may be called from another thread.
 
+## Published state
+
+The three processes talk only through SMAX, so the fault system publishes
+what it decided each tick, for the Fault System display page and anything
+else that wants it. It writes two points in its own table:
+
+| Point | Type | Value |
+|---|---|---|
+| `faultsystem:state` | string | One JSON snapshot of every node (below). |
+| `faultsystem:heartbeat` | float, s | The tick's wall-clock epoch. |
+
+The state is written **first**, then the heartbeat, so a reader that sees a
+fresh heartbeat sees a state at least as new. Judge freshness by the SMAX
+write timestamp, not the heartbeat's value: during `--as-of` replay the
+value is the fixed as-of time.
+
+```json
+{
+  "version": 1,
+  "tick": 1790094623.0,
+  "interval_s": 2.0,
+  "nodes": {
+    "monitorsystem:smainit:acc4:process:tune6":
+      {"state": "root", "validity": "VALID_ERROR", "since": 1790094421.0},
+    "monitorsystem:antenna:4:yig1_lock_fault":
+      {"state": "consequence", "validity": "VALID_ERROR", "since": 1790094421.0,
+       "hidden_by": ["monitorsystem:smainit:acc4:process:tune6"]},
+    "monitorsystem:antenna:1:drive_fault":
+      {"state": "ok", "validity": "VALID_GOOD", "since": null}
+  }
+}
+```
+
+- Every node appears every tick, in `faults.json` order, so a reader can
+  tell `ok` from "missing". The shipped config gives about 38 KB (75 KB in
+  the worst case, every node hidden).
+- `state`, first match wins: `ok` (not faulted); `consequence` (a parent is
+  faulted; `hidden_by` lists those parents); `debouncing` (filter still
+  running); `ignored` (would be `root`, but an ignore pattern matches);
+  `root`. A root stays `root` on the ticks after its event: dedup limits
+  events, not state. An ignore only replaces `root`, so the page always
+  shows what the fault system would do.
+- `validity` is this tick's verdict, so a reader needs no `monitorsystem`
+  metadata pulls.
+- `since` is when the current fault episode began
+  ({py:attr}`FaultNode.faulted_since <slama.fault.faultnode.FaultNode.faulted_since>`).
+  Unlike the debounce start time it is not reset while the node is hidden,
+  so it is how long the fault has really lasted.
+- Readers parse with
+  {py:func}`parse_snapshot <slama.fault.publish.parse_snapshot>`, which
+  rejects an unknown `version`, so a format change fails loudly.
+
+### Why one snapshot per tick
+
+The alternative was one SMAX point per node (`faultsystem:<node>:state` and
+so on). One snapshot was chosen (2026-11-04) because:
+
+- **Consistency.** A reader sees one tick's decisions, never a mix of two.
+  With 374 separate writes, a page refresh could land mid-tick and show a
+  child as a root next to a parent that is already faulted.
+- **Write cost.** Two writes per tick instead of about 750 (`smax_share`
+  plus validity metadata per node). Measured against local Valkey
+  (2026-11-04): 1.6 ms per tick for the 38 KB snapshot, 0.16 s per tick
+  for per-node writes, on top of a tick that already makes about 1,090
+  reads (about 0.3 s). Network latency on site multiplies the per-node
+  cost, not the snapshot's.
+- **Read cost.** The page pulls one key per refresh, not 374 values plus
+  their metadata.
+- **One source for the DAG.** Per-node points would have to be declared in
+  `smax.json` with `__each__` blocks mirroring `faults.json`, kept in step
+  by a test. With a snapshot, `faults.json` is the only place the DAG is
+  written; `smax.json` declares two points.
+- **Given up, deliberately:** per-node history plots and generic display
+  cells for fault state. Verdict history stays on the `monitorsystem:*`
+  points the nodes watch.
+
+Writing only on change was also rejected: the snapshot's own SMAX timestamp
+is the reader's freshness gate, so it must be written every tick.
+
+### Why a separate `faultsystem` table
+
+The state lives in a new top-level table, alongside `monitorsystem`, not
+under it:
+
+- **One writer per table.** Only the compute engine writes `monitorsystem:`;
+  only the fault system writes `faultsystem:`. The table says which process
+  produced a key.
+- **No feedback loop.** Fault nodes must be `monitorsystem:*` points, so
+  the fault system cannot be configured to watch its own output.
+- **Two heartbeats, two outages.** `monitorsystem:engine:heartbeat` (engine
+  alive) and `faultsystem:heartbeat` (fault system alive) are separate, and
+  the page needs to tell them apart.
+
 ## Running it
 
 ```bash
@@ -245,9 +343,14 @@ outputs, and without it the heartbeat faults and hides everything else.
 - `--host`/`--port` default to the `SMAX_HOST`/`SMAX_PORT` environment
   variables, else `localhost:6380`, as for the compute engine
   ({py:func}`slama.cli_common.add_smax_args`).
-- `--once` runs a single tick, logs each dispatched event, and exits.
-  Actions still fire. With the shipped filters nothing can debounce in one
-  tick, so `--once` dispatches nothing.
+- `--once` runs a single tick, logs each dispatched event, publishes the
+  state, logs one line of state counts, and exits. Actions still fire.
+  With the shipped filters nothing can debounce in one tick, so `--once`
+  dispatches nothing; the would-be roots show as `debouncing`:
+
+  ```text
+  --once: states ok 351, consequence 9, debouncing 14, ignored 0, root 0
+  ```
 - `--as-of EPOCH` replaces only the wall clock, for replaying the static
   snapshot; see [](replay-as-of.md). The staleness gate uses it, so
   snapshot points read as fresh.

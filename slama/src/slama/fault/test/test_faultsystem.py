@@ -83,6 +83,10 @@ class FakeClient:
     def __init__(self, ms):
         self.ms = ms
         self.meta_pulls = []
+        self.shares = []
+
+    def smax_share(self, table, key, value):
+        self.shares.append((f"{table}:{key}", value))
 
     def smax_pull_meta(self, meta, name):
         self.meta_pulls.append((meta, name))
@@ -781,3 +785,100 @@ class TestRecovery:
         assert names(system.tick()) == ["p"]     # c hidden, clock reset
         parent.set_validity(Validity.VALID_GOOD)
         assert system.tick() == []               # same validity: dedup holds
+
+
+
+# ---------------------------------------------------------------------------
+# Published state (phase 5)
+# ---------------------------------------------------------------------------
+
+class TestPublishedState:
+    def _states(self, system):
+        return {short([k])[0]: v["state"]
+                for k, v in system.last_snapshot["nodes"].items()
+                if k != HEARTBEAT_NAME}
+
+    def test_snapshot_published_then_heartbeat(self):
+        import json
+        mp = FakeMP("a", Validity.VALID_ERROR)
+        system = _build_system([{"canonical_name": "a"}], [mp])
+        system.tick()
+        shares = system._client.shares
+        assert [name for name, _ in shares] == ["faultsystem:state", "faultsystem:heartbeat"]
+        snapshot = json.loads(shares[0][1])
+        assert snapshot == system.last_snapshot
+        assert shares[1][1] == WALL_NOW
+        assert snapshot["nodes"][n("a")] == {
+            "state": "root", "validity": "VALID_ERROR", "since": WALL_NOW}
+
+    def test_states_through_an_episode(self):
+        parent = FakeMP("p", Validity.VALID_GOOD)
+        child = FakeMP("c", Validity.VALID_ERROR)
+        clock = FakeClock()
+        system = _build_system(
+            [{"canonical_name": "p", "transient_filter_s": 5},
+             {"canonical_name": "c", "parents": ["p"], "transient_filter_s": 5,
+              "no_data_filter_s": 10}],
+            [parent, child], clock=clock)
+        system.tick()
+        assert self._states(system) == {"p": "ok", "c": "debouncing"}
+        clock.advance(6)
+        system.tick()
+        assert self._states(system) == {"p": "ok", "c": "root"}
+        system.tick()                                   # deduped, still root
+        assert self._states(system) == {"p": "ok", "c": "root"}
+        parent.set_validity(Validity.VALID_ERROR)
+        system.tick()
+        assert self._states(system) == {"p": "debouncing", "c": "consequence"}
+        assert system.last_snapshot["nodes"][n("c")]["hidden_by"] == [n("p")]
+
+    def test_since_survives_hidden_ticks_and_clears_on_recovery(self):
+        parent = FakeMP("p", Validity.VALID_ERROR)
+        child = FakeMP("c", Validity.VALID_ERROR)
+        wall = [WALL_NOW]
+        system = _build_system(
+            [{"canonical_name": "p", "onset_s": 0},
+             {"canonical_name": "c", "parents": ["p"]}],
+            [parent, child], wall_clock=lambda: wall[0],
+            # points are written at WALL_NOW; keep them fresh as wall advances
+            defaults={"computed_max_age_s": 1000})
+        system.tick()
+        wall[0] += 100
+        system.tick()                   # c hidden: debounce clock reset, since kept
+        assert system.last_snapshot["nodes"][n("c")]["since"] == WALL_NOW
+        child.set_validity(Validity.VALID_GOOD)
+        system.tick()
+        assert system.last_snapshot["nodes"][n("c")]["since"] is None
+
+    def test_ignored_root(self):
+        mp = FakeMP("a", Validity.VALID_ERROR)
+        system = _build_system([{"canonical_name": "a"}], [mp])
+        system.ignore(n("a"))
+        system.tick()
+        assert self._states(system) == {"a": "ignored"}
+
+    def test_every_node_in_config_order(self):
+        mps = [FakeMP(x) for x in ("b", "a", "c")]
+        system = _build_system([{"canonical_name": x} for x in ("b", "a", "c")], mps)
+        system.tick()
+        assert list(system.last_snapshot["nodes"]) == [
+            HEARTBEAT_NAME, n("b"), n("a"), n("c")]
+
+    def test_publish_failure_is_logged_not_raised(self, caplog):
+        mp = FakeMP("a", Validity.VALID_ERROR)
+        rec = RecordingAction()
+        system = _build_system([{"canonical_name": "a"}], [mp], {"rec": rec})
+
+        def boom(*args):
+            raise ConnectionError("valkey down")
+        system._client.smax_share = boom
+        with caplog.at_level("ERROR", logger="slama.fault.faultsystem"):
+            events = system.tick()
+        assert names(events) == ["a"] and len(rec.events) == 1
+        assert any("publishing faultsystem:state failed" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_no_client_builds_but_does_not_publish(self):
+        system = _build_system([{"canonical_name": "a"}], [FakeMP("a")], client=False)
+        system.tick()
+        assert system.last_snapshot["nodes"][n("a")]["validity"] == "INVALID_NO_DATA"

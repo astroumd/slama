@@ -79,12 +79,15 @@ The fault system's flag freezes only the wall clock
     as {py:class}`FaultSystem <slama.fault.faultsystem.FaultSystem>`'s
     `wall_clock`. Its monotonic `clock`, which drives debounce
     (`transient_filter_s`) and ignore TTLs, stays real: frozen, no debounce
-    could ever elapse and no fault would be confirmed. Today the flag only
-    dates `FaultEvent.timestamp`, because the fault system does not yet
-    judge staleness (see [](fault-system.md)). It matters once the verdict
-    checks timestamp age (issue #56). With a non-zero `transient_filter_s`,
-    a single `--once` tick only starts each debounce timer and dispatches
-    nothing.
+    could ever elapse and no fault would be confirmed. The verdict's
+    staleness gate compares each point's SMAX timestamp with this wall
+    clock, so points the engine wrote during an `--as-of` run (timestamped
+    now, after the as-of time) read as fresh. With the shipped filters a
+    single `--once` tick only starts each debounce timer and dispatches
+    nothing; its log line of state counts shows the would-be roots as
+    `debouncing`. `--once` also **writes** `faultsystem:state` and
+    `faultsystem:heartbeat` into the database it reads (the static dev
+    snapshot), and the heartbeat's value is the as-of time, not now.
 
 The web display still uses the real clock
 :   `DataBridge._computed_css_class` compares a computed point's SMAX
