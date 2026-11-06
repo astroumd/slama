@@ -7,12 +7,14 @@ Usage:
 Or with CLI options (sets SMAX_HOST / SMAX_PORT before uvicorn starts):
     python -m slama.web.server [--smax-host HOST] [--smax-port PORT]
                                [--computed-max-age SECONDS]
+                               [--faults-json PATH]
                                [--web-port PORT] [--reload]
 
 Environment variables (used when launching via plain uvicorn):
     SMAX_HOST   SMAX/Redis server hostname (default: localhost)
     SMAX_PORT   SMAX/Redis server port     (default: 6380)
     SLAMA_COMPUTED_MAX_AGE_S   Computed-point no-data age, s (default: 6; inf = off)
+    SLAMA_FAULTS_JSON          faults.json drawn by /display/faults (default: conf/faults.json)
 """
 
 import asyncio
@@ -37,6 +39,12 @@ from .display_config import (
     load_display_config,
     list_display_configs,
 )
+from .fault_page import (
+    PAGE_NAME as FAULT_PAGE_NAME,
+    FaultPage,
+    FaultPageData,
+    FaultPageReader,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +55,7 @@ _STATIC_DIR = _WEB_DIR / "static"
 _CONF_DIR = _WEB_DIR.parent / "conf"
 _DISPLAYS_DIR = _CONF_DIR / "displays"
 _SMAX_JSON_PATH = _CONF_DIR / "smax.json"
+_FAULTS_JSON_PATH = _CONF_DIR / "faults.json"
 
 # Hawaii Standard Time (UTC-10, no daylight saving)
 _HST = timezone(timedelta(hours=-10))
@@ -102,6 +111,16 @@ bridge = DataBridge(
     computed_max_age_s=_computed_max_age_from_env(),
 )
 
+# Pages generated in code rather than from conf/displays/*.json, by URL
+# name. Each has name/description/filename/update_interval for the index
+# card, read() (blocking) and context(data) for its templates.
+GENERATED_PAGES: dict[str, FaultPage] = {
+    FAULT_PAGE_NAME: FaultPage(
+        os.environ.get("SLAMA_FAULTS_JSON") or _FAULTS_JSON_PATH,
+        FaultPageReader(bridge._get_client, bridge._computed_max_age_s),
+    ),
+}
+
 
 def _get_clock_html() -> str:
     """Return HTML fragment with current UTC, HST, and local times.
@@ -137,10 +156,11 @@ async def index():
     Returns
     -------
     str
-        Rendered HTML page listing all display configurations as
+        Rendered HTML page listing the generated pages
+        (:data:`GENERATED_PAGES`) and then all display configurations, as
         clickable cards.
     """
-    configs = list_display_configs(_DISPLAYS_DIR)
+    configs = list(GENERATED_PAGES.values()) + list_display_configs(_DISPLAYS_DIR)
     template = jinja_env.get_template("index.html")
     return template.render(displays=configs)
 
@@ -152,8 +172,9 @@ async def display_page(name: str):
     Parameters
     ----------
     name : str
-        Display config filename stem (e.g., ``"tracking"``). Must match
-        a JSON file in the displays directory.
+        A :data:`GENERATED_PAGES` name (e.g. ``"faults"``), or a display
+        config filename stem (e.g., ``"tracking"``) matching a JSON file
+        in the displays directory.
 
     Returns
     -------
@@ -162,6 +183,9 @@ async def display_page(name: str):
         found. If SMAX is unreachable, the page renders with ``"---"``
         placeholder values.
     """
+    if name in GENERATED_PAGES:
+        return await _generated_page(GENERATED_PAGES[name])
+
     config_path = _DISPLAYS_DIR / f"{name}.json"
     if not config_path.exists():
         return HTMLResponse(f"Display '{name}' not found", status_code=404)
@@ -197,6 +221,97 @@ async def display_page(name: str):
         GridBlock=GridBlock,
         CellsBlock=CellsBlock,
     )
+
+
+async def _generated_page(page) -> str:
+    """Render a generated page (:data:`GENERATED_PAGES`) with initial data.
+
+    Parameters
+    ----------
+    page : FaultPage
+        The page.
+
+    Returns
+    -------
+    str
+        The rendered ``fault_page.html``. If the read fails or takes over
+        5 s, the page renders with no data and the stale-heartbeat banners.
+    """
+    try:
+        data = await asyncio.wait_for(asyncio.to_thread(page.read), timeout=5.0)
+    except Exception:
+        logger.warning("Could not fetch initial data for '%s'", page.filename,
+                       exc_info=True)
+        data = None
+    if data is None and page.load_error is None:
+        data = FaultPageData.unavailable("Could not read the fault state from SMAX")
+    template = jinja_env.get_template("fault_page.html")
+    return template.render(clock_html=Markup(_get_clock_html()), **page.context(data))
+
+
+def _render_generated(page, data) -> str:
+    """Render the WebSocket push of a generated page.
+
+    Parameters
+    ----------
+    page : FaultPage
+        The page.
+    data : FaultPageData or None
+        From ``page.read()``.
+
+    Returns
+    -------
+    str
+        The clock and the ``#fault-body`` out-of-band swap.
+    """
+    body = jinja_env.get_template("components/fault_sections.html").render(
+        **page.context(data))
+    return (_get_clock_html() + "\n"
+            f'<div id="fault-body" hx-swap-oob="innerHTML">{body}</div>')
+
+
+async def _ws_generated(websocket: WebSocket, page) -> None:
+    """Push a generated page's body every ``page.update_interval`` seconds.
+
+    Parameters
+    ----------
+    websocket : WebSocket
+        Accepted connection.
+    page : FaultPage
+        The page. Client messages are read and ignored: the page has no
+        settings (refreshing faster than the fault system ticks shows
+        nothing new).
+    """
+    async def send_updates():
+        while True:
+            await asyncio.sleep(page.update_interval)
+            try:
+                data = await asyncio.to_thread(page.read)
+            except Exception:
+                # Never let one bad refresh end the socket: show a banner.
+                logger.exception("Reading '%s' failed", page.filename)
+                data = (None if page.load_error else
+                        FaultPageData.unavailable("Could not read the fault state from SMAX"))
+            await websocket.send_text(_render_generated(page, data))
+
+    async def receive_messages():
+        while True:
+            await websocket.receive_text()
+
+    send_task = asyncio.create_task(send_updates())
+    receive_task = asyncio.create_task(receive_messages())
+    try:
+        done, pending = await asyncio.wait(
+            [send_task, receive_task], return_when=asyncio.FIRST_COMPLETED)
+        for task in done:
+            task.result()
+    except WebSocketDisconnect:
+        logger.debug("Client disconnected from display '%s'", page.filename)
+    except Exception:
+        logger.exception("Error in WebSocket for display '%s'", page.filename)
+    finally:
+        send_task.cancel()
+        receive_task.cancel()
 
 
 # ------------------------------------------------------------------
@@ -244,9 +359,15 @@ async def ws_display(websocket: WebSocket, name: str):
     websocket : WebSocket
         FastAPI WebSocket connection.
     name : str
-        Display config filename stem (e.g., ``"tracking"``).
+        A :data:`GENERATED_PAGES` name, or a display config filename
+        stem (e.g., ``"tracking"``). Closes with code 4004 when neither
+        matches.
     """
     await websocket.accept()
+
+    if name in GENERATED_PAGES:
+        await _ws_generated(websocket, GENERATED_PAGES[name])
+        return
 
     config_path = _DISPLAYS_DIR / f"{name}.json"
     if not config_path.exists():
@@ -399,6 +520,13 @@ if __name__ == "__main__":
              "(default: auto-detect, see slama.site_paths)",
     )
     parser.add_argument(
+        "--faults-json",
+        default=os.environ.get("SLAMA_FAULTS_JSON"),
+        metavar="PATH",
+        help="faults.json drawn by the Fault System page "
+             "(default: conf/faults.json)",
+    )
+    parser.add_argument(
         "--web-port",
         type=int,
         default=8000,
@@ -423,6 +551,8 @@ if __name__ == "__main__":
     os.environ["SLAMA_COMPUTED_MAX_AGE_S"] = str(args.computed_max_age)
     if args.site_root:
         os.environ["SLAMA_SITE_ROOT"] = args.site_root
+    if args.faults_json:
+        os.environ["SLAMA_FAULTS_JSON"] = args.faults_json
     if args.verbose:
         print(args)
 

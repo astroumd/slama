@@ -28,10 +28,13 @@ of blocks rendered top to bottom:
 A row or cell may carry a `format` string to override the default four
 decimal places.
 
+One page is generated in code instead: the Fault System page (see
+[The Fault System page](#the-fault-system-page)).
+
 ## Request flow
 
 ```text
-GET  /                       index of all display configs
+GET  /                       index: the Fault System page, then all display configs
 GET  /display/{name}         full page, rendered with initial values
 WS   /ws/display/{name}      server pushes HTML fragments; client sends settings
 GET  /api/history/{name}     JSON time series for the click-to-plot feature
@@ -87,6 +90,66 @@ To view a replay against a static snapshot, add `--computed-max-age inf`
 (environment variable `SLAMA_COMPUTED_MAX_AGE_S`) so computed cells are not
 greyed for being old; see [](replay-as-of.md).
 
+## The Fault System page
+
+`/display/faults` shows every node of the fault DAG and its state. It is
+not a `displays/*.json` page: {py:mod}`slama.web.fault_page` builds its
+layout from `faults.json` (path from `--faults-json` or
+`SLAMA_FAULTS_JSON`, default `conf/faults.json`), and fills it from the
+fault system's published snapshot, `faultsystem:state` (see
+[](fault-system.md), "Published state"). A page built from per-point pulls
+would cost about 750 pulls per refresh and would only see validities, so
+it could not tell a root fault from a consequence or a fault still
+debouncing.
+
+Sections, top to bottom:
+
+Status line
+:   Both heartbeats (fault system and compute engine), the snapshot's tick
+    time, the engine heartbeat node, and the count of nodes in each state.
+
+Antennas
+:   Rows Host (`smainit:acc{i}:report_age`), Servo, Tune6 (the named-process
+    points), Drive, YIG1, Gunn1 and Gunn2; columns Ant 1 to 8. The rows come
+    from the nodes `faults.json` declares. A column is dimmed while
+    `monitorsystem:antenna:{i}:online` is false.
+
+Hosts (smainit)
+:   One row per smainit host: its reporting state, the number of slots not
+    `ok` (coloured like the worst of them), and a list of those slots with
+    their program names, which expands on click and stays open across
+    refreshes.
+
+Other faults
+:   Every node no rule above places, grouped by name prefix. Empty for the
+    shipped config; it exists so a new `faults.json` node always appears.
+
+| State | Cell |
+|---|---|
+| `root` | bold red, with how long the fault has lasted |
+| `consequence` | dimmed red, with its duration |
+| `debouncing` | amber, with its duration |
+| `ignored` | grey with a red border, `ign` |
+| `ok` | coloured by its validity (green, or white for not checked), blank |
+
+Durations are `tick - since`, both from the snapshot, so a replay does not
+show months; under `--as-of` the fault system's wall clock is frozen, so
+every duration reads `0s`. Hover a cell for its name, validity, start time
+and the parents hiding it. Fault cells have no history plot; verdict history
+stays on the `monitorsystem:*` points.
+
+Each refresh pulls the snapshot, the two heartbeats, the eight `online`
+points and, only for slots that are not `ok`, the slot's program name:
+about 15 pulls for a normal night. Heartbeats are judged by their SMAX
+write time, with the same `computed_max_age_s` as computed cells.
+
+| Condition | Page shows |
+|---|---|
+| Fault heartbeat stale (or missing) | banner "Fault system not running; states as of ..."; every cell grey |
+| `faultsystem:state` missing, bad JSON or wrong `version` | banner with the reason; every cell grey |
+| Engine heartbeat stale, fault system running | banner "Compute engine not running"; cells as published |
+| A node missing from the snapshot | that cell grey; one warning logged |
+
 ## Adding a page
 
 1. Find canonical names in `smax.json` (or `docs/all_monitor_points.txt`).
@@ -105,4 +168,4 @@ derived from).
   colouring, plots, known limitations); [](history/web_display_phases.md) is the
   implementation log it replaces.
 - {py:mod}`slama.web.server`, {py:mod}`slama.web.data_bridge`,
-  {py:mod}`slama.web.display_config`.
+  {py:mod}`slama.web.display_config`, {py:mod}`slama.web.fault_page`.

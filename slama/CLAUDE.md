@@ -43,7 +43,7 @@ Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The faul
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
-**Tests**: a pytest suite exists (about 990 tests, about 12 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
+**Tests**: a pytest suite exists (about 1048 tests, about 12 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
 ```bash
 uv run pytest -n auto
 ```
@@ -85,7 +85,8 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 **`src/slama/web/`** — FastAPI web display (see `docs/source/web_display_design.md` for full architecture):
 
-- `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON).
+- `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON). `GENERATED_PAGES` (checked before `displays/*.json`) holds pages built in code: `faults`.
+- `fault_page.py` — the generated Fault System page (`/display/faults`): layout built from `FaultConfig` (antenna grid, smainit host table, "Other faults"), filled from one `faultsystem:state` pull plus both heartbeats (gated on SMAX write time), the `online` points, and names of faulted slots only. `--faults-json` / `SLAMA_FAULTS_JSON`.
 - `data_bridge.py` — `DataBridge` fetches SMAX values, maps them to `CellData` with validity CSS classes (`cell-good`, `cell-warning`, `cell-error`, `cell-nodata`, `cell-unchecked`), and maintains a per-canonical-name ring buffer (`deque(maxlen=1800)`, ~1 hour at 2s) for history plots. Lazy SMAX connection; graceful degradation on failure.
 - `display_config.py` — Loads `conf/displays/*.json` and expands block templates (`{ant}` placeholders → per-column canonical names). Block types: `table`, `grid`, `cells`.
 - `templates/` — Jinja2 templates (`base.html`, `index.html`, `display.html`, `components/{table,grid,cells}.html`).

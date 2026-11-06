@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.name }} - SMA Monitor{% endblock %}
+
+{% block clock %}{{ clock_html }}{% endblock %}
+
+{% block content %}
+<div class="display-header">
+    <h1>{{ page.name }}</h1>
+    <p class="display-desc">{{ page.description }}.
+        <span class="fault-legend">
+            <span class="fault-cell cell-error fault-root">root</span>
+            <span class="fault-cell fault-consequence">consequence</span>
+            <span class="fault-cell cell-warning fault-debouncing">debouncing</span>
+            <span class="fault-cell fault-ignored">ign</span>
+            <span class="fault-cell cell-good">ok</span>
+            <span class="fault-cell cell-unchecked">not checked</span>
+            <span class="fault-cell cell-nodata">no data</span>
+        </span>
+        Times are how long the fault has lasted; hover a cell for details.
+    </p>
+</div>
+
+<div hx-ext="ws" ws-connect="/ws/display/{{ page.filename }}">
+    <div id="fault-body" class="layout-block">
+        {% include "components/fault_sections.html" %}
+    </div>
+</div>
+
+<script>
+    // --- Connection status (as display.html) ---
+    document.body.addEventListener("htmx:wsOpen", function() {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Connected";
+        el.classList.add("connected");
+        el.classList.remove("disconnected");
+    });
+    document.body.addEventListener("htmx:wsClose", function() {
+        var el = document.getElementById("connection-status");
+        el.textContent = "Disconnected";
+        el.classList.add("disconnected");
+        el.classList.remove("connected");
+    });
+
+    // --- Keep expanded host rows open across refreshes ---
+    // Each push replaces #fault-body, which would collapse every <details>.
+    var _openDetails = new Set();
+    document.addEventListener("toggle", function(evt) {
+        var d = evt.target;
+        if (!d.id) return;
+        if (d.open) { _openDetails.add(d.id); } else { _openDetails.delete(d.id); }
+    }, true);
+    document.body.addEventListener("htmx:wsAfterMessage", function() {
+        _openDetails.forEach(function(id) {
+            var d = document.getElementById(id);
+            if (d) d.open = true;
+        });
+    });
+</script>
+{% endblock %}
