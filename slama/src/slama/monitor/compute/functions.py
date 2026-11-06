@@ -1321,6 +1321,70 @@ def write_age(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
     return ctx.wall_clock() - float(ts)
 
 
+def _smainit_rows(inputs: dict[str, ResolvedInput]) -> np.ndarray:
+    """Return ``PRG_STATUS_V24_V6_L`` as a 24 x 6 array (``prg_status`` in column 0).
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        Must hold ``"status"``, a ``(24, 6)`` array or the flat 144 values.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(SMAINIT_N_SLOTS, SMAINIT_N_FIELDS)``.
+
+    Raises
+    ------
+    ValueError
+        If the value cannot be reshaped to 24 x 6.
+    """
+    return np.asarray(inputs["status"].value).reshape(SMAINIT_N_SLOTS, SMAINIT_N_FIELDS)
+
+
+def _smainit_names(inputs: dict[str, ResolvedInput]) -> list[str]:
+    """Return the 24 program names from ``PRG_NAMES_V24_C24``, blank-padded.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        Must hold ``"names"``.
+
+    Returns
+    -------
+    list of str
+        Exactly :data:`SMAINIT_N_SLOTS` names, NUL and space stripped;
+        ``""`` for an empty or missing slot.
+    """
+    raw_names = list(inputs["names"].value)
+    names = []
+    for j in range(SMAINIT_N_SLOTS):
+        raw = raw_names[j] if j < len(raw_names) else ""
+        if isinstance(raw, (bytes, bytearray)):
+            raw = raw.decode("utf-8", errors="replace")
+        names.append(str(raw).strip("\x00 "))
+    return names
+
+
+def _smainit_host_stale(inputs: dict[str, ResolvedInput]) -> bool:
+    """Return True when the host's ``report_age`` says its report is too old.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        Must hold ``"age"``, the host's ``report_age`` computed point.
+
+    Returns
+    -------
+    bool
+        ``True`` if the age's validity is an ERROR state (from its
+        ``smax.json`` levels).
+    """
+    return inputs["age"].validity in (
+        Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW,
+    )
+
+
 @compute_function("smainit_slots")
 def smainit_slots(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict:
     """Per-slot program status and name for one smainit host.
@@ -1359,18 +1423,13 @@ def smainit_slots(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict
         If ``"status"`` cannot be reshaped to 24 x 6 (the engine then
         marks every slot ``INVALID_NO_DATA`` for the tick).
     """
-    rows = np.asarray(inputs["status"].value).reshape(SMAINIT_N_SLOTS, SMAINIT_N_FIELDS)
-    names = list(inputs["names"].value)
+    rows = _smainit_rows(inputs)
+    names = _smainit_names(inputs)
     normally_dead = set(ctx.params.get("normally_dead", ()))
-    host_stale = inputs["age"].validity in (
-        Validity.VALID_ERROR, Validity.VALID_ERROR_HIGH, Validity.VALID_ERROR_LOW,
-    )
+    host_stale = _smainit_host_stale(inputs)
     out = {}
     for j in range(SMAINIT_N_SLOTS):
-        raw = names[j] if j < len(names) else ""
-        if isinstance(raw, (bytes, bytearray)):
-            raw = raw.decode("utf-8", errors="replace")
-        name = str(raw).strip("\x00 ")
+        name = names[j]
         label = _label(rows[j][0], SMAINIT_STATUS_LABELS)
         if not name or name in normally_dead or host_stale:
             out[f"status_{j}"] = (label, Validity.VALID_NOT_CHECKED)
@@ -1378,6 +1437,49 @@ def smainit_slots(inputs: dict[str, ResolvedInput], ctx: ComputeContext) -> dict
             out[f"status_{j}"] = label
         out[f"name_{j}"] = (name, Validity.VALID_NOT_CHECKED)
     return out
+
+
+@compute_function("smainit_process")
+def smainit_process(inputs: dict[str, ResolvedInput], ctx: ComputeContext):
+    """Status of one named program on an smainit host, wherever its slot is.
+
+    smainit slots are positional and set by each host's configuration
+    (tune6 is slot 8 on acc2-6; servo is slot 6 on acc1-7 and slot 5 on
+    acc8), so a fault edge cannot point at a fixed slot. This finds the
+    program by name, so the fault DAG can make, for example, a dead
+    ``tune6`` the parent of the antenna's LO faults.
+
+    Parameters
+    ----------
+    inputs : dict of str to ResolvedInput
+        ``"status"``, ``"names"`` and ``"age"``, as for
+        :func:`smainit_slots`.
+    ctx : ComputeContext
+        ``params["program"]``: the program name to find (exact match).
+
+    Returns
+    -------
+    str or tuple of (str, Validity)
+        The status label (``running`` GOOD, anything else ERROR, from the
+        output's ``state_validity`` in ``smax.json``), or ``(label,
+        VALID_NOT_CHECKED)`` when the host's report is stale (the
+        host-down fault covers it). ``("absent", VALID_NOT_CHECKED)``
+        when the program is not configured on the host, for example
+        tune6 on a wSMA antenna.
+
+    Raises
+    ------
+    ValueError
+        If ``"status"`` cannot be reshaped to 24 x 6.
+    """
+    program = ctx.params["program"]
+    names = _smainit_names(inputs)
+    if program not in names:
+        return "absent", Validity.VALID_NOT_CHECKED
+    label = _label(_smainit_rows(inputs)[names.index(program)][0], SMAINIT_STATUS_LABELS)
+    if _smainit_host_stale(inputs):
+        return label, Validity.VALID_NOT_CHECKED
+    return label
 
 
 @compute_function("hotload_position")

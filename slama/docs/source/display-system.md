@@ -2,8 +2,8 @@
 
 The display system serves live telemetry to browsers. Everything is Python on
 the server: FastAPI for routing and WebSockets, Jinja2 for HTML, HTMX for
-swapping HTML fragments into the page. The team has little JavaScript
-experience by design; the only hand-written JS is a few lines for the
+swapping HTML fragments into the page. There is very little JavaScript
+by design; the only hand-written JS is a few lines for the
 settings controls and the Plotly plot.
 
 ## How a page is defined

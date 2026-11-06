@@ -7,6 +7,7 @@ Generated from the numpydoc docstrings in the source.
 ```{eval-rst}
 .. automodule:: slama.monitor.monitorpoint
 .. automodule:: slama.monitor.monitorsystem
+.. automodule:: slama.monitor.computed_verdict
 ```
 
 ## Compute engine

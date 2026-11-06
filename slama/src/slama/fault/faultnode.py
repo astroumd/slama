@@ -67,12 +67,31 @@ class FaultNode:
         is currently faulted, this node is not treated as a root
         fault. The list is initialized empty (a root candidate).
     transient_filter_s : float
-        Debounce window in seconds. A fault on this node is ignored
-        until it has been continuously faulted for at least this many
-        seconds. ``0.0`` disables the filter.
+        Debounce window in seconds for every fault state except
+        ``INVALID_NO_DATA``. A fault on this node is ignored until it has
+        been continuously faulted for at least this many seconds.
+        ``0.0`` disables the filter.
     actions : list of str
         Names of actions (keys into :attr:`FaultConfig.actions`) to
         fire when this node is reported as a root fault.
+    no_data_filter_s : float
+        Debounce window in seconds used while the current verdict is
+        ``INVALID_NO_DATA``. Usually longer than ``transient_filter_s``,
+        so a node whose inputs went stale because a parent died is
+        hidden by that parent before it can debounce (the parent-lag
+        rule checked by :class:`FaultConfig`).
+    computed_max_age_s : float
+        Oldest acceptable age, in seconds, of the point's SMAX timestamp;
+        an older point reads ``INVALID_NO_DATA``
+        (:func:`slama.monitor.computed_verdict.computed_validity`).
+    onset_s : float
+        How long, in seconds, this node takes to *notice* its fault after
+        the cause begins: ``computed_max_age_s`` for a staleness fault,
+        or a value threshold such as the 70 s host-down age. Used only
+        for the parent-lag check.
+    context : list of str
+        Canonical names of context points read with the node and attached
+        to its :class:`FaultEvent`. They never fault on their own.
     first_fault_t : float or None
         Monotonic-clock time at which the current fault first
         appeared, or ``None`` if the node is currently good. Used by
@@ -95,10 +114,42 @@ class FaultNode:
     parents: list[str] = field(default_factory=list)
     transient_filter_s: float = 0.0
     actions: list[str] = field(default_factory=list)
+    no_data_filter_s: float = 0.0
+    computed_max_age_s: float = 6.0
+    onset_s: float = 6.0
+    context: list[str] = field(default_factory=list)
 
     first_fault_t: float | None = None
     last_reported_t: float | None = None
     last_reported_validity: Validity | None = None
+
+    def filter_for(self, validity: Validity) -> float:
+        """Return the debounce window that applies to ``validity``.
+
+        Parameters
+        ----------
+        validity : Validity
+            The node's verdict this tick.
+
+        Returns
+        -------
+        float
+            :attr:`no_data_filter_s` for ``INVALID_NO_DATA``, otherwise
+            :attr:`transient_filter_s`.
+        """
+        if validity == Validity.INVALID_NO_DATA:
+            return self.no_data_filter_s
+        return self.transient_filter_s
+
+    @property
+    def detection_s(self) -> float:
+        """float: Conservative time for this node to report its own fault.
+
+        ``onset_s + max(transient_filter_s, no_data_filter_s)``. A child's
+        ``no_data_filter_s`` must be at least this for each parent.
+        """
+        return self.onset_s + max(self.transient_filter_s,
+                                  self.no_data_filter_s)
 
 
 @dataclass
@@ -121,12 +172,20 @@ class FaultEvent:
         seconds since the Unix epoch (as returned by ``time.time()``).
         Suitable for formatting into an ISO timestamp for logs.
     transient_filter_s : float
-        The debounce window that was configured for this node. Copied
-        from :attr:`FaultNode.transient_filter_s` for convenience so
-        actions can cite the filter value in alert bodies.
+        The debounce window that applied to this event: the node's
+        :meth:`FaultNode.filter_for` the reported validity. Actions can
+        cite it in alert bodies.
+    value : object, optional
+        The node's current value as pulled from SMAX (``None`` when
+        absent).
+    context : dict of str to object, optional
+        The node's context points, canonical name to current value
+        (``None`` when absent), in :attr:`FaultNode.context` order.
     """
 
     canonical_name: str
     validity: Validity
     timestamp: float
     transient_filter_s: float
+    value: object = None
+    context: dict = field(default_factory=dict)

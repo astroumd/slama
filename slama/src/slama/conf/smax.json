@@ -12276,6 +12276,42 @@
                 }
               }
             }
+          },
+          "process": {
+            "tune6": {
+              "description": "Status of the tune6 program on host {i}, found by name in PRG_NAMES_V24_C24 (computed for acc1-8 only; fault parent of the antenna's LO lock faults). 'absent' when tune6 is not configured on the host; VALID_NOT_CHECKED when the host report is stale. From slama.monitor.compute",
+              "size": "1",
+              "smax_type": "string",
+                "state_validity": {
+                "running": "GOOD",
+                "quit": "ERROR",
+                "terminated": "ERROR",
+                "no restarts": "ERROR",
+                "bad config": "ERROR",
+                "shutdown": "ERROR",
+                "suspended": "ERROR",
+                "unknown": "ERROR",
+                "absent": "VALID_NOT_CHECKED"
+              },
+              "unknown_state": "ERROR"
+            },
+            "servo": {
+              "description": "Status of the servo program on host {i}, found by name in PRG_NAMES_V24_C24 (computed for acc1-8 only; fault parent of the antenna's drive_fault). 'absent' when servo is not configured on the host; VALID_NOT_CHECKED when the host report is stale. From slama.monitor.compute",
+              "size": "1",
+              "smax_type": "string",
+                "state_validity": {
+                "running": "GOOD",
+                "quit": "ERROR",
+                "terminated": "ERROR",
+                "no restarts": "ERROR",
+                "bad config": "ERROR",
+                "shutdown": "ERROR",
+                "suspended": "ERROR",
+                "unknown": "ERROR",
+                "absent": "VALID_NOT_CHECKED"
+              },
+              "unknown_state": "ERROR"
+            }
           }
         }
       }

@@ -53,3 +53,40 @@ class TestBuildAction:
     def test_log_file_requires_path(self):
         with pytest.raises(ValueError, match="requires 'path'"):
             build_action({"type": "log_file"})
+
+
+class TestLogLineValueAndContext:
+    def test_value_and_context_appended(self, tmp_path):
+        path = tmp_path / "faults.log"
+        event = FaultEvent(
+            canonical_name="monitorsystem:antenna:4:gunn1_lock_fault",
+            validity=Validity.VALID_ERROR, timestamp=1700000000.0,
+            transient_filter_s=5.0, value=False,
+            context={"monitorsystem:antenna:4:gunn1_pll_ifpower": -1.4e29,
+                     "monitorsystem:antenna:4:gunn1_pll_noise": None},
+        )
+        LogFileAction(path).fire(event)
+        (line,) = path.read_text().splitlines()
+        assert line.split()[1:] == [
+            "monitorsystem:antenna:4:gunn1_lock_fault", "VALID_ERROR",
+            "value=False",
+            "monitorsystem:antenna:4:gunn1_pll_ifpower=-1.4e+29",
+            "monitorsystem:antenna:4:gunn1_pll_noise=None",
+        ]
+
+    def test_absent_value_and_no_context(self, tmp_path):
+        path = tmp_path / "faults.log"
+        LogFileAction(path).fire(_event())
+        assert path.read_text().split()[-1] == "value=None"
+
+    @pytest.mark.parametrize("value, text", [
+        ("terminated", "terminated"),
+        ("no restarts", '"no restarts"'),
+        ("", '""'),
+    ])
+    def test_strings_with_spaces_are_quoted(self, tmp_path, value, text):
+        path = tmp_path / "faults.log"
+        event = FaultEvent("monitorsystem:x", Validity.VALID_ERROR,
+                           1700000000.0, 5.0, value=value)
+        LogFileAction(path).fire(event)
+        assert path.read_text().rstrip("\n").endswith(f"value={text}")

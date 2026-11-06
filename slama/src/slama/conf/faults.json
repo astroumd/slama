@@ -1,31 +1,77 @@
 {
   "_note": [
     "The `parents` field encodes physical/causal fault dependency, NOT",
-    "the colon-separated canonical-name hierarchy. A sibling leaf under",
-    "the same branch (e.g. antenna:1:air:temperature and antenna:1:air:heater)",
-    "does NOT imply a parent/child fault relationship. Edges here should",
-    "capture the real dependency chain, e.g. a power or site-level monitor",
-    "upstream of subsystem leaves. All entries below are root-only until",
-    "those causal relationships are filled in."
+    "the colon-separated canonical-name hierarchy. Every node watches a",
+    "compute-engine output (monitorsystem:*); its verdict is the engine's",
+    "pushed validity, NO_DATA once the point is older than",
+    "computed_max_age_s. monitorsystem:engine:heartbeat is added as an",
+    "implicit parent of every other node by FaultConfig.",
+    "INVALID_NO_DATA debounces with no_data_filter_s, every other fault",
+    "state with transient_filter_s. FaultConfig rejects a child whose",
+    "no_data_filter_s is shorter than a parent's onset_s +",
+    "max(transient_filter_s, no_data_filter_s), so a child made stale by",
+    "a dead parent is hidden by it instead of reported first.",
+    "report_age onset_s 70 is smainit's host-down age; it must match",
+    "err_high / -err_low on monitorsystem:smainit:{h}:report_age in",
+    "smax.json (checked by test_realconfig)."
   ],
   "defaults": {
+    "interval_s": 2,
     "transient_filter_s": 5,
-    "interval_s": 2
+    "no_data_filter_s": 15,
+    "computed_max_age_s": 6
   },
   "actions": {
     "log": { "type": "log_file", "path": "/tmp/slama-faults.log" }
   },
   "faults": [
     {
-      "canonical_name": "correlator:swarm:progress",
+      "_comment": "Compute engine alive (written first every engine tick). Detection 6 + 5 = 11 s.",
+      "canonical_name": "monitorsystem:engine:heartbeat",
+      "no_data_filter_s": 5,
       "actions": ["log"]
+    },
+    {
+      "__each__": {
+        "over": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus",
+        "as": "h",
+        "template": {
+          "_comment": "Host {h} down: SMAINIT_REPORT_X older than 70 s (smainitMonitor.c 126). Detection 70 + 15 = 85 s.",
+          "canonical_name": "monitorsystem:smainit:{h}:report_age",
+          "onset_s": 70,
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "hal9000,acc1,acc2,acc3,acc4,acc5,acc6,acc7,acc8,newdds,corcon,m5,colossus",
+        "as": "h",
+        "template": {
+          "__each__": {
+            "over": "0-23",
+            "as": "j",
+            "template": {
+              "_comment": "Program in smainit slot {j} on {h} not running. NC for an empty slot, a normally-dead program or a stale host report.",
+              "canonical_name": "monitorsystem:smainit:{h}:slot:{j}:status",
+              "parents": ["monitorsystem:smainit:{h}:report_age"],
+              "no_data_filter_s": 90,
+              "context": ["monitorsystem:smainit:{h}:slot:{j}:name"],
+              "actions": ["log"]
+            }
+          }
+        }
+      }
     },
     {
       "__each__": {
         "over": "1-8",
         "as": "i",
         "template": {
-          "canonical_name": "antenna:{i}:air:temperature",
+          "_comment": "tune6 not running on acc{i}; NC where tune6 is not configured (wSMA). Detection 6 + 90 = 96 s.",
+          "canonical_name": "monitorsystem:smainit:acc{i}:process:tune6",
+          "parents": ["monitorsystem:smainit:acc{i}:report_age"],
+          "no_data_filter_s": 90,
           "actions": ["log"]
         }
       }
@@ -35,7 +81,84 @@
         "over": "1-8",
         "as": "i",
         "template": {
-          "canonical_name": "antenna:{i}:air:heater",
+          "_comment": "servo not running on acc{i}. Detection 6 + 90 = 96 s.",
+          "canonical_name": "monitorsystem:smainit:acc{i}:process:servo",
+          "parents": ["monitorsystem:smainit:acc{i}:report_age"],
+          "no_data_filter_s": 90,
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "_comment": "Antenna {i} drive fault (drive_status verdict, NC off-array).",
+          "canonical_name": "monitorsystem:antenna:{i}:drive_fault",
+          "parents": [
+            "monitorsystem:smainit:acc{i}:report_age",
+            "monitorsystem:smainit:acc{i}:process:servo"
+          ],
+          "no_data_filter_s": 100,
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "_comment": "Antenna {i} YIG1 unlocked (always required; lo_lock_ok, arrayMonitor.c 2152-2158). Detection 6 + 100 = 106 s.",
+          "canonical_name": "monitorsystem:antenna:{i}:yig1_lock_fault",
+          "parents": [
+            "monitorsystem:smainit:acc{i}:report_age",
+            "monitorsystem:smainit:acc{i}:process:tune6"
+          ],
+          "no_data_filter_s": 100,
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "_comment": "Antenna {i} Gunn 1 unlocked (needed below 600 GHz). Lists report_age and tune6 directly: hiding is not transitive through a yig1 that is not faulted.",
+          "canonical_name": "monitorsystem:antenna:{i}:gunn1_lock_fault",
+          "parents": [
+            "monitorsystem:antenna:{i}:yig1_lock_fault",
+            "monitorsystem:smainit:acc{i}:report_age",
+            "monitorsystem:smainit:acc{i}:process:tune6"
+          ],
+          "no_data_filter_s": 110,
+          "context": [
+            "monitorsystem:antenna:{i}:gunn1_pll_ifpower",
+            "monitorsystem:antenna:{i}:gunn1_pll_noise"
+          ],
+          "actions": ["log"]
+        }
+      }
+    },
+    {
+      "__each__": {
+        "over": "1-8",
+        "as": "i",
+        "template": {
+          "_comment": "Antenna {i} Gunn 2 unlocked (needed above 600 GHz).",
+          "canonical_name": "monitorsystem:antenna:{i}:gunn2_lock_fault",
+          "parents": [
+            "monitorsystem:antenna:{i}:yig1_lock_fault",
+            "monitorsystem:smainit:acc{i}:report_age",
+            "monitorsystem:smainit:acc{i}:process:tune6"
+          ],
+          "no_data_filter_s": 110,
+          "context": [
+            "monitorsystem:antenna:{i}:gunn2_pll_ifpower",
+            "monitorsystem:antenna:{i}:gunn2_pll_noise"
+          ],
           "actions": ["log"]
         }
       }

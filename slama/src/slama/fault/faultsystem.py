@@ -6,11 +6,16 @@ the registered :class:`Action` instances. On each tick it:
 
 1. Asks the :class:`MonitorSystem` to refresh, from SMAX, only the
    points the DAG watches (:meth:`MonitorSystem.read`), not the whole
-   tree.
-2. Classifies each critical node as currently faulted or not.
-3. Applies the per-node transient filter (``transient_filter_s``).
+   tree, and pulls each node's ``validity`` metadata.
+2. Takes each node's verdict from
+   :func:`~slama.monitor.computed_verdict.computed_validity`: the
+   engine's pushed validity, or ``INVALID_NO_DATA`` when the point is
+   absent or older than its ``computed_max_age_s``.
+3. Applies the per-node debounce: ``no_data_filter_s`` while the verdict
+   is ``INVALID_NO_DATA``, ``transient_filter_s`` otherwise, measured
+   from the start of the fault episode.
 4. Walks the DAG to find root faults — a node is a root fault iff
-   *none* of its parents are also debounced-faulted.
+   *none* of its parents is currently faulted (debounced or not).
 5. Applies the active ignore patterns (pattern / TTL based
    suppression, independent of root-detection).
 6. De-duplicates against the last report for each node so a single
@@ -42,6 +47,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from slama.monitor.computed_verdict import computed_validity
 from slama.monitor.monitorpoint import MonitorPoint, Validity
 from slama.monitor.monitorsystem import MonitorSystem
 
@@ -91,16 +97,18 @@ class FaultSystem:
         ``get_monitor_point(name)`` and ``read(names, client)``.
     client : SmaxRedisClient or None, optional
         SMAX client used by :meth:`MonitorSystem.read` to refresh the
-        watched values at the start of each tick. If ``None`` (the default),
-        :meth:`tick` skips the refresh — useful for tests that
-        inject a fake :class:`MonitorSystem` with pre-set values.
+        watched values, and for each node's ``validity`` metadata
+        (``smax_pull_meta``). If ``None`` (the default), :meth:`tick`
+        refreshes nothing and every node reads ``INVALID_NO_DATA``.
     clock : callable, optional
         Monotonic clock used for debounce and ignore-TTL timers.
         Defaults to :func:`time.monotonic`. Override in tests to
         inject a controllable fake clock.
     wall_clock : callable, optional
-        Wall-clock source used as :attr:`FaultEvent.timestamp`.
-        Defaults to :func:`time.time`.
+        Wall-clock source used as :attr:`FaultEvent.timestamp` and as
+        "now" for the staleness gate, so ``--as-of`` replay against a
+        snapshot sees the snapshot's points as fresh. Defaults to
+        :func:`time.time`.
 
     Attributes
     ----------
@@ -200,24 +208,28 @@ class FaultSystem:
         The algorithm, in order, is:
 
         1. If ``client`` was provided, call :meth:`MonitorSystem.read`
-           to refresh current values for :attr:`watched_names` only.
-           A full-tree read takes about 13 s against valkey, longer
-           than the interval; the watched set takes well under a
-           second.
+           to refresh current values for :attr:`watched_names` only
+           (nodes and their context points). A full-tree read takes
+           about 13 s against valkey, longer than the interval; the
+           watched set takes well under a second.
         2. Read the monotonic and wall clocks.
         3. Purge any expired ignore entries.
-        4. For each DAG node, read its current
-           :attr:`MonitorPoint.validity`, updating its runtime
+        4. For each DAG node, compute its verdict with
+           :func:`~slama.monitor.computed_verdict.computed_validity`
+           (value timestamp gated against the wall clock, plus the
+           pushed ``validity`` metadata), updating its runtime
            debounce state (:attr:`FaultNode.first_fault_t` set on
-           rising edge, cleared on return-to-good). Classify the
-           node as ``faulted`` (in a fault state) and, if the
-           transient filter has elapsed, as ``debounced``.
+           rising edge, cleared on return to a non-fault state).
+           Classify the node as ``faulted`` (in a fault state) and,
+           once :meth:`FaultNode.filter_for` its current verdict has
+           elapsed since the episode start, as ``debounced``.
         5. For each ``debounced`` node, skip it if any parent is
-           also debounced (not a root), skip it if matched by an
+           ``faulted`` (not a root), skip it if matched by an
            active ignore pattern, and skip it if the last report
            was the same validity value (dedup). Otherwise construct
-           a :class:`FaultEvent`, dispatch actions, and record the
-           new last-report state.
+           a :class:`FaultEvent` (with the node's value and context
+           values), dispatch actions, and record the new last-report
+           state.
 
         Returns
         -------
@@ -228,11 +240,18 @@ class FaultSystem:
 
         Notes
         -----
-        Ignored nodes are still counted as ``debounced`` for
+        Ignored nodes are still counted as ``faulted`` for
         root-cause detection; they are only suppressed at dispatch.
         This preserves the invariant that a child is not reported
         if its parent is physically faulted, regardless of whether
         the parent is being alert-suppressed.
+
+        A parent hides its children as soon as it is faulted, not only
+        once debounced, so a child with a shorter filter cannot be
+        reported during the parent's own debounce. A hidden child's
+        :attr:`FaultNode.first_fault_t` is reset to now on every tick it
+        is hidden, so once its parents clear it must be faulted for its
+        full filter before it can report (no burst of roots on recovery).
         """
         if self._client is not None:
             self._monitor_system.read(self._watched, self._client)
@@ -247,8 +266,7 @@ class FaultSystem:
         current_validity: dict[str, Validity] = {}
 
         for name, node in self._nodes.items():
-            mp = self._get_mp(name)
-            validity = mp.validity if mp is not None else Validity.INVALID_NO_DATA
+            validity = self._verdict(node, now_wall)
             current_validity[name] = validity
             is_fault = validity in FAULT_STATES
 
@@ -256,17 +274,32 @@ class FaultSystem:
                 if node.first_fault_t is None:
                     node.first_fault_t = now_mono
                 faulted.add(name)
-                if (now_mono - node.first_fault_t) >= node.transient_filter_s:
+                if (now_mono - node.first_fault_t) >= node.filter_for(validity):
                     debounced.add(name)
             else:
                 node.first_fault_t = None
                 node.last_reported_t = None
                 node.last_reported_validity = None
 
+        # A hidden node's episode restarts every tick it is hidden, so after
+        # its parents clear it must stay faulted for its full filter on its
+        # own. Otherwise a child still stale from the parent's outage (an
+        # engine restart rewriting ~1000 outputs after the heartbeat, a
+        # host's RM inputs lagging its smainit report) would be past its
+        # filter and fire as a root the tick the parent clears. Dedup state
+        # is kept, so a child reported before its parent failed does not
+        # fire again.
+        hidden = {
+            name for name in faulted
+            if any(p in faulted for p in self._nodes[name].parents)
+        }
+        for name in hidden:
+            self._nodes[name].first_fault_t = now_mono
+
         events: list[FaultEvent] = []
         for name in debounced:
             node = self._nodes[name]
-            if any(p in debounced for p in node.parents):
+            if name in hidden:
                 continue
             if self._is_ignored(name):
                 continue
@@ -278,7 +311,9 @@ class FaultSystem:
                 canonical_name=name,
                 validity=validity,
                 timestamp=now_wall,
-                transient_filter_s=node.transient_filter_s,
+                transient_filter_s=node.filter_for(validity),
+                value=self._value(name),
+                context={c: self._value(c) for c in node.context},
             )
             self._dispatch(node, event)
             node.last_reported_t = now_mono
@@ -420,7 +455,8 @@ class FaultSystem:
     def watched_names(self) -> tuple[str, ...]:
         """tuple of str: Canonical names :meth:`tick` refreshes from SMAX.
 
-        Currently the DAG node names, in config order. Replaced
+        The DAG node names in config order, then their context points
+        (each name once). Replaced
         wholesale by :meth:`reload_config`.
         """
         return self._watched
@@ -432,12 +468,13 @@ class FaultSystem:
     def _apply_config(self, config: FaultConfig) -> None:
         """Copy resolved config into the system's mutable state.
 
-        Also rebuilds :attr:`watched_names` from the new nodes and logs
-        one ``WARNING`` naming every node absent from the
-        :class:`MonitorSystem`. Such a node is never refreshed
-        (:meth:`MonitorSystem.read` skips unknown names) and always
-        reads as ``INVALID_NO_DATA``, so it is almost certainly a
-        typo or a point missing from ``smax.json``.
+        Also rebuilds :attr:`watched_names` from the new nodes and their
+        context points, and logs one ``WARNING`` naming every watched
+        name absent from the :class:`MonitorSystem`. Such a name is
+        never refreshed (:meth:`MonitorSystem.read` skips unknown
+        names); a node reads as ``INVALID_NO_DATA`` and a context value
+        as ``None``, so it is almost certainly a typo or a point
+        missing from ``smax.json``.
 
         Parameters
         ----------
@@ -447,17 +484,72 @@ class FaultSystem:
             responsible for holding ``self._lock``.
         """
         self._nodes = config.nodes
-        self._watched = tuple(config.nodes)
+        watched = dict.fromkeys(config.nodes)
+        for node in config.nodes.values():
+            watched.update(dict.fromkeys(node.context))
+        self._watched = tuple(watched)
         self._actions = config.actions
         self._interval_s = config.default_interval_s
 
         missing = [n for n in self._watched if self._get_mp(n) is None]
         if missing:
             logger.warning(
-                "FaultSystem: %d fault node(s) not in the MonitorSystem; "
-                "they will always read INVALID_NO_DATA: %s",
+                "FaultSystem: %d watched point(s) not in the MonitorSystem; "
+                "nodes will always read INVALID_NO_DATA and context "
+                "values None: %s",
                 len(missing), ", ".join(missing),
             )
+
+    def _value(self, canonical_name: str):
+        """Return a watched point's last pulled SMAX value, or ``None``.
+
+        Parameters
+        ----------
+        canonical_name : str
+            Colon-delimited canonical name.
+
+        Returns
+        -------
+        object or None
+            The SMAX result (``SmaxFloat``, ``SmaxStr``, ...) last pulled
+            into the :class:`MonitorPoint`, or ``None`` when the point is
+            unknown or was never pulled.
+        """
+        mp = self._get_mp(canonical_name)
+        return None if mp is None else mp.value
+
+    def _verdict(self, node: FaultNode, now_wall: float) -> Validity:
+        """Return a node's verdict for this tick.
+
+        Parameters
+        ----------
+        node : FaultNode
+            The node to classify.
+        now_wall : float
+            This tick's wall-clock time (epoch seconds); the staleness
+            gate compares the point's SMAX timestamp against it.
+
+        Returns
+        -------
+        Validity
+            :func:`~slama.monitor.computed_verdict.computed_validity` of
+            the node's last pulled value and its ``validity`` metadata.
+            ``INVALID_NO_DATA`` when there is no client, the point is
+            unknown, or the metadata pull fails.
+        """
+        if self._client is None:
+            return Validity.INVALID_NO_DATA
+        result = self._value(node.canonical_name)
+        if result is None:
+            return Validity.INVALID_NO_DATA
+        try:
+            raw = self._client.smax_pull_meta("validity", node.canonical_name)
+        except Exception:
+            logger.debug("validity pull failed for %s", node.canonical_name,
+                         exc_info=True)
+            return Validity.INVALID_NO_DATA
+        return computed_validity(result, raw, now_wall,
+                                 node.computed_max_age_s)
 
     def _get_mp(self, canonical_name: str) -> MonitorPoint | None:
         """Fetch a monitor point by canonical name, tolerating absence.

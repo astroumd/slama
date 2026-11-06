@@ -635,7 +635,7 @@ is substituted before the token is resolved.
 
 ## 10. Points for the fault system
 
-**Added:** 2026-11-03 (fault-system redesign, phase 3; see
+**Added:** 2026-11-03 (fault-system redesign, phases 3 and 4; see
 [](fault-system.md)). The fault system judges each node by the validity
 the engine pushes, so the verdicts it needs are computed here. These
 points are *fault-only views*: they reuse an existing point's logic and
@@ -650,7 +650,10 @@ on (`drive_status`, `lo_lock_ok`, `yig1_locked`, ...) are unchanged.
 any node, with the tick's wall-clock epoch as value and `VALID_GOOD`.
 Written first, it is never fresher than the points it vouches for, so a
 stopped engine shows as one stale heartbeat before any other point ages
-out. It is built into the engine, not a `computations.json` entry:
+out. On restart the order works against it: the heartbeat is fresh about a
+second before the rest are rewritten. The fault system handles that by
+restarting a hidden child's debounce clock while its parent is faulted
+(see [](fault-system.md), "Parent lag"). It is built into the engine, not a `computations.json` entry:
 topological order does not put a no-input node first. A tree that does
 not declare it skips it with a warning.
 
@@ -710,13 +713,24 @@ the fault system can debounce "no data" longer than a real fault:
   The normally-dead list is a `params` entry in `computations.json`.
 - Hosts: the 13 `listDead.c` hosts that have `SMAINIT_REPORT_X`.
   `crate1/2/7/8` have none in `smax.json` or the snapshot (#56-3).
+- `smainit:acc{i}:process:tune6` and `:process:servo` (phase 4):
+  {py:func}`smainit_process <slama.monitor.compute.functions.smainit_process>`
+  finds one program by name. Slots are positional and set by each host's
+  configuration (tune6 is slot 8 on acc2-6; servo is slot 6 on acc1-7
+  and slot 5 on acc8), so a fault edge cannot name a fixed slot. These
+  are the fault parents of the antenna's LO faults (tune6) and
+  `drive_fault` (servo). A program not configured on the host reads
+  `absent` (`VALID_NOT_CHECKED`), so tune6 on a wSMA antenna is not a
+  fault and `faults.json` can list all 8; a stale host report gives
+  `VALID_NOT_CHECKED`, as for the slots.
 
 ### 10.4 Touch points
 
 - `engine.py`: the heartbeat write and its `_apply_config` check.
 - `functions.py`: `fault_gate`, `lo_lock_faults`, `write_age`,
-  `smainit_slots`, helpers `_tune6_busy`, `_is_on`, `_opt_value`,
-  `_wsma_chain_units`.
+  `smainit_slots`, `smainit_process`, helpers `_tune6_busy`, `_is_on`,
+  `_opt_value`, `_wsma_chain_units`, `_smainit_rows`, `_smainit_names`,
+  `_smainit_host_stale`.
 - `smax.json`: the `monitorsystem` `engine` and `smainit` subtrees, the
   new antenna points, and the wSMA `pll:BPF`, `pll:NF` and
   `vco:is_enabled` declarations the C reads (the H mixer schema names
