@@ -43,9 +43,10 @@ full table and the deviations that were agreed.
 
 The engine reads existing points, derives new ones (counts, rollups,
 min/max, "is the antenna on source", sun distance, sequence timeouts, ...)
-and writes the result back to SMAX under `monitorsystem:`. A display or
-fault entry then treats `monitorsystem:antenna:1:sun_distance` like any
-hardware point.
+and writes the result back to SMAX under `monitorsystem:`. A display entry
+then treats `monitorsystem:antenna:1:sun_distance` like any hardware point,
+and the fault system watches only such points: a fault node must be a
+`monitorsystem:` output (see [](fault-system.md)).
 
 ### Declare, then compute
 

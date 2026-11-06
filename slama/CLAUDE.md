@@ -43,7 +43,7 @@ Both honour `SMAX_HOST`/`SMAX_PORT` (shared helper `slama.cli_common`). The faul
 
 **Simulate observatory data**: `scripts/fakeobs.py` is currently broken (issue #52) and a rewrite is planned. Do not patch it.
 
-**Tests**: a pytest suite exists (about 1089 tests, about 15 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
+**Tests**: a pytest suite exists (about 1105 tests, about 15 s) and needs no SMAX server; tests use fakes in place of `SmaxRedisClient`:
 ```bash
 uv run pytest -n auto
 ```
@@ -55,7 +55,7 @@ Tests live beside the code in `test/` subdirectories (and `scripts/test_*.py`). 
 
 ### Data Flow
 ```
-JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/displays/*.json)
+JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/processes.json, conf/displays/*.json)
     → MonitorPoint / MonitorSystem / ComputeConfig / FaultConfig / DisplayConfig objects
     → SmaxRedisClient (SMAX library, localhost:6380)
     → three independent processes, communicating only through SMAX keys:
@@ -77,7 +77,7 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 **`src/slama/monitor/compute/`** — Compute engine (see `docs/source/monitorsystem_writer_design.md`): `ComputeConfig` loads `computations.json`; `ComputeEngine` ticks, resolving `ComputeNode` inputs, running registered functions (`functions.py`), and writing derived points and validities under `monitorsystem:`. Accepts an injected clock/client and `--as-of` replay.
 
-**`src/slama/fault/`** — Fault system (see `docs/source/fault-system.md`): `FaultConfig` loads `faults.json` (critical `monitorsystem:*` points, causal-dependency DAG with the engine heartbeat as implicit parent, debounce windows, parent-lag check, context points, actions); `FaultSystem` takes each node's verdict from the engine's pushed validity gated on timestamp age (`slama.monitor.computed_verdict`, shared with the web display), finds root faults, debounces (long filter for `INVALID_NO_DATA` only) and de-dupes, and dispatches `Action`s (e.g. `LogFileAction`), then publishes every node's state as one JSON snapshot (`slama.fault.publish`; `faultsystem` is its own top-level table). The compute engine must run for faults to be meaningful.
+**`src/slama/fault/`** — Fault system (see `docs/source/fault-system.md`): `FaultConfig` loads `faults.json` (critical `monitorsystem:*` points, causal-dependency DAG with the engine heartbeat as implicit parent, debounce windows, parent-lag check, context points, actions); `FaultSystem` takes each node's verdict from the engine's pushed validity gated on timestamp age (`slama.monitor.computed_verdict`, shared with the web display), finds root faults, debounces (long filter for `INVALID_NO_DATA` only) and de-dupes, and dispatches `Action`s (e.g. `LogFileAction`), then publishes every node's state as one JSON snapshot (`slama.fault.publish`; `faultsystem` is its own top-level table). The compute engine must run for faults to be meaningful. Rejected design options are in `docs/source/history/fault_system_options.md`.
 
 **`src/slama/coordinates/`** — Spatial and spectral coordinate helpers (`core.py`).
 
@@ -87,7 +87,7 @@ JSON config (conf/smax.json, conf/computations.json, conf/faults.json, conf/disp
 
 - `server.py` — FastAPI app. Routes: `GET /` (index), `GET /display/{name}` (rendered page), `WS /ws/display/{name}` (live HTML fragment updates + client settings), `GET /api/history/{canonical_name}` (time series JSON). `GENERATED_PAGES` (checked before `displays/*.json`) holds pages built in code (`faults`, `processes`); each provides `page_template`, `body_template` (body id `page-body`), `read()`, `unavailable(message)` and `context(data)`, and the server's render and push code is shared.
 - `fault_page.py` — the generated Fault System page (`/display/faults`): layout built from `FaultConfig` (antenna grid, smainit host table, "Other faults"), filled from one `faultsystem:state` pull plus both heartbeats (gated on SMAX write time), the `online` points, and names of faulted slots only. `--faults-json` / `SLAMA_FAULTS_JSON`. `heartbeat_status` (write-time heartbeat rule) is shared with the Processes page.
-- `process_page.py` — the generated Processes page (`/display/processes`) from `conf/processes.json`: `heartbeat` groups (engine, fault system) and `smainit` groups (one card per host, every named slot's status label coloured by validity). Program names cached, re-read every `names_refresh_s`; statuses via `DataBridge.fetch_cell`. `--processes-json` / `SLAMA_PROCESSES_JSON`.
+- `process_page.py` — the generated Processes page (`/display/processes`) from `conf/processes.json`: `heartbeat` groups (engine, fault system) and `smainit` groups (one card per host, every named slot's status label coloured by validity; a stale host's programs read "no report" and no-data ones "---", counted as unknown, never their last label). Program names cached, re-read every `names_refresh_s`; statuses via `DataBridge.fetch_cell`. `--processes-json` / `SLAMA_PROCESSES_JSON`.
 - `data_bridge.py` — `DataBridge` fetches SMAX values, maps them to `CellData` with validity CSS classes (`cell-good`, `cell-warning`, `cell-error`, `cell-nodata`, `cell-unchecked`), and maintains a per-canonical-name ring buffer (`deque(maxlen=1800)`, ~1 hour at 2s) for history plots. Lazy SMAX connection; graceful degradation on failure.
 - `display_config.py` — Loads `conf/displays/*.json` and expands block templates (`{ant}` placeholders → per-column canonical names). Block types: `table`, `grid`, `cells`.
 - `templates/` — Jinja2 templates (`base.html`, `index.html`, `display.html`, `components/{table,grid,cells}.html`).

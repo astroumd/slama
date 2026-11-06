@@ -640,7 +640,9 @@ is substituted before the token is resolved.
 the engine pushes, so the verdicts it needs are computed here. These
 points are *fault-only views*: they reuse an existing point's logic and
 add the gating the fault DAG needs. The display points they are built
-on (`drive_status`, `lo_lock_ok`, `yig1_locked`, ...) are unchanged.
+on (`drive_status`, `lo_lock_ok`, `yig1_locked`, ...) are unchanged. The
+options weighed for these points are in
+[history/fault_system_options.md](history/fault_system_options.md).
 
 ### 10.1 Engine heartbeat
 
@@ -713,7 +715,7 @@ the fault system can debounce "no data" longer than a real fault:
   The normally-dead list is a `params` entry in `computations.json`.
 - Hosts: the 13 `listDead.c` hosts that have `SMAINIT_REPORT_X`.
   `crate1/2/7/8` have none in `smax.json` or the snapshot (#56-3).
-- `smainit:acc{i}:process:tune6` and `:process:servo` (phase 4):
+- `smainit:acc{i}:process:tune6` and `:process:servo`:
   {py:func}`smainit_process <slama.monitor.compute.functions.smainit_process>`
   finds one program by name. Slots are positional and set by each host's
   configuration (tune6 is slot 8 on acc2-6; servo is slot 6 on acc1-7

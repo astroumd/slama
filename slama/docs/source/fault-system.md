@@ -360,6 +360,12 @@ outputs, and without it the heartbeat faults and hides everything else.
 - There is no `--site-root`: the fault system reads no site files. Add it
   if `faults.json` ever gains `@` tokens.
 
+To see what it decided, open the web server's Fault System page,
+`/display/faults`, which draws `faultsystem:state`. The Processes page,
+`/display/processes`, shows whether the fault system and the compute
+engine are running. Against a static snapshot start the web server with
+`--computed-max-age inf` (see [](replay-as-of.md)).
+
 A log line is the ISO time, the node, its validity, `value=`, then each
 context point as `name=value` (strings with spaces are JSON-quoted):
 
@@ -382,3 +388,13 @@ context point as `name=value` (strings with spaces are JSON-quoted):
   `computations.json`) freezes at its last value when its host dies. That
   needs no special handling: a frozen GOOD fires nothing, a frozen ERROR
   was already reported, and the host-down fault hides it once it faults.
+
+## Where to read more
+
+- [](history/fault_system_options.md): the options weighed in the redesign
+  (#55, #56) and why each lost.
+- [](monitorsystem_writer_design.md) §10: the computed points the nodes
+  watch.
+- [](display-system.md): the Fault System and Processes pages.
+- {py:mod}`slama.fault.faultconfig`, {py:mod}`slama.fault.faultsystem`,
+  {py:mod}`slama.fault.publish`, {py:mod}`slama.monitor.computed_verdict`.
