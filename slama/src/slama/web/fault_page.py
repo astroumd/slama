@@ -49,7 +49,8 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "PAGE_NAME", "AntennaGrid", "HostRow", "SlotRef", "OtherGroup", "FaultLayout",
-    "build_fault_layout", "HeartbeatStatus", "FaultPageData", "FaultPageReader",
+    "build_fault_layout", "HeartbeatStatus", "pull_or_none", "heartbeat_status",
+    "FaultPageData", "FaultPageReader",
     "FaultCell", "cell_view", "slot_summary", "format_duration", "FaultPage",
 ]
 
@@ -407,7 +408,7 @@ class FaultPageData:
         return out
 
 
-def _pull(client, name: str):
+def pull_or_none(client, name: str):
     """Pull one canonical name; ``None`` on any error.
 
     Parameters
@@ -426,8 +427,43 @@ def _pull(client, name: str):
     try:
         return client.smax_pull(table, key)
     except Exception:
-        logger.debug("fault page: pull of %s failed", name, exc_info=True)
+        logger.debug("generated page: pull of %s failed", name, exc_info=True)
         return None
+
+
+def heartbeat_status(client, label: str, name: str, now: float,
+                     max_age_s: float) -> HeartbeatStatus:
+    """Judge one heartbeat by its SMAX write timestamp, not its value.
+
+    Under ``--as-of`` the value is the replayed epoch, so gating on it
+    would always read stale; the write timestamp is when the process
+    actually ran. Shared by the Fault System and Processes pages.
+
+    Parameters
+    ----------
+    client : SmaxRedisClient or None
+        Connected client; ``None`` gives a missing heartbeat.
+    label : str
+        Display label.
+    name : str
+        Canonical name of the heartbeat point.
+    now : float
+        Current wall-clock time, epoch seconds.
+    max_age_s : float
+        Maximum write age to count as fresh; ``inf`` disables the check.
+
+    Returns
+    -------
+    HeartbeatStatus
+        ``age_s=None`` (and not fresh) when the point is missing or has no
+        timestamp.
+    """
+    result = pull_or_none(client, name) if client is not None else None
+    ts = getattr(result, "timestamp", None)
+    if ts is None:
+        return HeartbeatStatus(label, name, False, None)
+    age = now - ts.timestamp()
+    return HeartbeatStatus(label, name, age <= max_age_s, age)
 
 
 class FaultPageReader:
@@ -452,20 +488,6 @@ class FaultPageReader:
         self._max_age_s = max_age_s
         self._clock = clock
 
-    def _heartbeat(self, client, label: str, name: str, now: float) -> HeartbeatStatus:
-        """Judge one heartbeat by its SMAX write timestamp, not its value.
-
-        Under ``--as-of`` the value is the replayed epoch, so gating on
-        it would always read stale; the write timestamp is when the
-        process actually ran.
-        """
-        result = _pull(client, name) if client is not None else None
-        ts = getattr(result, "timestamp", None)
-        if ts is None:
-            return HeartbeatStatus(label, name, False, None)
-        age = now - ts.timestamp()
-        return HeartbeatStatus(label, name, age <= self._max_age_s, age)
-
     def read(self, layout: FaultLayout) -> FaultPageData:
         """Pull the snapshot, heartbeats, ``online`` points and slot names.
 
@@ -482,13 +504,15 @@ class FaultPageReader:
         """
         now = self._clock()
         client = self._get_client()
-        fault_hb = self._heartbeat(client, "Fault system", FAULT_HEARTBEAT_NAME, now)
-        engine_hb = self._heartbeat(client, "Compute engine", ENGINE_HEARTBEAT_NAME, now)
+        fault_hb = heartbeat_status(client, "Fault system", FAULT_HEARTBEAT_NAME, now,
+                                    self._max_age_s)
+        engine_hb = heartbeat_status(client, "Compute engine", ENGINE_HEARTBEAT_NAME, now,
+                                     self._max_age_s)
         if client is None:
             return FaultPageData(None, "SMAX server unreachable", fault_hb, engine_hb)
 
         snapshot, error = None, None
-        raw = _pull(client, STATE_NAME)
+        raw = pull_or_none(client, STATE_NAME)
         if raw is None:
             error = f"{STATE_NAME} not found: has the fault system run?"
         else:
@@ -500,7 +524,7 @@ class FaultPageReader:
 
         for i in layout.antennas.antennas:
             name = f"monitorsystem:antenna:{i}:online"
-            result = _pull(client, name)
+            result = pull_or_none(client, name)
             validity = computed_validity(result, Validity.VALID_GOOD.value, now,
                                          self._max_age_s)
             try:
@@ -514,7 +538,7 @@ class FaultPageReader:
                 for slot in row.slots:
                     entry = data.entry(slot.node)
                     if slot.name_point and entry and entry["state"] != "ok":
-                        result = _pull(client, slot.name_point)
+                        result = pull_or_none(client, slot.name_point)
                         if result is not None:
                             data.slot_names[slot.node] = str(result)
         return data
@@ -707,11 +731,16 @@ class FaultPage:
         ``None`` when the config failed to load.
     load_error : str or None
         Why the config failed to load.
+    page_template, body_template : str
+        The full-page template and the body fragment pushed over the
+        WebSocket (the generated-page interface of :mod:`slama.web.server`).
     """
 
     name = "Fault System"
     description = "Fault DAG: root faults, consequences and debouncing, by antenna and host"
     filename = PAGE_NAME
+    page_template = "fault_page.html"
+    body_template = "components/fault_sections.html"
 
     def __init__(self, faults_json: str | Path, reader: FaultPageReader):
         self.reader = reader
@@ -738,6 +767,24 @@ class FaultPage:
         if self.layout is None:
             return None
         return self.reader.read(self.layout)
+
+    def unavailable(self, message: str) -> FaultPageData | None:
+        """Data to draw when a refresh could not read SMAX at all.
+
+        Parameters
+        ----------
+        message : str
+            Banner text.
+
+        Returns
+        -------
+        FaultPageData or None
+            ``None`` when the config failed to load (its own banner shows),
+            else :meth:`FaultPageData.unavailable`.
+        """
+        if self.load_error is not None:
+            return None
+        return FaultPageData.unavailable(message)
 
     def context(self, data: FaultPageData | None) -> dict:
         """Template variables for ``fault_page.html`` and its sections.

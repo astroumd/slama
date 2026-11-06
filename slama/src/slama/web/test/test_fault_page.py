@@ -403,7 +403,7 @@ class TestRendering:
         page = _page(tmp_path, _data(snap, online={1: False}))
         assert page.update_interval == 3.0
         html = server._render_generated(page, page.read())
-        assert 'id="fault-body" hx-swap-oob="innerHTML"' in html
+        assert 'id="page-body" hx-swap-oob="innerHTML"' in html
         assert "fault-root" in html and ">45s<" in html
         assert "fault-offarray" in html
         assert "Other faults" in html and "monitorsystem:array:foo" in html
@@ -431,7 +431,7 @@ class TestRendering:
         monkeypatch.setitem(server.GENERATED_PAGES, "faults", page)
         html = asyncio.run(server.display_page("faults"))
         assert 'ws-connect="/ws/display/faults"' in html
-        assert 'id="fault-body"' in html and "<h1>Fault System</h1>" in html
+        assert 'id="page-body"' in html and "<h1>Fault System</h1>" in html
 
     def test_full_page_when_read_fails(self, tmp_path, monkeypatch):
         page = _page(tmp_path, None)
@@ -441,7 +441,7 @@ class TestRendering:
         page.read = boom
         monkeypatch.setitem(server.GENERATED_PAGES, "faults", page)
         html = asyncio.run(server.display_page("faults"))
-        assert "Could not read the fault state from SMAX" in html
+        assert server.READ_FAILED in html
 
 
 class _FakeWebSocket:
@@ -468,7 +468,7 @@ class TestWebSocketPush:
         ws = _FakeWebSocket(n=2)
         asyncio.run(server._ws_generated(ws, page))
         assert len(ws.sent) == 2
-        assert all('id="fault-body" hx-swap-oob="innerHTML"' in m for m in ws.sent)
+        assert all('id="page-body" hx-swap-oob="innerHTML"' in m for m in ws.sent)
 
     def test_read_error_becomes_banner(self, tmp_path):
         page = _page(tmp_path, None)
@@ -479,7 +479,7 @@ class TestWebSocketPush:
         page.read = boom
         ws = _FakeWebSocket(n=1)
         asyncio.run(server._ws_generated(ws, page))
-        assert "Could not read the fault state from SMAX" in ws.sent[0]
+        assert server.READ_FAILED in ws.sent[0]
 
 
 class TestServer:

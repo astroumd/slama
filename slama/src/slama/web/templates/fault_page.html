@@ -22,7 +22,7 @@
 </div>
 
 <div hx-ext="ws" ws-connect="/ws/display/{{ page.filename }}">
-    <div id="fault-body" class="layout-block">
+    <div id="page-body" class="layout-block">
         {% include "components/fault_sections.html" %}
     </div>
 </div>
@@ -43,7 +43,7 @@
     });
 
     // --- Keep expanded host rows open across refreshes ---
-    // Each push replaces #fault-body, which would collapse every <details>.
+    // Each push replaces #page-body, which would collapse every <details>.
     var _openDetails = new Set();
     document.addEventListener("toggle", function(evt) {
         var d = evt.target;

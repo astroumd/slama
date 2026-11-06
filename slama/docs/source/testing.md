@@ -7,8 +7,8 @@ uv run pytest src/slama/fault -k debounce
 uv run pytest --cov=slama      # coverage (pytest-cov)
 ```
 
-Written against the repository as of this guide, the suite collects **1048
-tests and runs in about twelve seconds**. None of it needs a SMAX server (a
+Written against the repository as of this guide, the suite collects **1098
+tests and runs in about fifteen seconds**. None of it needs a SMAX server (a
 run with Valkey up on 6380 opened no connections to it): tests use fakes in place of `SmaxRedisClient` and build a {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` from
 either a small fixture or the real `smax.json`.
 
@@ -17,7 +17,7 @@ either a small fixture or the real `smax.json`.
 | Compute engine | `src/slama/monitor/compute/test/` | config loading and validation, engine ticks, every compute function, the real `computations.json` |
 | Monitor points | `src/slama/monitor/test/` | {py:class}`MonitorPoint <slama.monitor.monitorpoint.MonitorPoint>` validity, {py:class}`MonitorSystem <slama.monitor.monitorsystem.MonitorSystem>` tree build (fixture `fixture_smax.json`), the computed-point verdict gate |
 | Fault system | `src/slama/fault/test/` | config and parent-lag validation, verdicts, debounce by verdict, root detection, dedup, ignores, actions, the published snapshot, CLI, the shipped `faults.json` against `smax.json` and `computations.json` |
-| Web | `src/slama/web/test/` | {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` validity to CSS mapping, computed-point freshness; the Fault System page's layout (against the shipped `faults.json`), reader, cell views and rendering |
+| Web | `src/slama/web/test/` | {py:class}`DataBridge <slama.web.data_bridge.DataBridge>` validity to CSS mapping, computed-point freshness; the Fault System page's layout (against the shipped `faults.json`), reader, cell views and rendering; the Processes page's config (against the shipped `processes.json` and `smax.json`), names cache, the stale-host and no-data label rules, views and rendering; both generated pages through the server's shared render and WebSocket push |
 | Site files | `src/slama/test/` | `site_paths`, `sitefiles` parsers, logging |
 | Coordinates | `src/slama/coordinates/test/` | astronomy helpers |
 | Scripts | `scripts/test_*.py` | maintenance scripts |
