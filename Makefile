@@ -47,6 +47,8 @@ setup:
 	chmod +x smax-init.sh valkey-init.sh
 
 anaconda: anaconda3
+
+anaconda3:
 	./install_anaconda3
 
 install-valkey: git-valkey
